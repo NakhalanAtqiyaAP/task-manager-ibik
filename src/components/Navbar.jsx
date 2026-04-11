@@ -16,7 +16,7 @@ export default function Navbar({ onMenuAction }) {
           <div className="w-10 h-10 bg-purple-600 border-4 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             <span className="text-white font-black">TI</span>
           </div>
-          <span className="text-2xl md:text-3xl font-black tracking-tighter uppercase">Tugas TI-25-KA</span>
+          <span className="text-2xl md:text-3xl font-black tracking-tighter uppercase">TI-25-KA</span>
         </div>
 
         <div className="hidden md:flex gap-6 relative">

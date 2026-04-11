@@ -4,15 +4,15 @@ export default function Hero() {
       {/* Main Info Block */}
       <div className="border-4 border-black bg-purple-600 p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
         <h1 className="text-5xl md:text-6xl font-black text-white uppercase mb-4 leading-none tracking-tight">
-          Sistem<br />Tugas
+          Website<br />TI-25-KA
         </h1>
-        <p className="text-white text-lg font-bold bg-black inline-block px-3 py-1 mb-8 border-2 border-white">
-          Manajemen Akademik & Pengingat v1.0
-        </p>
+        {/* <p className="text-white text-lg font-bold bg-black inline-block px-3 py-1 mb-8 border-2 border-white">
+          
+        </p> */}
         <div className="flex gap-4">
-          <button className="bg-green-400 text-black border-4 border-black px-8 py-3 font-black text-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase">
+          {/* <button className="bg-green-400 text-black border-4 border-black px-8 py-3 font-black text-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase">
             Tambah Tugas +
-          </button>
+          </button> */}
         </div>
       </div>
       
