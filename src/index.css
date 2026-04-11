@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+body {
+  /* Membuat pola grid minimalis */
+  background-color: #f0f0f0;
+  background-image: radial-gradient(#bcbcbc 1px, transparent 1px);
+  background-size: 20px 20px;
+  font-family: 'Courier New', Courier, monospace; /* Memberikan kesan retro/developer */
+}
