@@ -12,78 +12,65 @@ export default function DaftarTugasList() {
       const { data, error } = await supabase
         .from('student_tasks')
         .select(`
-          id,
-          deadline,
-          is_completed,
-          students ( id, nama, nim ),
-          tasks ( id, judul, kode_tugas, courses ( semester, mata_kuliah:matkul_id ( nama_matkul ) ) )
+          id, deadline, is_completed,
+          students ( nama ),
+          tasks ( judul, mata_kuliah:courses(mata_kuliah(nama_matkul)) )
         `)
         .order('deadline', { ascending: true });
 
-      if (error) {
-        console.error('Gagal memuat daftar tugas:', error.message);
-        setAssignments([]);
-      } else {
-        setAssignments(data || []);
-      }
+      if (!error) setAssignments(data || []);
       setLoading(false);
     }
-
     fetchAssignments();
   }, []);
 
   return (
-    <div className="space-y-6">
-      <section className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-        <div className="bg-black text-white p-4 font-black uppercase text-2xl flex items-center justify-between">
-          <span>Daftar Tugas</span>
-          {loading && <span className="text-xs animate-pulse text-green-400">SYNCING...</span>}
+    <div className="space-y-8 p-1">
+      {/* SECTION MONITORING */}
+      <section>
+        <div className="bg-purple-600 text-white p-3 border-4 border-black font-black uppercase text-sm mb-[-4px] relative z-10 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          // Monitoring_Status
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b-4 border-black bg-purple-600 text-white">
-                <th className="p-4 border-r-4 border-black font-black uppercase">Mahasiswa</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase">Tugas</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase">Mata Kuliah</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase text-center">Deadline</th>
-                <th className="p-4 text-center uppercase font-black">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assignments.length > 0 ? (
-                assignments.map((item) => (
-                  <tr key={item.id} className="border-b-4 border-black bg-white hover:bg-green-100 transition-colors text-black">
-                    <td className="p-4 border-r-4 border-black font-black uppercase">{item.students?.nama}</td>
-                    <td className="p-4 border-r-4 border-black font-bold">{item.tasks?.judul}</td>
-                    <td className="p-4 border-r-4 border-black italic text-gray-600">
-                      {item.tasks?.courses?.mata_kuliah?.nama_matkul} (Sem {item.tasks?.courses?.semester})
+        <div className="border-4 border-black bg-white overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-yellow-400 border-b-4 border-black text-xs font-black uppercase italic">
+                  <th className="p-3 border-r-4 border-black">Mahasiswa</th>
+                  <th className="p-3 border-r-4 border-black">Tugas & Matkul</th>
+                  <th className="p-3 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {assignments.map((item) => (
+                  <tr key={item.id} className="border-b-2 border-black hover:bg-gray-50 transition-colors">
+                    <td className="p-3 border-r-4 border-black font-black uppercase leading-tight">
+                      {item.students?.nama}
                     </td>
-                    <td className="p-4 border-r-4 border-black font-black text-purple-600 text-center">
-                      {item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                    <td className="p-3 border-r-4 border-black">
+                      <div className="font-bold uppercase text-xs">{item.tasks?.judul}</div>
+                      <div className="text-[10px] italic text-gray-500">
+                         {item.tasks?.mata_kuliah?.mata_kuliah?.nama_matkul}
+                      </div>
                     </td>
-                    <td className="p-4 text-center">
-                      <span className={`inline-block border-2 border-black px-2 py-1 font-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${item.is_completed ? 'bg-green-400' : 'bg-red-400 text-white'}`}>
-                        {item.is_completed ? 'COMPLETED' : 'PENDING'}
-                      </span>
+                    <td className="p-3 text-center">
+                      <div className={`border-2 border-black px-2 py-1 font-black text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${item.is_completed ? 'bg-green-400' : 'bg-red-400 text-white'}`}>
+                        {item.is_completed ? 'DONE' : 'WAIT'}
+                      </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="p-10 text-center font-black text-gray-400 uppercase italic">
-                    {loading ? 'Fetching Daftar Tugas...' : 'Belum ada data tugas.'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-4">
-        <div className="mb-4 text-2xl font-black uppercase">Master Tugas</div>
+      {/* SECTION MASTER */}
+      <section>
+        <div className="bg-black text-white p-3 border-4 border-black font-black uppercase text-sm mb-[-4px] relative z-10 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          // Master_Tugas_Ref
+        </div>
         <TugasList />
       </section>
     </div>

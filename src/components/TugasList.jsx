@@ -32,33 +32,23 @@ export default function TugasList() {
   }, []);
 
   return (
-    <div className="overflow-x-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-      <table className="w-full text-left border-collapse">
-        <thead className="bg-black text-white">
+    <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+      <table className="w-full text-left border-collapse text-xs">
+        <thead className="bg-gray-100 border-b-4 border-black font-black uppercase">
           <tr>
-            <th className="p-3 border-r-2 border-white uppercase font-black">Kode</th>
-            <th className="p-3 border-r-2 border-white uppercase font-black">Judul Tugas</th>
-            <th className="p-3 border-r-2 border-white uppercase font-black">Mata Kuliah</th>
-            <th className="p-3 border-r-2 border-white uppercase font-black text-center">Semester</th>
+            <th className="p-2 border-r-2 border-black w-20">ID_KODE</th>
+            <th className="p-2 border-r-2 border-black">Judul_Tugas</th>
+            <th className="p-2">Matkul</th>
           </tr>
         </thead>
         <tbody>
-          {tasks.length > 0 ? (
-            tasks.map((task) => (
-              <tr key={task.id} className="border-b-2 border-black hover:bg-green-100 transition-colors">
-                <td className="p-3 font-mono font-black uppercase border-r-2 border-black">{task.kode_tugas}</td>
-                <td className="p-3 font-bold">{task.judul}</td>
-                <td className="p-3 italic text-gray-600">{task.courses?.mata_kuliah?.nama_matkul || '-'}</td>
-                <td className="p-3 text-center font-black">{task.courses?.semester ?? '-'}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="p-8 text-center font-black text-gray-400 uppercase italic">
-                {loading ? 'Loading daftar tugas...' : 'Tidak ada master tugas.'}
-              </td>
+          {tasks.map((task) => (
+            <tr key={task.id} className="border-b-2 border-black italic">
+              <td className="p-2 border-r-2 border-black font-black uppercase text-purple-600">{task.kode_tugas}</td>
+              <td className="p-2 border-r-2 border-black font-bold uppercase">{task.judul}</td>
+              <td className="p-2 text-gray-500 uppercase">{task.courses?.mata_kuliah?.nama_matkul}</td>
             </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </div>
