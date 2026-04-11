@@ -1,4 +1,4 @@
-export default function Hero() {
+export default function Hero({ taskCount = 0, loading = false }) {
   return (
     <section className="py-10 px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
       {/* Main Info Block */}
@@ -23,7 +23,9 @@ export default function Hero() {
         </div>
         <div className="h-64 bg-gray-50 border-4 border-black flex flex-col items-center justify-center p-6 text-center">
            <h3 className="font-black text-3xl uppercase mb-2 border-b-4 border-black pb-2">Ringkasan</h3>
-           <p className="font-bold text-gray-500 text-xl mt-2">2 Tugas Menunggu Penilaian</p>
+           <p className="font-bold text-gray-500 text-xl mt-2">
+             {loading ? 'Memuat...' : taskCount > 0 ? `${taskCount} tugas sedang aktif` : 'Tidak ada tugas aktif'}
+           </p>
         </div>
       </div>
     </section>

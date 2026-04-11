@@ -1,43 +1,4 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase'; // Pastikan path file config supabase benar
-
-export default function TaskTable() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Ambil data saat komponen pertama kali dimuat
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  async function fetchTasks() {
-    setLoading(true);
-    try {
-      // Melakukan JOIN: Ambil semua kolom dari tasks 
-      // dan ambil kolom nama_matkul, semester dari tabel courses (foreign key)
-      const { data, error } = await supabase
-        .from('tasks')
-        .select(`
-          id,
-          judul_tugas,
-          deadline,
-          courses (
-            nama_matkul,
-            semester
-          )
-        `)
-        .order('deadline', { ascending: true }); // Urutkan dari deadline terdekat
-
-      if (error) throw error;
-      setTasks(data || []);
-    } catch (error) {
-      console.error('Error fetching tasks:', error.message);
-      alert('Gagal mengambil data tugas!');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function TaskTable({ tasks = [], loading = false, onRefresh = () => {} }) {
   return (
     <div className="px-6 pb-24 mt-8">
       <div className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
@@ -48,7 +9,7 @@ export default function TaskTable() {
           <div className="flex items-center gap-4">
              {loading && <span className="text-xs animate-pulse text-gray-400">LOADING...</span>}
              <button 
-                onClick={fetchTasks}
+                onClick={onRefresh}
                 className="text-green-400 text-sm border-2 border-green-400 px-2 py-1 tracking-widest hover:bg-green-400 hover:text-black transition-colors"
              >
                RE_SYNC

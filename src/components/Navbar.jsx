@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export default function Navbar({ onMenuAction }) {
   const [activeSub, setActiveSub] = useState(null);
-  const menuItems = ['Daftar Tugas', 'Mahasiswa'];
+  const menuItems = ['Daftar Tugas', 'Mahasiswa', 'Tugas'];
 
   const handleAction = (category, mode) => {
     onMenuAction(category, mode); // Mengirim category (e.g., Mahasiswa) dan mode (view/create)

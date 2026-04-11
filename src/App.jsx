@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import TaskTable from './components/TaskTable';
@@ -7,14 +7,16 @@ import Modal from './components/ModalNavbar';
 import FormMahasiswa from './components/Form/FormMahasiswa';
 import FormTugas from './components/Form/FormTugas';
 import StudentList from './components/MahasiswaList'; // Pastikan membuat file ini
+import { supabase } from './lib/supabase';
 
 export default function App() {
-  // Menggunakan object agar bisa menampung kategori dan mode (view/create)
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, 
     category: '', 
     mode: '' 
   });
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const openModal = (category, mode) => {
     setModalConfig({ isOpen: true, category, mode });
@@ -23,6 +25,37 @@ export default function App() {
   const closeModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
   };
+
+  async function fetchTasks() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+          id,
+          judul_tugas,
+          deadline,
+          courses (
+            nama_matkul,
+            semester
+          )
+        `)
+        .order('deadline', { ascending: true });
+
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error) {
+      console.error('Error fetching tasks:', error.message);
+      alert('Gagal mengambil data tugas!');
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   return (
     <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-white relative">
@@ -37,8 +70,8 @@ export default function App() {
       <Navbar onMenuAction={openModal} />
 
       <main className="max-w-7xl mx-auto pt-8">
-        <Hero />
-        <TaskTable />
+        <Hero taskCount={tasks.length} loading={loading} />
+        <TaskTable tasks={tasks} loading={loading} onRefresh={fetchTasks} />
       </main>
 
       <Footer />
