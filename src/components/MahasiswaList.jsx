@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 export default function StudentList() {
   const [students, setStudents] = useState([]);
@@ -27,7 +27,12 @@ export default function StudentList() {
             <tr key={s.id} className="border-b-2 border-black hover:bg-purple-100">
               <td className="p-3 font-mono font-bold border-r-2 border-black">{s.nim}</td>
               <td className="p-3 font-black uppercase border-r-2 border-black">{s.nama}</td>
-              <td className="p-3 text-center font-bold text-purple-600">+{s.no_wa}</td>
+              <td className="p-3 text-center font-bold text-purple-600">
+                {/* Update property no_wa menjadi phone_num */}
+                <a href={`https://wa.me/${s.phone_num}`} target="_blank" rel="noreferrer" className="hover:underline">
+                  +{s.phone_num}
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>
