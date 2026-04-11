@@ -7,6 +7,7 @@ import Modal from './components/ModalNavbar';
 import FormMahasiswa from './components/Form/FormMahasiswa';
 import FormTugas from './components/Form/FormTugas';
 import StudentList from './components/MahasiswaList';
+import FormMataKuliah from './components/Form/FormMataKuliah';
 
 export default function App() {
   const [modalConfig, setModalConfig] = useState({ 
@@ -62,6 +63,14 @@ export default function App() {
                 TABEL TUGAS FULL-SCREEN SEDANG DIOPTIMASI...
               </div>
         )}
+
+        {modalConfig.category === 'Mata Kuliah' && (
+    modalConfig.mode === 'create' 
+      ? <FormMataKuliah onComplete={closeModal} /> 
+      : <div className="p-8 text-center font-black border-4 border-dashed border-black">
+          LIST MATA KULIAH SEDANG DISYNC...
+        </div>
+  )}
       </Modal>
     </div>
   )

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
 export default function FormTugas({ onComplete }) {
-  const [courses, setCourses] = useState([]);
+  const [activeCourses, setActiveCourses] = useState([]);
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
     judul: '', 
@@ -12,17 +12,56 @@ export default function FormTugas({ onComplete }) {
   });
 
   useEffect(() => {
-    async function getCourses() {
-      const { data } = await supabase.from('courses').select('id, nama_matkul');
-      if (data) setCourses(data);
+    async function getActiveCourses() {
+      const { data } = await supabase
+        .from('courses')
+        .select(`
+          id,
+          semester,
+          mata_kuliah ( nama_matkul )
+        `);
+      
+      if (data) setActiveCourses(data);
     }
-    getCourses();
+    getActiveCourses();
   }, []);
+
+  // FUNGSI AUTO-GENERATE KODE TUGAS
+  const handleCourseChange = (e) => {
+    const selectedCourseId = e.target.value;
+    
+    if (!selectedCourseId) {
+      setFormData({ ...formData, course_id: '', kode_tugas: '' });
+      return;
+    }
+
+    // CARI DATA MATKUL YANG DIPILIH
+    const selectedCourse = activeCourses.find(c => c.id === selectedCourseId);
+    
+    // PERBAIKAN: Ambil dari mata_kuliah.nama_matkul sesuai query
+    const namaMatkul = selectedCourse?.mata_kuliah?.nama_matkul || 'XX';
+    
+    // Ambil 2 huruf depan (Uppercase)
+    const prefixMatkul = namaMatkul.substring(0, 2).toUpperCase();
+    
+    // Format Tanggal: DDMMYYYY
+    const date = new Date();
+    const ddmmyyyy = String(date.getDate()).padStart(2, '0') + 
+                     String(date.getMonth() + 1).padStart(2, '0') + 
+                     date.getFullYear();
+                     
+    const generatedKode = `TI-${ddmmyyyy}-${prefixMatkul}`;
+
+    setFormData({ 
+      ...formData, 
+      course_id: selectedCourseId, 
+      kode_tugas: generatedKode 
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 1. Insert ke tabel Master Tasks
     const { data: newTask, error: taskError } = await supabase
       .from('tasks')
       .insert([{
@@ -31,27 +70,21 @@ export default function FormTugas({ onComplete }) {
         deskripsi: formData.deskripsi,
         course_id: formData.course_id
       }])
-      .select()
-      .single();
+      .select().single();
 
-    if (taskError) return alert("Error buat Master Task: " + taskError.message);
+    if (taskError) return alert("Error: " + taskError.message);
 
-    // 2. Ambil ID semua Mahasiswa
     const { data: students } = await supabase.from('students').select('id');
-    
-    // 3. Distribusikan ke student_tasks jika ada mahasiswa
-    if (students && students.length > 0) {
-      const distributions = students.map(student => ({
+    if (students?.length > 0) {
+      const dist = students.map(s => ({
         task_id: newTask.id,
-        student_id: student.id,
+        student_id: s.id,
         deadline: formData.deadline
       }));
-
-      const { error: distError } = await supabase.from('student_tasks').insert(distributions);
-      if (distError) return alert("Tugas terbuat, tapi gagal didistribusikan.");
+      await supabase.from('student_tasks').insert(dist);
     }
 
-    alert("Tugas berhasil DIBUAT dan DIDISTRIBUSIKAN ke semua mahasiswa!");
+    alert(`Tugas ${formData.kode_tugas} Berhasil Di-deploy!`);
     onComplete();
   };
 
@@ -59,46 +92,65 @@ export default function FormTugas({ onComplete }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block font-black uppercase text-xs mb-1">// KODE_TUGAS</label>
-          <input required placeholder="Contoh: LAB-01" className="w-full border-4 border-black p-3 font-bold focus:bg-purple-50 outline-none uppercase"
-            onChange={(e) => setFormData({...formData, kode_tugas: e.target.value})}
-          />
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// PILIH_MATKUL_AKTIF</label>
+          <select 
+            required 
+            className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none appearance-none"
+            value={formData.course_id}
+            onChange={handleCourseChange}
+          >
+            <option value="">-- PILIH MATKUL --</option>
+            {activeCourses.map(c => (
+              <option key={c.id} value={c.id}>
+                {/* PERBAIKAN: Akses mata_kuliah.nama_matkul */}
+                {c.mata_kuliah?.nama_matkul} (Smtr {c.semester})
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <label className="block font-black uppercase text-xs mb-1">// MATA_KULIAH</label>
-          <select required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-50 outline-none appearance-none"
-            onChange={(e) => setFormData({...formData, course_id: e.target.value})}
-          >
-            <option value="">-- PILIH --</option>
-            {courses.map(c => (<option key={c.id} value={c.id}>{c.nama_matkul}</option>))}
-          </select>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE_TUGAS (AUTO)</label>
+          <input 
+            required 
+            readOnly
+            placeholder="Terisi Otomatis..."
+            value={formData.kode_tugas}
+            className="w-full border-4 border-black p-3 font-black bg-gray-200 text-gray-600 outline-none cursor-not-allowed"
+          />
         </div>
       </div>
 
+      {/* Input lainnya tetap sama */}
       <div>
-        <label className="block font-black uppercase text-xs mb-1">// JUDUL_TUGAS</label>
-        <input required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-50 outline-none"
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// JUDUL_TUGAS</label>
+        <input 
+          required 
+          className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
           onChange={(e) => setFormData({...formData, judul: e.target.value})}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-           <label className="block font-black uppercase text-xs mb-1">// DESKRIPSI (Opsional)</label>
-           <input className="w-full border-4 border-black p-3 font-bold focus:bg-purple-50 outline-none"
+           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DESKRIPSI (Opsional)</label>
+           <input 
+             className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
              onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}
            />
         </div>
         <div>
-          <label className="block font-black uppercase text-xs mb-1">// DEADLINE</label>
-          <input required type="datetime-local" className="w-full border-4 border-black p-3 font-bold focus:bg-purple-50 outline-none"
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DEADLINE</label>
+          <input 
+            required 
+            type="datetime-local" 
+            className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             onChange={(e) => setFormData({...formData, deadline: e.target.value})}
           />
         </div>
       </div>
 
-      <button className="w-full bg-green-400 border-4 border-black p-4 font-black uppercase text-xl shadow-neo hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all mt-4">
-        DEPLOY_TASK_DATA
+      <button className="w-full bg-green-400 border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all mt-4">
+        SYNC_NEW_TASK
       </button>
     </form>
   );

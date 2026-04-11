@@ -2,11 +2,12 @@ import { useState } from 'react';
 
 export default function Navbar({ onMenuAction }) {
   const [activeSub, setActiveSub] = useState(null);
-  const menuItems = ['Daftar Tugas', 'Mahasiswa', 'Tugas'];
+  // Tambahkan 'Mata Kuliah' di sini
+  const menuItems = ['Daftar Tugas', 'Mahasiswa', 'Mata Kuliah'];
 
   const handleAction = (category, mode) => {
-    onMenuAction(category, mode); // Mengirim category (e.g., Mahasiswa) dan mode (view/create)
-    setActiveSub(null); // Tutup sub-menu setelah memilih
+    onMenuAction(category, mode);
+    setActiveSub(null);
   };
 
   return (
@@ -29,7 +30,6 @@ export default function Navbar({ onMenuAction }) {
                 {item}
               </button>
 
-              {/* Sub-Menu Pilihan */}
               {activeSub === item && (
                 <div className="absolute top-full mt-2 left-0 w-48 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-[60]">
                   <button 
