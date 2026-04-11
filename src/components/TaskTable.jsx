@@ -1,8 +1,42 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase'; // Pastikan path file config supabase benar
+
 export default function TaskTable() {
-  const dummyTasks = [
-    { id: 1, nama: 'Laporan Lab Elektronika', matkul: 'Dasar Elektronika', deadline: '2026-04-15', semester: 2 },
-    { id: 2, nama: 'Optimasi Query MariaDB', matkul: 'Database Mgmt', deadline: '2026-04-18', semester: 2 },
-  ];
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Ambil data saat komponen pertama kali dimuat
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  async function fetchTasks() {
+    setLoading(true);
+    try {
+      // Melakukan JOIN: Ambil semua kolom dari tasks 
+      // dan ambil kolom nama_matkul, semester dari tabel courses (foreign key)
+      const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+          id,
+          judul_tugas,
+          deadline,
+          courses (
+            nama_matkul,
+            semester
+          )
+        `)
+        .order('deadline', { ascending: true }); // Urutkan dari deadline terdekat
+
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error) {
+      console.error('Error fetching tasks:', error.message);
+      alert('Gagal mengambil data tugas!');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="px-6 pb-24 mt-8">
@@ -11,7 +45,15 @@ export default function TaskTable() {
         {/* Table Header Wrapper */}
         <div className="bg-black text-white p-4 font-black text-2xl uppercase flex justify-between items-center">
           <span>Daftar Tugas Aktif</span>
-          <span className="text-green-400 text-sm border-2 border-green-400 px-2 py-1 tracking-widest">Live_Sync</span>
+          <div className="flex items-center gap-4">
+             {loading && <span className="text-xs animate-pulse text-gray-400">LOADING...</span>}
+             <button 
+                onClick={fetchTasks}
+                className="text-green-400 text-sm border-2 border-green-400 px-2 py-1 tracking-widest hover:bg-green-400 hover:text-black transition-colors"
+             >
+               RE_SYNC
+             </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -26,19 +68,41 @@ export default function TaskTable() {
               </tr>
             </thead>
             <tbody>
-              {dummyTasks.map((task) => (
-                <tr key={task.id} className="border-b-4 border-black hover:bg-green-100 transition-colors bg-white text-black">
-                  <td className="p-4 border-r-4 border-black font-black text-xl">{task.nama}</td>
-                  <td className="p-4 border-r-4 border-black font-bold text-gray-700">{task.matkul}</td>
-                  <td className="p-4 border-r-4 border-black text-center font-black text-2xl">{task.semester}</td>
-                  <td className="p-4 border-r-4 border-black font-black text-purple-600 text-lg">{task.deadline}</td>
-                  <td className="p-4 text-center bg-gray-50">
-                    <button className="bg-green-400 text-black border-4 border-black px-4 py-2 font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-sm">
-                      Kirim WA
-                    </button>
+              {tasks.length > 0 ? (
+                tasks.map((task) => (
+                  <tr key={task.id} className="border-b-4 border-black hover:bg-green-100 transition-colors bg-white text-black">
+                    <td className="p-4 border-r-4 border-black font-black text-xl uppercase">
+                      {task.judul_tugas}
+                    </td>
+                    <td className="p-4 border-r-4 border-black font-bold text-gray-700 italic">
+                      {/* Mengambil data dari hasil join tabel courses */}
+                      {task.courses?.nama_matkul || 'Tanpa Mata Kuliah'}
+                    </td>
+                    <td className="p-4 border-r-4 border-black text-center font-black text-2xl">
+                      {task.courses?.semester || '-'}
+                    </td>
+                    <td className="p-4 border-r-4 border-black font-black text-purple-600 text-lg">
+                      {/* Format tanggal simpel */}
+                      {new Date(task.deadline).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </td>
+                    <td className="p-4 text-center bg-gray-50">
+                      <button className="bg-green-400 text-black border-4 border-black px-4 py-2 font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-sm">
+                        Kirim WA
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="p-10 text-center font-black text-gray-400 uppercase italic">
+                    {loading ? 'Sychronizing...' : 'Tidak ada tugas yang ditemukan.'}
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
