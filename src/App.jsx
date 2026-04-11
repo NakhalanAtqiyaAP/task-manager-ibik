@@ -8,6 +8,8 @@ import FormMahasiswa from './components/Form/FormMahasiswa';
 import FormTugas from './components/Form/FormTugas';
 import StudentList from './components/MahasiswaList';
 import FormMataKuliah from './components/Form/FormMataKuliah';
+import DaftarTugasList from './components/DaftarTugasList';
+import MataKuliahList from './components/MataKuliahList';
 
 export default function App() {
   const [modalConfig, setModalConfig] = useState({ 
@@ -59,18 +61,14 @@ export default function App() {
         {modalConfig.category === 'Daftar Tugas' && (
           modalConfig.mode === 'create' 
             ? <FormTugas onComplete={closeModal} /> 
-            : <div className="p-8 text-center font-black border-4 border-dashed border-black">
-                TABEL TUGAS FULL-SCREEN SEDANG DIOPTIMASI...
-              </div>
+            : <DaftarTugasList />
         )}
 
         {modalConfig.category === 'Mata Kuliah' && (
-    modalConfig.mode === 'create' 
-      ? <FormMataKuliah onComplete={closeModal} /> 
-      : <div className="p-8 text-center font-black border-4 border-dashed border-black">
-          LIST MATA KULIAH SEDANG DISYNC...
-        </div>
-  )}
+          modalConfig.mode === 'create' 
+            ? <FormMataKuliah onComplete={closeModal} /> 
+            : <MataKuliahList />
+        )}
       </Modal>
     </div>
   )
