@@ -48,8 +48,8 @@ export default function Navbar({ onMenuAction }) {
               )}
             </div>
           ))}
-          <button className="px-5 py-2 bg-black text-white border-4 border-black font-black uppercase hover:bg-white hover:text-black transition-all">
-            Log Sistem
+          <button className="px-5 py-2 bg-black text-white border-4 border-black font-black uppercase hover:bg-white hover:text-black transition-all" onClick={() => supabase.auth.signOut()}>
+            Logout
           </button>
         </div>
       </div>
