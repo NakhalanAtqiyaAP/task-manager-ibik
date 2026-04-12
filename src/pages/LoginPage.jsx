@@ -35,7 +35,7 @@ export default function Login() {
 
     setTimeout(() => {
       window.location.href = window.location.origin;
-    }, 4500);
+    }, 5000);
   };
 
   const handleGoogleLogin = async () => {
@@ -93,35 +93,57 @@ export default function Login() {
       </div>
 
       {/* CUTSCENE OVERLAY - Dipindahkan ke dalam return fragment */}
-      {isBooting && (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white font-mono p-4">
-          <div className="space-y-6 text-center">
-            <h2 className="text-xl md:text-2xl uppercase tracking-[0.2em] animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
-              Welcome <span className="text-green-400 font-black">{studentName}</span>...
-            </h2>
+      {/* CUTSCENE OVERLAY */}
+{isBooting && (
+  <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white font-mono p-4 overflow-hidden">
+    
+    <div className="space-y-8 text-center">
+      {/* Teks 1: Welcome (Muncul detik 0.5) */}
+      <h2 
+        className="text-xl md:text-2xl uppercase tracking-[0.2em] opacity-0 animate-text-seq"
+        style={{ animationDelay: '0.5s' }}
+      >
+        Welcome <span className="text-green-400 font-black">{studentName}</span>...
+      </h2>
 
-            <p className="text-lg uppercase tracking-widest opacity-0 animate-in fade-in duration-700 delay-1000 fill-mode-both">
-              To Website...
-            </p>
+      {/* Teks 2: To (Muncul detik 1.5) */}
+      <p 
+        className="text-lg uppercase tracking-widest opacity-0 animate-text-seq"
+        style={{ animationDelay: '1.8s' }}
+      >
+        To Website...
+      </p>
 
-            <h1 className="text-5xl md:text-7xl font-black italic underline decoration-green-400 opacity-0 animate-in fade-in zoom-in-95 duration-1000 delay-[2000ms] fill-mode-both">
-              TI-25-KA
-            </h1>
-          </div>
+      {/* Teks 3: Logo (Muncul detik 2.8) */}
+      <h1 
+        className="text-5xl md:text-7xl font-black italic underline decoration-green-400 opacity-0 animate-text-seq"
+        style={{ animationDelay: '2.8s' }}
+      >
+        TI-25-KA
+      </h1>
+    </div>
 
-          <div className="absolute bottom-12 w-full max-w-[200px]">
-            <div className="h-1 bg-gray-800 w-full overflow-hidden border border-white/20">
-              <div className="h-full bg-white animate-progress"></div>
-            </div>
-            <p className="text-[10px] mt-2 text-center text-gray-500 animate-pulse uppercase tracking-tighter">
-              Initializing_Core_Modules...
-            </p>
-          </div>
+    {/* Indikator Loading */}
+    <div className="absolute bottom-20 w-full max-w-[250px] px-4">
+      <div className="h-1 bg-gray-900 w-full overflow-hidden border border-white/10">
+        <div className="h-full bg-green-500 animate-progress"></div>
+      </div>
+      <div className="flex justify-between mt-2">
+        <p className="text-[10px] text-gray-500 animate-pulse uppercase">
+          Loading_to_website...
+        </p>
+        <p className="text-[10px] text-green-500 font-bold uppercase">Ready</p>
+      </div>
+    </div>
 
-          {/* Fade out di akhir */}
-          <div className="absolute inset-0 bg-black opacity-0 animate-in fade-in duration-1000 delay-[3500ms] fill-mode-both pointer-events-none"></div>
-        </div>
-      )}
+    {/* OVERLAY HITAM UNTUK FADE OUT (Muncul detik 4) */}
+    {/* Ini yang akan menutup semua teks sebelum pindah halaman */}
+    <div 
+      className="absolute inset-0 bg-black opacity-0 animate-final-fade z-[110] pointer-events-none"
+      style={{ animationDelay: '4s' }}
+    ></div>
+  </div>
+)}
     </>
   );
 }
