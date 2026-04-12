@@ -84,16 +84,55 @@ body {
   z-index: 1;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-entrance {
+  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.eva-glitch-hover:hover {
-  text-shadow: 2px 0 #00FF19, -2px 0 #FF5C5C;
-  transition: all 0.2s;
+/* Membuat delay agar teks muncul setelah kotak */
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+
+@keyframes brutalBounce {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2px, -1px); }
+  30% { transform: translate(2px, 1px); }
+  50% { transform: translate(-1px, 2px); }
+  70% { transform: translate(1px, -2px); }
+  90% { transform: translate(-2px, 1px); }
+}
+
+.animate-brutal-wiggle:hover {
+  animation: brutalBounce 0.4s steps(1) infinite;
+  /* cubic-bezier juga bisa, tapi steps(1) memberikan efek patah-patah yang lebih Brutalist */
+}
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(15px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.fade-up {
+  animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-150%) skewX(-25deg); }
+  100% { transform: translateX(150%) skewX(-25deg); }
+}
+
+.shimmer-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-container::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 40%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 4s infinite;
 }

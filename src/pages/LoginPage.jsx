@@ -87,7 +87,7 @@ const handleManualLogin = async (e) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-purple-600 p-4 font-sans relative bg-blueprint">
+    <div className="min-h-screen flex items-center justify-center bg-purple-900 p-4 font-sans relative bg-blueprint">
       <div className="bg-white border-8 border-black p-8 max-w-md w-full shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
         <h1 className="text-4xl font-black uppercase mb-6 italic underline">// AUTH_GATE</h1>
         

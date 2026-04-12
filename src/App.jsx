@@ -171,7 +171,7 @@
     const activeTasksCount = tasks.filter(task => !task.is_completed).length;
 
     if (isCheckingAuth) {
-      return <div className="min-h-screen flex items-center justify-center bg-white"><div className="font-black uppercase text-2xl animate-pulse">Memvalidasi Akses...</div></div>;
+      return <div className="min-h-screen flex items-center justify-center bg-purple-900"><div className="font-black uppercase text-2xl animate-pulse">Memvalidasi Akses...</div></div>;
     }
 
     if (!isAuthorized) return <Login />;
@@ -182,7 +182,7 @@
         <Navbar onMenuAction={openModal} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
         <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300">
-          <Hero taskCount={activeTasksCount} loading={loading} />
+          <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
           <TaskTable tasks={tasks} studentId={currentUser?.id} loading={loading} onRefresh={fetchInitialData} />
         </main>
 
