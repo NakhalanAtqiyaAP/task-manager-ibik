@@ -77,6 +77,15 @@ export default function FormTugas({ onComplete }) {
       return alert("Pilih minimal satu mahasiswa untuk menerima tugas ini!");
     }
     
+    // Convert datetime-local to proper ISO string with timezone offset
+    let deadline = formData.deadline;
+    if (deadline) {
+      // datetime-local returns format: "2024-04-12T14:30"
+      const localDate = new Date(deadline);
+      // Convert to ISO string (this will be in UTC, but we need to keep local time)
+      deadline = localDate.toISOString();
+    }
+    
     // 1. Simpan ke Master Tasks
     const { data: newTask, error: taskError } = await supabase
       .from('tasks')
@@ -94,7 +103,7 @@ export default function FormTugas({ onComplete }) {
     const dist = selectedStudents.map(studentId => ({
       task_id: newTask.id,
       student_id: studentId,
-      deadline: formData.deadline
+      deadline: deadline
     }));
 
     const { error: distError } = await supabase.from('student_tasks').insert(dist);
