@@ -73,7 +73,7 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-black text-white p-4 font-black uppercase hover:bg-gray-800 transition-colors shadow-[4px_4px_0px_0px_rgba(100,100,100,1)]"
             >
-              {loading ? 'Authenticating...' : 'Enter System'}
+              {loading ? 'Authenticating...' : 'Login'}
             </button>
           </form>
 
@@ -95,7 +95,7 @@ export default function Login() {
       {/* CUTSCENE OVERLAY - Dipindahkan ke dalam return fragment */}
       {/* CUTSCENE OVERLAY */}
 {isBooting && (
-  <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white font-mono p-4 overflow-hidden">
+  <div className="fixed inset-0 z-[100] bg-purple-900 flex flex-col items-center justify-center text-white font-mono p-4 overflow-hidden">
     
     <div className="space-y-8 text-center">
       {/* Teks 1: Welcome (Muncul detik 0.5) */}
