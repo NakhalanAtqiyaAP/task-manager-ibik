@@ -38,7 +38,7 @@ export default function HistoryDashboard({ studentId }) {
 
   return (
     <div id="history" className="mb-8 border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-6">
-      <h3 className="font-black text-lg uppercase border-b-4 border-black pb-2 mb-4">// STATISTIK_RIWAYAT_TUGAS</h3>
+      <h3 className="font-black text-lg uppercase border-b-4 border-black pb-2 mb-4">STATISTIK RIWAYAT TUGAS</h3>
       
       <div className="grid grid-cols-2 gap-4 mb-6 text-center">
         <div className="bg-green-400 border-4 border-black p-4">

@@ -188,7 +188,37 @@
     }
 
     if (!isAuthorized) return <Login />;
+  const AccessDenied = () => (
+    <div className="flex flex-col items-center justify-center p-10 border-4 border-black bg-red-500 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center my-10 max-w-2xl mx-auto">
+      <div className="text-6xl mb-4">⛔</div>
+      <h2 className="text-4xl font-black text-white uppercase mb-2">Akses Ditolak</h2>
+      <p className="font-bold text-black border-2 border-black bg-white px-4 py-2 uppercase">
+        Hanya Admin yang dapat mengakses area ini.
+      </p>
+    </div>
+  );
+  const renderContent = () => {
+  const userRole = currentUser?.role || 'student';
 
+  // PROTEKSI ROUTING DI SINI
+  if ((currentCategory === 'Mahasiswa' || currentCategory === 'Mata Kuliah') && userRole !== 'admin') {
+    return <AccessDenied />;
+  }
+
+  // Jika aman, render sesuai kategori
+  switch (currentCategory) {
+    case 'Dashboard':
+      return <Dashboard />;
+    case 'Daftar Tugas':
+      return <TaskManager mode={currentMode} />;
+    case 'Mahasiswa':
+      return <StudentManager mode={currentMode} />; // Admin only
+    case 'Mata Kuliah':
+      return <CourseManager mode={currentMode} />; // Admin only
+    default:
+      return <Dashboard />;
+  }
+};
     return (
       <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
           {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}

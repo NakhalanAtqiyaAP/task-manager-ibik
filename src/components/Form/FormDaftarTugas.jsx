@@ -43,7 +43,7 @@ export default function FormDaftarTugas({ onComplete }) {
         </div>
       </div>
       <button className="w-full bg-green-400 border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
-        SIMPAN_DATA_MAHASISWA
+        SIMPAN DATA
       </button>
     </form>
   );

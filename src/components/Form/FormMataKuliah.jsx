@@ -93,7 +93,7 @@ export default function FormMataKuliah({ onComplete }) {
       </div>
 
       <button className="w-full bg-yellow-400 border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all mt-4">
-        SIMPAN_DATA_MATKUL
+        SIMPAN DATA
       </button>
     </form>
   );

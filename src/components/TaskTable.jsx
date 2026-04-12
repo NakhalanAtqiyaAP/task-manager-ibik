@@ -79,16 +79,16 @@ export default function TaskTable({ studentId, onRefresh }) {
     // Tunggu proses sinkronisasi selesai sebelum mengambil data
     await syncExpiredTasks();
 
-    let query = supabase
-      .from('student_tasks')
-      .select(`
-        id, deadline, is_completed, task_id,
-        tasks ( 
-          id, judul, 
-          courses ( mata_kuliah (nama_matkul), semester )
-        )
-      `)
-      .eq('student_id', studentId);
+   let query = supabase
+    .from('student_tasks')
+    .select(`
+      id, deadline, is_completed, task_id, submission_link, 
+      tasks ( 
+        id, judul, 
+        courses ( mata_kuliah (nama_matkul), semester )
+      )
+    `)
+    .eq('student_id', studentId);
 
     // Filter berdasarkan mata kuliah
     if (selectedCourse) {
@@ -229,43 +229,92 @@ export default function TaskTable({ studentId, onRefresh }) {
         {/* LIST TUGAS */}
         <div className="divide-y-4 divide-black">
           {tasks.length > 0 ? (
-            displayedTasks.map((item) => {
-              const isDone = item.is_completed;
-              return (
-                <div key={item.id} className={`group flex items-center transition-colors ${isDone ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}>
-                  <div className="p-4 border-r-4 border-black flex-shrink-0">
-                    <button
-                      onClick={() => handleToggleTask(item.id, isDone)}
-                      className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${isDone ? 'bg-green-400' : 'bg-white hover:bg-gray-200'}`}
-                    >
-                      {isDone && <span id="task-done" className="font-black text-xl text-black">✓</span>}
-                    </button>
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <h4 className={`font-black uppercase text-sm sm:text-base ${isDone ? 'line-through text-gray-500' : ''}`}>
-                        {item.tasks?.judul}
-                      </h4>
-                      <p className="text-xs italic text-gray-600">
-                        {item.tasks?.courses?.mata_kuliah?.nama_matkul} (Sem {item.tasks?.courses?.semester})
-                      </p>
-                    </div>
-                    <div className="text-right flex flex-col items-end flex-shrink-0">
-                      <span className="text-[10px] font-black uppercase text-gray-400">Deadline</span>
-                      <span className={`font-black text-sm ${isDone ? 'text-gray-400' : 'text-purple-600'}`}>
-                        {fmtDate(item.deadline)}
-                      </span>
-                      {isDone && (
-                        <span className="bg-green-400 border border-black text-black text-[10px] px-2 py-0.5 mt-1 font-black uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          Selesai Dieksekusi
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
+  displayedTasks.map((item) => {
+    const isDone = item.is_completed;
+    const link = item.submission_link;
+
+    // Fungsi deteksi tipe link
+    const renderSubmissionAction = () => {
+      if (!link) return null;
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const urlRegex = /^(http|https):\/\/[^ "]+$/;
+
+      // Jika Email
+      if (emailRegex.test(link)) {
+        return (
+          <a 
+            href={`mailto:${link}`} 
+            className="inline-flex items-center gap-1 mt-2 bg-yellow-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+          >
+            📧 Kirim di Sini (Email)
+          </a>
+        );
+      }
+
+      // Jika URL
+      if (urlRegex.test(link)) {
+        return (
+          <a 
+            href={link} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 mt-2 bg-blue-400 text-white border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+          >
+            🔗 Kirim di Sini (Link)
+          </a>
+        );
+      }
+
+      // Jika hanya teks perintah
+      return (
+        <div className="mt-2 flex items-start gap-1">
+          <span className="bg-gray-200 border-2 border-black px-2 py-0.5 text-[9px] font-black uppercase">Note:</span>
+          <span className="text-[10px] font-bold text-gray-700 italic">{link}</span>
+        </div>
+      );
+    };
+
+    return (
+      <div key={item.id} className={`group flex items-center transition-colors ${isDone ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}>
+        <div className="p-4 border-r-4 border-black flex-shrink-0">
+          <button
+            onClick={() => handleToggleTask(item.id, isDone)}
+            className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${isDone ? 'bg-green-400' : 'bg-white hover:bg-gray-200'}`}
+          >
+            {isDone && <span className="font-black text-xl text-black">✓</span>}
+          </button>
+        </div>
+
+        <div className="p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h4 className={`font-black uppercase text-sm sm:text-base ${isDone ? 'line-through text-gray-500' : ''}`}>
+              {item.tasks?.judul}
+            </h4>
+            <p className="text-xs italic text-gray-600">
+              {item.tasks?.courses?.mata_kuliah?.nama_matkul} (Sem {item.tasks?.courses?.semester})
+            </p>
+            
+            {/* TAMPILKAN ACTION SUBMISSION DI SINI */}
+            {!isDone && renderSubmissionAction()}
+          </div>
+
+          <div className="text-right flex flex-col items-end flex-shrink-0">
+            <span className="text-[10px] font-black uppercase text-gray-400">Deadline</span>
+            <span className={`font-black text-sm ${isDone ? 'text-gray-400' : 'text-purple-600'}`}>
+              {fmtDate(item.deadline)}
+            </span>
+            {isDone && (
+              <span className="bg-green-400 border border-black text-black text-[10px] px-2 py-0.5 mt-1 font-black uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                Selesai Dieksekusi
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  })
+) : (
             <div className="p-12 text-center font-black text-gray-400 uppercase italic">
               {loading ? 'Menyinkronkan data...' : 'Tidak ada tugas aktif!'}
             </div>
