@@ -7,3 +7,56 @@ body {
   background-size: 20px 20px;
   font-family: 'Courier New', Courier, monospace; /* Memberikan kesan retro/developer */
 }
+
+.comic-grid-bg {
+  background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 0 0;
+}
+
+.bg-notebook-lines {
+  background-color: #ffffff;
+  background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 100% 30px; /* Jarak antar garis 30px */
+}
+
+/* Tambahkan garis vertikal merah di samping (opsional) */
+.bg-notebook-margin {
+  background-image: 
+    linear-gradient(90deg, transparent 79px, #ff8a8a 79px, #ff8a8a 81px, transparent 81px),
+    linear-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 100% 100%, 100% 30px;
+}
+
+/* CSS */
+/* Tambahkan di index.css atau style.css */
+.bg-blueprint {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(0, 0, 0, 0.05) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 2px, transparent 2px);
+  background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+}
+
+.bg-industrial {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 20px,
+    rgba(0, 0, 0, 0.03) 20px,
+    rgba(0, 0, 0, 0.03) 40px
+  );
+}
+
+.bg-isometric {
+  background-image: 
+    linear-gradient(30deg, #000 12%, transparent 12.5%, transparent 87%, #000 87.5%, #000),
+    linear-gradient(150deg, #000 12%, transparent 12.5%, transparent 87%, #000 87.5%, #000),
+    linear-gradient(30deg, #000 12%, transparent 12.5%, transparent 87%, #000 87.5%, #000),
+    linear-gradient(150deg, #000 12%, transparent 12.5%, transparent 87%, #000 87.5%, #000),
+    linear-gradient(60deg, rgba(0,0,0,0.1) 25%, transparent 25.5%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1)),
+    linear-gradient(60deg, rgba(0,0,0,0.1) 25%, transparent 25.5%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1));
+  background-size: 40px 70px;
+  opacity: 0.04;
+}
