@@ -177,7 +177,7 @@
     if (!isAuthorized) return <Login />;
 
     return (
-      <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-600 relative overflow-visible bg-stripes bg-blueprint">
+      <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
           {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
         <Navbar onMenuAction={openModal} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
