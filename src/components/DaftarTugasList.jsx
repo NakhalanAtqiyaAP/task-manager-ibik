@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import TugasList from './TugasList';
 
 export default function DaftarTugasList() {
   const [assignments, setAssignments] = useState([]);
