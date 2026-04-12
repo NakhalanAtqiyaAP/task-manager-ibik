@@ -60,3 +60,40 @@ body {
   background-size: 40px 70px;
   opacity: 0.04;
 }
+
+@keyframes scanline {
+  0% { top: -100%; }
+  100% { top: 100%; }
+}
+
+.bg-scan-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-scan-overlay::after {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 255, 25, 0.1), transparent);
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.eva-glitch-hover:hover {
+  text-shadow: 2px 0 #00FF19, -2px 0 #FF5C5C;
+  transition: all 0.2s;
+}

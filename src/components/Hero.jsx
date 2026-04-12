@@ -18,12 +18,12 @@ export default function Hero({ taskCount = 0, loading = false }) {
       
       {/* Decorative / Status Block */}
       <div className="hidden md:block border-4 text-white border-black bg-white p-4 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative">
-        <div className="absolute -top-5 -right-5 bg-green-400 border-4 border-black px-4 py-1 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black uppercase text-lg">
+        <div className="absolute -top-5 -right-5 bg-green-400 border-4 border-black px-4 py-1 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black uppercase text-lg z-10">
           Semester 2
         </div>
-        <div className="h-64 bg-black border-4 border-white flex flex-col items-center justify-center p-6 text-center">
-           <h3 className="font-black text-3xl uppercase mb-2 border-b-4 border-white pb-2">Ringkasan</h3>
-           <p className="font-bold text-gray-500 text-xl mt-2">
+        <div className="h-64 bg-gray-800 border-4 border-white flex flex-col items-center justify-center p-6 text-center bg-scan-overlay relative z-0">
+           <h3 className="font-black text-3xl uppercase mb-2 border-b-4 border-white pb-2 relative z-10">Ringkasan</h3>
+           <p className="font-bold text-gray-500 text-xl mt-2 relative z-10">
              {loading ? 'Memuat...' : taskCount > 0 ? `${taskCount} tugas sedang aktif` : 'Tidak ada tugas aktif'}
            </p>
         </div>
