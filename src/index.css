@@ -136,3 +136,47 @@ body {
   background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
   animation: shimmer 4s infinite;
 }
+
+@keyframes progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-progress {
+  animation: progress 3.5s ease-in-out forwards;
+}
+
+/* Fallback jika tidak pakai plugin tailwindcss-animate */
+.fill-mode-both {
+  animation-fill-mode: both;
+}
+
+/* Animasi Muncul Teks */
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animasi Fade Out Seluruh Layar di Akhir */
+@keyframes screenFadeOut {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Progress Bar */
+@keyframes progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-text-seq {
+  animation: textFadeIn 0.8s ease-out forwards;
+}
+
+.animate-progress {
+  animation: progress 4s linear forwards; /* Sesuaikan durasi dengan timeout redirect */
+}
+
+.animate-final-fade {
+  animation: screenFadeOut 1s ease-in forwards;
+}

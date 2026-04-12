@@ -1,4 +1,5 @@
 export default {
+  plugins: [require("tailwindcss-animate")],
   theme: {
     extend: {
       colors: {
