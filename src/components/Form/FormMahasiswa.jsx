@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
 export default function FormMahasiswa({ onComplete }) {
-  // Update state sesuai skema baru (phone_num dan email)
-  const [formData, setFormData] = useState({ nama: '', nim: '', phone_num: '', email: '' });
+  // Update state sesuai skema baru (phone_num, email, dan password)
+  const [formData, setFormData] = useState({ nama: '', nim: '', phone_num: '', email: '', password: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +36,12 @@ export default function FormMahasiswa({ onComplete }) {
             value={formData.nim}
             onChange={(e) => {
               const nim = e.target.value;
-              setFormData({ ...formData, nim, email: nim ? `${nim}@student.ibik.ac.id` : '' });
+              setFormData({ 
+                ...formData, 
+                nim, 
+                email: nim ? `${nim}@student.ibik.ac.id` : '',
+                password: nim || ''
+              });
             }}
           />
         </div>
@@ -57,6 +62,15 @@ export default function FormMahasiswa({ onComplete }) {
           type="email"
           className="w-full border-4 border-black p-3 font-bold bg-gray-100 outline-none"
           value={formData.email}
+          readOnly
+        />
+      </div>
+      <div>
+        <label className="block font-black uppercase mb-1 text-sm text-gray-500">// PASSWORD</label>
+        <input 
+          type="text"
+          className="w-full border-4 border-black p-3 font-bold bg-gray-100 outline-none"
+          value={formData.password}
           readOnly
         />
       </div>
