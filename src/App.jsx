@@ -24,6 +24,8 @@ export default function App() {
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, category: '', mode: '' 
   });
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 1. Cek sesi saat aplikasi pertama kali dimuat
@@ -75,6 +77,43 @@ export default function App() {
   const openModal = (category, mode) => setModalConfig({ isOpen: true, category, mode });
   const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
 
+  async function fetchInitialData() {
+    setLoading(true);
+    try {
+      const { data: monitorData, error } = await supabase
+        .from('student_tasks')
+        .select(`
+          id, deadline, is_completed,
+          students ( id, nama ),
+          tasks (
+            id, judul,
+            courses ( 
+              semester,
+              mata_kuliah:matkul_id ( nama_matkul ) 
+            )
+          )
+        `)
+        .order('deadline', { ascending: true });
+
+      if (error) throw error;
+
+      setTasks(monitorData || []);
+
+    } catch (error) {
+      console.error('Error:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthorized) {
+      fetchInitialData();
+    }
+  }, [isAuthorized]);
+
+  const activeTasksCount = tasks.filter(task => !task.is_completed).length;
+
   // Tampilkan layar loading saat sistem masih memvalidasi auth
   if (isCheckingAuth) {
     return (
@@ -101,8 +140,8 @@ export default function App() {
       <Navbar onMenuAction={openModal} session={session} />
 
       <main className="max-w-7xl mx-auto pt-8">
-        <Hero />
-        <TaskTable />
+        <Hero taskCount={activeTasksCount} loading={loading} />
+        <TaskTable tasks={tasks} loading={loading} onRefresh={fetchInitialData} />
       </main>
 
       <Footer />
