@@ -48,14 +48,24 @@ export default function FormTugas({ onComplete }) {
 
     const selectedCourse = activeCourses.find(c => c.id === selectedCourseId);
     const namaMatkul = selectedCourse?.mata_kuliah?.nama_matkul || 'XX';
-    const prefixMatkul = namaMatkul.substring(0, 2).toUpperCase();
     
+    // 1. Ambil dua huruf awal matkul (Uppercase)
+    const twoLettersMatkul = namaMatkul.substring(0, 2).toUpperCase();
+    
+    // 2. Generate date format DDMMYY (Tanggal)
     const date = new Date();
-    const ddmmyyyy = String(date.getDate()).padStart(2, '0') + 
-                     String(date.getMonth() + 1).padStart(2, '0') + 
-                     date.getFullYear();
-                     
-    const generatedKode = `TI-${ddmmyyyy}-${prefixMatkul}`;
+    const ddmmyy = String(date.getDate()).padStart(2, '0') + 
+                   String(date.getMonth() + 1).padStart(2, '0') + 
+                   String(date.getFullYear()).slice(-2);
+    
+    // 3. Generate random angka 1 digit (0-9)
+    const random1Digit = Math.floor(Math.random() * 10);
+    
+    // 4. Generate random angka 2 digit (00-99)
+    const random2Digit = String(Math.floor(Math.random() * 100)).padStart(2, '0');
+    
+    // 5. Gabungkan sesuai format: TI-tanggal-random1-random2-duaHurufMatkul
+    const generatedKode = `TI-${ddmmyy}-${random1Digit}-${random2Digit}-${twoLettersMatkul}`;
 
     setFormData({ ...formData, course_id: selectedCourseId, kode_tugas: generatedKode });
   };

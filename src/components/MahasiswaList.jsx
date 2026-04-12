@@ -13,30 +13,32 @@ export default function StudentList() {
   }, []);
 
   return (
-    <div className="overflow-x-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-2 sm:p-4">
-      <table className="min-w-full w-full text-left text-xs sm:text-sm">
-        <thead className="bg-black text-green-400">
-          <tr>
-            <th className="p-3 uppercase font-black border-r-2 border-green-400">NIM</th>
-            <th className="p-3 uppercase font-black border-r-2 border-green-400">Nama</th>
-            <th className="p-3 uppercase font-black text-center">WhatsApp</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white">
-          {students.map((s) => (
-            <tr key={s.id} className="border-b-2 border-black hover:bg-purple-100">
-              <td className="p-3 font-mono font-bold border-r-2 border-black">{s.nim}</td>
-              <td className="p-3 font-black uppercase border-r-2 border-black">{s.nama}</td>
-              <td className="p-3 text-center font-bold text-purple-600">
-                {/* Update property no_wa menjadi phone_num */}
-                <a href={`https://wa.me/${s.phone_num}`} target="_blank" rel="noreferrer" className="hover:underline">
-                  +{s.phone_num}
-                </a>
-              </td>
+    <div className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+      <div className="bg-black text-white p-4 font-black uppercase text-lg">Daftar Mahasiswa</div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full w-full text-left border-collapse text-xs sm:text-sm">
+          <thead>
+            <tr className="border-b-4 border-black bg-purple-600 text-white">
+              <th className="p-4 border-r-4 border-black font-black uppercase">NIM</th>
+              <th className="p-4 border-r-4 border-black font-black uppercase">Nama</th>
+              <th className="p-4 text-center font-black uppercase">WhatsApp</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {students.map((s) => (
+              <tr key={s.id} className="border-b-4 border-black hover:bg-green-100 transition-colors bg-white">
+                <td className="p-4 border-r-4 border-black font-mono font-bold">{s.nim}</td>
+                <td className="p-4 border-r-4 border-black font-black uppercase">{s.nama}</td>
+                <td className="p-4 text-center font-bold text-purple-600">
+                  <a href={`https://wa.me/${s.phone_num}`} target="_blank" rel="noreferrer" className="hover:underline font-black">
+                    +{s.phone_num}
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
