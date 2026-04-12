@@ -28,9 +28,6 @@ export default function DaftarTugasList() {
     <div className="space-y-8 p-1">
       {/* SECTION MONITORING */}
       <section>
-        <div className="bg-purple-600 text-white p-3 border-4 border-black font-black uppercase text-sm mb-[-4px] relative z-10 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          // Monitoring_Status
-        </div>
         <div className="border-4 border-black bg-white overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -64,14 +61,6 @@ export default function DaftarTugasList() {
             </table>
           </div>
         </div>
-      </section>
-
-      {/* SECTION MASTER */}
-      <section>
-        <div className="bg-black text-white p-3 border-4 border-black font-black uppercase text-sm mb-[-4px] relative z-10 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          // Master_Tugas_Ref
-        </div>
-        <TugasList />
       </section>
     </div>
   );
