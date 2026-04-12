@@ -130,14 +130,14 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
         </div>
 
         {/* LOGOUT BUTTON */}
-        <div className="border-t-4 border-black p-4">
+        {/* <div className="border-t-4 border-black p-4">
           <button
             onClick={() => handleAction('Logout', 'logout')}
             className="w-full bg-red-500 text-white border-4 border-black font-black uppercase text-sm py-3 px-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
           >
             Logout
           </button>
-        </div>
+        </div> */}
       </div>
     </>
   );

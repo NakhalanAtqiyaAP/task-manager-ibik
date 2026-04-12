@@ -225,8 +225,8 @@
       : 'translate-x-full border-l-0 border-transparent shadow-none'
     }`}
 >
-          <div className="flex justify-between items-center p-6 border-b-4 border-black bg-yellow-400">
-            <h2 className="text-2xl font-black uppercase italic">// USER_PROFILE</h2>
+          <div className="flex justify-between items-center p-6 border-b-4 border-black bg-purple-900">
+            <h2 className="text-2xl font-black uppercase italic text-white">// USER_PROFILE</h2>
             <button 
               onClick={() => setIsProfileOpen(false)}
               className="w-10 h-10 bg-white border-4 border-black font-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:bg-red-400"

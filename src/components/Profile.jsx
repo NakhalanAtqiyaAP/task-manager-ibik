@@ -104,7 +104,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           <h2 className="text-2xl font-black uppercase italic underline break-words">{profile.nama}</h2>
           <div className="flex flex-col gap-2 mt-3 items-center">
             <span className="bg-black text-white px-3 py-1 font-black text-sm uppercase">NIM: {profile.nim}</span>
-            <span className="bg-yellow-400 border-2 border-black px-3 py-1 font-black text-xs uppercase">CLASS: {profile.kelas}</span>
+            <span className="bg-green-400 border-2 border-black px-3 py-1 font-black text-xs uppercase">CLASS: {profile.kelas}</span>
           </div>
         </div>
       </div>
@@ -153,9 +153,9 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
       <div className="pt-6 border-t-4 border-black mt-auto">
          <button 
             onClick={onLogout}
-            className="w-full bg-black text-white px-6 py-4 font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] hover:bg-red-500 transition-all"
+            className="w-full bg-red-600 text-white px-6 py-4 font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] hover:bg-red-700 transition-all"
           >
-            LOGOUT SYSTEM
+            LOGOUT
          </button>
       </div>
     </div>
