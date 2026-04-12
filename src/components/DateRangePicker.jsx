@@ -150,7 +150,7 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
     }
     if (s) return `Dari ${fmtFull(s)}`;
     if (e) return `Sampai ${fmtFull(e)}`;
-    return 'PILIH PERIODE';
+    return 'PILIH DEADLINE';
   };
 
   return (
@@ -166,13 +166,13 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
             : 'shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'
           }`}
       >
-        <span className="truncate">{formatLabel()}</span>
+        <span className="truncate text-black">{formatLabel()}</span>
         <span className={`shrink-0 text-[10px] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
       </button>
 
       {/* PANEL */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 z-50 bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-[360px] max-w-[calc(100vw-32px)]">
+        <div className="absolute top-full left-0 mt-1.5 z-50 bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-[360px] max-w-[calc(100vw-32px)] text-black">
 
           {/* Header */}
           <div className="bg-black flex items-center justify-between px-4 py-2.5">
@@ -189,7 +189,7 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
           <div className="px-4 pt-3 pb-0">
             <div className="border-2 border-purple-600 bg-purple-50 px-3 py-2 font-black text-[11px] uppercase tracking-wide text-purple-900 min-h-[34px] flex items-center">
               {startSel || endSel ? formatLabel() : (
-                <span className="text-purple-400">Belum ada periode dipilih</span>
+                <span className="text-purple-400">Belum ada rentang deadline dipilih</span>
               )}
             </div>
           </div>

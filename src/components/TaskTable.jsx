@@ -165,8 +165,8 @@ export default function TaskTable({ studentId, onRefresh }) {
 
   return (
     <div className="px-4 sm:px-6 pb-24 mt-8">
-      <HistoryDashboard studentId={studentId} />
-      <div className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+      <HistoryDashboard studentId={studentId} />  
+    <div className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10">
         {/* HEADER */}
         <div className="bg-black text-white p-5 font-black uppercase">
           <div className="flex justify-between items-center border-b-2 border-gray-700 pb-4 mb-4">
