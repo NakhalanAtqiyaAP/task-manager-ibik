@@ -153,7 +153,20 @@
       }
     };
 
-    const openModal = (category, mode) => setModalConfig({ isOpen: true, category, mode });
+    const handleMenuAction = (category, mode) => {
+      if (category === 'Logout' && mode === 'logout') {
+        // Handle logout
+        localStorage.removeItem('manual_auth_user');
+        supabase.auth.signOut();
+        setIsAuthorized(false);
+        setCurrentUser(null);
+        setSession(null);
+        setIsProfileOpen(false);
+      } else {
+        // Handle modal opening for other actions
+        setModalConfig({ isOpen: true, category, mode });
+      }
+    };
     const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
 
     // ... (fungsi fetchInitialData TETAP SAMA) ...
@@ -179,7 +192,7 @@
     return (
       <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
           {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
-        <Navbar onMenuAction={openModal} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
+        <Navbar onMenuAction={handleMenuAction} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
         <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300">
           <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
@@ -205,7 +218,13 @@
         )}
 
         {/* Laci Kanan */}
-        <div className={`fixed top-0 right-0 h-full w-full sm:w-100 bg-white border-l-8 border-black z-100 transform transition-transform duration-300 ease-in-out shadow-[-16px_0_0_0_rgba(0,0,0,1)] flex flex-col ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div 
+  className={`fixed top-0 right-0 h-full w-full sm:w-100 bg-white z-100 transform transition-transform duration-300 ease-in-out flex flex-col 
+    ${isProfileOpen 
+      ? 'translate-x-0 border-l-8 border-black shadow-[-16px_0_0_0_rgba(0,0,0,1)]' 
+      : 'translate-x-full border-l-0 border-transparent shadow-none'
+    }`}
+>
           <div className="flex justify-between items-center p-6 border-b-4 border-black bg-yellow-400">
             <h2 className="text-2xl font-black uppercase italic">// USER_PROFILE</h2>
             <button 
