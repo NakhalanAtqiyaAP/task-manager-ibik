@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 
 import Login from './pages/LoginPage';
-
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import TaskTable from './components/TaskTable';
@@ -15,11 +14,16 @@ import StudentList from './components/MahasiswaList';
 import FormMataKuliah from './components/Form/FormMataKuliah';
 import DaftarTugasList from './components/DaftarTugasList';
 import MataKuliahList from './components/MataKuliahList';
+import Profile from './components/Profile';
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  
+  // State baru untuk User Saat Ini dan Toggle Profil
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, category: '', mode: '' 
@@ -27,130 +31,202 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
+ useEffect(() => {
+  const initAuth = async () => {
+    try {
+      // 1. Cek dulu apakah ada user manual di localStorage
+      const manualUser = localStorage.getItem('manual_auth_user');
+      
+      if (manualUser) {
+        const parsed = JSON.parse(manualUser);
+        // Validasi sederhana: pastikan data tidak kosong
+        if (parsed && parsed.email) {
+          setCurrentUser(parsed);
+          setSession({ user: { email: parsed.email }, app_metadata: { provider: 'manual' } });
+          setIsAuthorized(true);
+          setIsCheckingAuth(false);
+          return; // Jika ada login manual, stop di sini.
+        }
+      }
+
+      // 2. Jika tidak ada manual, baru cek session Supabase (untuk Google Login)
+      const { data, error } = await supabase.auth.getSession();
+      if (data?.session) {
+        await handleSession(data.session);
+      } else {
+        setIsAuthorized(false);
+        setIsCheckingAuth(false);
+      }
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+      setIsCheckingAuth(false);
+    }
+  };
+
+  initAuth();
+
+  // Listener untuk perubahan auth (seperti login Google)
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (session) {
+      handleSession(session);
+    }
+  });
+
+  return () => subscription?.unsubscribe();
+}, []);
+
   useEffect(() => {
-    // 1. Cek sesi saat aplikasi pertama kali dimuat
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSession(session);
-    });
+    let logoutTimer;
+    const resetTimer = () => {
+      if (logoutTimer) clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(() => {
+        alert("Sesi berakhir karena tidak ada aktivitas selama 2 jam.");
+        supabase.auth.signOut();
+      }, 7200000);
+    };
 
-    // 2. Dengarkan perubahan status login (saat user login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      handleSession(session);
-    });
+    if (isAuthorized) {
+      window.addEventListener('mousemove', resetTimer);
+      window.addEventListener('keydown', resetTimer);
+      window.addEventListener('scroll', resetTimer);
+      window.addEventListener('click', resetTimer);
+      resetTimer();
+    }
+    return () => {
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('click', resetTimer);
+      if (logoutTimer) clearTimeout(logoutTimer);
+    };
+  }, [isAuthorized]);
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Fungsi Gatekeeper untuk memvalidasi email
   const handleSession = async (currentSession) => {
     if (!currentSession) {
       setSession(null);
       setIsAuthorized(false);
+      setCurrentUser(null);
       setIsCheckingAuth(false);
       return;
     }
 
-    const userEmail = currentSession.user.email;
+    try {
+      const userEmail = currentSession.user.email;
+      const { data: student, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('email', userEmail)
+        .single();
 
-    // Cek apakah email ada di tabel students
-    const { data, error } = await supabase
-      .from('students')
-      .select('email, nama')
-      .eq('email', userEmail)
-      .single();
+      if (error) {
+        console.error('Student lookup failed:', error);
+        throw error;
+      }
 
-    if (data) {
-      // Email valid & terdaftar
-      setSession(currentSession);
-      setIsAuthorized(true);
-    } else {
-      // Email tidak terdaftar -> Paksa Logout
-      await supabase.auth.signOut();
-      alert(`AKSES DITOLAK!\n\nEmail ${userEmail} tidak terdaftar sebagai mahasiswa aktif. Gunakan email kampus.`);
+      if (student) {
+        setSession(currentSession);
+        setIsAuthorized(true);
+        setCurrentUser(student);
+
+        const lastLogin = localStorage.getItem('last_log_at');
+        const now = new Date().getTime();
+        if (!lastLogin || now - lastLogin > 60000) {
+          await supabase.from('login_history').insert([
+            { student_id: student.id, email: userEmail, login_method: currentSession.user.app_metadata?.provider || 'password' }
+          ]);
+          localStorage.setItem('last_log_at', now);
+        }
+      } else {
+        await supabase.auth.signOut();
+        alert("Email tidak terdaftar!");
+        setSession(null);
+        setIsAuthorized(false);
+        setCurrentUser(null);
+      }
+    } catch (error) {
+      console.error('handleSession error:', error);
       setSession(null);
       setIsAuthorized(false);
+      setCurrentUser(null);
+    } finally {
+      setIsCheckingAuth(false);
     }
-    
-    setIsCheckingAuth(false);
   };
 
   const openModal = (category, mode) => setModalConfig({ isOpen: true, category, mode });
   const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
 
+  // ... (fungsi fetchInitialData TETAP SAMA) ...
   async function fetchInitialData() {
     setLoading(true);
     try {
-      const { data: monitorData, error } = await supabase
-        .from('student_tasks')
-        .select(`
-          id, deadline, is_completed,
-          students ( id, nama ),
-          tasks (
-            id, judul,
-            courses ( 
-              semester,
-              mata_kuliah:matkul_id ( nama_matkul ) 
-            )
-          )
-        `)
-        .order('deadline', { ascending: true });
-
+      const { data: monitorData, error } = await supabase.from('student_tasks').select(`id, deadline, is_completed, students ( id, nama ), tasks ( id, judul, courses ( semester, mata_kuliah:matkul_id ( nama_matkul ) ) )`).order('deadline', { ascending: true });
       if (error) throw error;
-
       setTasks(monitorData || []);
-
-    } catch (error) {
-      console.error('Error:', error.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error('Error:', error.message); } finally { setLoading(false); }
   }
 
-  useEffect(() => {
-    if (isAuthorized) {
-      fetchInitialData();
-    }
-  }, [isAuthorized]);
+  useEffect(() => { if (isAuthorized) fetchInitialData(); }, [isAuthorized]);
 
   const activeTasksCount = tasks.filter(task => !task.is_completed).length;
 
-  // Tampilkan layar loading saat sistem masih memvalidasi auth
   if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="font-black uppercase text-2xl animate-pulse">Memvalidasi Akses...</div>
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center bg-white"><div className="font-black uppercase text-2xl animate-pulse">Memvalidasi Akses...</div></div>;
   }
 
-  // Jika tidak punya akses (belum login / email salah), tampilkan halaman Login
-  if (!isAuthorized) {
-    return <Login />;
-  }
+  if (!isAuthorized) return <Login />;
 
-  // ==========================================
-  // JIKA LOLOS VALIDASI, TAMPILKAN APLIKASI UTAMA
-  // ==========================================
   return (
-    <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-white relative">
-      <div className="fixed inset-0 z-[-1] opacity-[0.03]" 
-           style={{ backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`, backgroundSize: '40px 40px' }}>
-      </div>
+    <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-white relative overflow-hidden">
+      <div className="fixed inset-0 z-[-1] opacity-[0.03]" style={{ backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>
 
-      <Navbar onMenuAction={openModal} session={session} />
+      {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
+      <Navbar onMenuAction={openModal} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
-      <main className="max-w-7xl mx-auto pt-8">
+      <main className="max-w-7xl mx-auto pt-8 transition-all duration-300">
         <Hero taskCount={activeTasksCount} loading={loading} />
         <TaskTable tasks={tasks} loading={loading} onRefresh={fetchInitialData} />
       </main>
 
       <Footer />
 
+      {/* MODAL BIASA UNTUK CRUD */}
       <Modal isOpen={modalConfig.isOpen} onClose={closeModal} title={`${modalConfig.mode === 'view' ? 'DATA' : 'INPUT'} ${modalConfig.category.toUpperCase()}`}>
         {modalConfig.category === 'Mahasiswa' && (modalConfig.mode === 'create' ? <FormMahasiswa onComplete={closeModal} /> : <StudentList />)}
         {modalConfig.category === 'Daftar Tugas' && (modalConfig.mode === 'create' ? <FormTugas onComplete={closeModal} /> : <DaftarTugasList />)}
         {modalConfig.category === 'Mata Kuliah' && (modalConfig.mode === 'create' ? <FormMataKuliah onComplete={closeModal} /> : <MataKuliahList />)}
       </Modal>
+
+      {/* PROFILE SIDEBAR DRAWER */}
+      {/* Overlay Gelap */}
+      {isProfileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[90] transition-opacity"
+          onClick={() => setIsProfileOpen(false)}
+        ></div>
+      )}
+
+      {/* Laci Kanan */}
+      <div className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l-8 border-black z-[100] transform transition-transform duration-300 ease-in-out shadow-[-16px_0_0_0_rgba(0,0,0,1)] flex flex-col ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex justify-between items-center p-6 border-b-4 border-black bg-yellow-400">
+          <h2 className="text-2xl font-black uppercase italic">// USER_PROFILE</h2>
+          <button 
+            onClick={() => setIsProfileOpen(false)}
+            className="w-10 h-10 bg-white border-4 border-black font-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:bg-red-400"
+          >
+            X
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <Profile 
+            userEmail={currentUser?.email} 
+            // Update state di App.jsx secara realtime jika profil diedit
+            onProfileUpdate={(updatedUser) => setCurrentUser({...currentUser, ...updatedUser})} 
+            onLogout={() => { localStorage.removeItem('manual_auth_user'); supabase.auth.signOut(); }}
+          />
+        </div>
+      </div>
     </div>
   )
 }
