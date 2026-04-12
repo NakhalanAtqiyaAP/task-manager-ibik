@@ -185,7 +185,7 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300">
         <Hero taskCount={activeTasksCount} loading={loading} />
-        <TaskTable tasks={tasks} loading={loading} onRefresh={fetchInitialData} />
+        <TaskTable tasks={tasks} studentId={currentUser?.id} loading={loading} onRefresh={fetchInitialData} />
       </main>
 
       <Footer />

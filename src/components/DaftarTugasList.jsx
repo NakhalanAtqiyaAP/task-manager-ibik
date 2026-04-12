@@ -228,7 +228,7 @@ export default function DaftarTugasList() {
           </div>
 
           {filteredAssignments.length > 5 && (
-            <div className="px-4 py-3 bg-gray-100 border-t-4 border-black flex justify-end">
+            <div className="px-4 py-3 bg-gray-100 border-t-4 border-black flex justify-center">
               <button
                 onClick={() => setShowAll(prev => !prev)}
                 className="px-3 py-1.5 border-2 border-black bg-black text-white font-black text-xs uppercase hover:bg-white hover:text-black transition-colors"

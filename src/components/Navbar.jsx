@@ -41,12 +41,11 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 border-4 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             <span className="text-white font-black text-sm">TI</span>
           </div>
-          <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-tighter uppercase hidden sm:block">
+          <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-tighter uppercase">
             TI-25-KA
           </span>
         </button>
 
-        {/* KANAN: Menu + Avatar */}
         <div className="flex items-center gap-2 sm:gap-4 relative">
 
           {/* DESKTOP MENU — md ke atas */}
@@ -55,7 +54,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
               <div key={item} className="relative">
                 <button
                   onClick={() => setActiveSub(activeSub === item ? null : item)}
-                  className={`px-3 lg:px-5 py-2 border-4 border-black font-black uppercase text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none ${
+                  className={`px-3 lg:px-5 py-2 border-4 border-black font-black uppercase text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none ${
                     activeSub === item ? 'bg-purple-600 text-white' : 'bg-white'
                   }`}
                 >
@@ -98,7 +97,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           {/* AVATAR */}
           <button
             onClick={onToggleProfile}
-            className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all overflow-hidden bg-purple-200"
+            className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all overflow-hidden bg-purple-200"
             title="Buka Profil"
           >
             <img
