@@ -219,12 +219,18 @@ export default function App() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-6 bg-white">
-          <Profile 
-            userEmail={currentUser?.email} 
-            // Update state di App.jsx secara realtime jika profil diedit
-            onProfileUpdate={(updatedUser) => setCurrentUser({...currentUser, ...updatedUser})} 
-            onLogout={() => { localStorage.removeItem('manual_auth_user'); supabase.auth.signOut(); }}
-          />
+         <Profile 
+        userEmail={currentUser?.email} 
+        onProfileUpdate={(updatedUser) => setCurrentUser({...currentUser, ...updatedUser})} 
+        onLogout={() => { 
+          localStorage.removeItem('manual_auth_user'); // Hapus storage
+          supabase.auth.signOut(); // Sign out dari supabase
+          setIsAuthorized(false); // <--- INI KUNCINYA: Paksa state jadi false
+          setCurrentUser(null);
+          setSession(null);
+          setIsProfileOpen(false); // Tutup drawer
+        }}
+        />
         </div>
       </div>
     </div>
