@@ -196,7 +196,7 @@
 
         <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300">
           <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
-          <TaskTable tasks={tasks} studentId={currentUser?.id} loading={loading} onRefresh={fetchInitialData} />
+          <TaskTable tasks={tasks} studentId={currentUser?.id} loading={loading} onRefresh={fetchInitialData}/>
         </main>
 
         <Footer />

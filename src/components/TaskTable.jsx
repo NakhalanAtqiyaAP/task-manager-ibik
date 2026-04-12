@@ -166,7 +166,7 @@ export default function TaskTable({ studentId, onRefresh }) {
   return (
     <div className="px-4 sm:px-6 pb-24 mt-8">
       <HistoryDashboard studentId={studentId} />  
-    <div className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10">
+    <div id="task" className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10" >
         {/* HEADER */}
         <div className="bg-black text-white p-5 font-black uppercase">
           <div className="flex justify-between items-center border-b-2 border-gray-700 pb-4 mb-4">
@@ -238,7 +238,7 @@ export default function TaskTable({ studentId, onRefresh }) {
                       onClick={() => handleToggleTask(item.id, isDone)}
                       className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${isDone ? 'bg-green-400' : 'bg-white hover:bg-gray-200'}`}
                     >
-                      {isDone && <span className="font-black text-xl text-black">✓</span>}
+                      {isDone && <span id="task-done" className="font-black text-xl text-black">✓</span>}
                     </button>
                   </div>
                   <div className="p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

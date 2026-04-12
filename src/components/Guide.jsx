@@ -6,58 +6,83 @@ export default function GameGuide({ onClose, userName }) {
   const [isTyping, setIsTyping] = useState(true);
   const [spotlightStyle, setSpotlightStyle] = useState({ opacity: 0 });
 
-  // 1. Tambahkan useRef untuk menyimpan ID timeout dan interval
   const typingIntervalRef = useRef(null);
   const startTimeoutRef = useRef(null);
 
+  // Data langkah panduan dengan karakter pixel (contoh URL pixel art)
   const guideSteps = [
     {
       title: "SYSTEM_STARTUP",
-      character: "💻 SYSTEM",
-      message: `Halo, ${userName || 'User'}! Selamat datang di core system TI-25-KA. Aku akan memandu instalasi pemahamanmu di sini...`,
-      image: "⚡",
+      character: "Udin",
+      message: `Halo, ${userName || 'User'}! Selamat datang di website TI-25-KA. Aku akan memandu instalasi pemahamanmu di sini...`,
+      // Ganti dengan URL gambar pixel art kamu
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: null
     },
     {
-      title: "STATUS_MONITOR",
-      character: "📊 ANALYST",
+      title: "STATUS MONITOR",
+      character: "Udin",
       message: "Di sini adalah ringkasan tugasmu. Jika angka di sini bukan nol, berarti ada pekerjaan yang menunggu!",
-      image: "📁",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: ".bg-gray-800"
     },
     {
-      title: "NAVIGATION_MENU",
-      character: "☰ OPERATOR",
+      title: "NAVIGATION MENU",
+      character: "Udin",
       message: "Gunakan tombol menu ini untuk navigasi ke Mahasiswa, Mata Kuliah, atau tambah data tugas baru.",
-      image: "🛠️",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: "button[aria-label='Toggle menu']"
     },
     {
-      title: "USER_PROFILE",
-      character: "👤 IDENTITY",
-      message: "Klik avatar ini untuk mengubah profil, mengganti foto, atau mengganti password sistemmu.",
-      image: "🔑",
+      title: "USER PROFILE",
+      character: "Udin",
+      message: "Klik avatar ini untuk mengubah profil, mengganti foto, atau mengganti password.",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: "button[title='Buka Profil']"
     },
     {
+      title: "HISTORY DASHBOARD",
+      character: "Udin",
+      message: "Disini kamu akan lihat data-data tugas yang berhasil kamu kerjakan atau kamu lewatkan.",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
+      target: "#history"
+    },
+    {
+      title: "TASK TABLE",
+      character: "Udin",
+      message: "Disini akan tampil tugas beserta deadlinenya.",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
+      target: "#task"
+    },
+    {
+      title: "TASK TABLE",
+      character: "Udin",
+      message: "Klik tombong ceklis ini jika kamu sudah mengerjakan tugasnya.",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
+      target: "#task-done"
+    },
+    {
       title: "MISSION_COMPLETE",
-      character: "🚀 SYSTEM",
+      character: "Udin",
       message: "Sekarang kamu sudah siap. Jelajahi sistem dan selesaikan semua tugas tepat waktu!",
-      image: "🏁",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
+      target: null
+    },
+    {
+      title: "MISSION_COMPLETE",
+      character: "Udin",
+      message: "HAVE UN!",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: null
     }
   ];
 
-  // Fix: Gunakan useRef untuk mengontrol interval
   useEffect(() => {
     let i = 0;
     const fullText = guideSteps[currentStep].message;
-    
-    // Reset state seketika
     setDisplayText(""); 
     setIsTyping(true);
 
-    // Bersihkan sisa interval sebelumnya (jaga-jaga)
     clearTimeout(startTimeoutRef.current);
     clearInterval(typingIntervalRef.current);
 
@@ -75,22 +100,29 @@ export default function GameGuide({ onClose, userName }) {
 
     updateSpotlight();
 
-    // CLEANUP saat komponen unmount atau pindah step
     return () => {
       clearTimeout(startTimeoutRef.current);
       clearInterval(typingIntervalRef.current);
     };
   }, [currentStep]);
 
-  const updateSpotlight = () => {
-    const targetSelector = guideSteps[currentStep].target;
-    if (!targetSelector) {
-      setSpotlightStyle({ opacity: 0 });
-      return;
-    }
+  // (Fungsi updateSpotlight dan useEffect resize tetap sama...)
+ // Di dalam GameGuide.jsx
 
-    const el = document.querySelector(targetSelector);
-    if (el) {
+const updateSpotlight = () => {
+  const targetSelector = guideSteps[currentStep].target;
+  if (!targetSelector) {
+    setSpotlightStyle({ opacity: 0 });
+    return;
+  }
+
+  const el = document.querySelector(targetSelector);
+  if (el) {
+    // 1. Scroll dulu ke target
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // 2. Beri jeda sangat singkat agar posisi sudah stabil setelah scroll dimulai
+    setTimeout(() => {
       const rect = el.getBoundingClientRect();
       const padding = 10;
       setSpotlightStyle({
@@ -101,26 +133,28 @@ export default function GameGuide({ onClose, userName }) {
         opacity: 1,
         boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)", 
       });
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
+    }, 300); // 300ms biasanya cukup untuk nunggu animasi scroll
+  }
+};
 
-  useEffect(() => {
-    window.addEventListener('resize', updateSpotlight);
-    return () => window.removeEventListener('resize', updateSpotlight);
-  }, [currentStep]);
+// Pastikan spotlight update saat window di-scroll atau di-resize
+useEffect(() => {
+  window.addEventListener('resize', updateSpotlight);
+  window.addEventListener('scroll', updateSpotlight); // Tambahkan listener scroll!
+  
+  return () => {
+    window.removeEventListener('resize', updateSpotlight);
+    window.removeEventListener('scroll', updateSpotlight);
+  };
+}, [currentStep]);
 
   const nextStep = () => {
     if (isTyping) {
-      // 2. HENTIKAN INTERVAL SEKETIKA SAAT TOMBOL SKIP DITEKAN
       clearTimeout(startTimeoutRef.current);
       clearInterval(typingIntervalRef.current);
-      
-      // Tampilkan semua teks
       setDisplayText(guideSteps[currentStep].message);
       setIsTyping(false);
     } else {
-      // Jika sudah selesai ngetik, baru pindah ke dialog selanjutnya
       if (currentStep < guideSteps.length - 1) {
         setCurrentStep(currentStep + 1);
       } else {
@@ -143,12 +177,10 @@ export default function GameGuide({ onClose, userName }) {
         )}
       </div>
 
-      {/* BACKGROUND DIM */}
       {!guideSteps[currentStep].target && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-[100]"></div>
       )}
 
-      {/* DIALOG CONTAINER */}
       <div className="absolute inset-0 flex items-end justify-center p-4 sm:p-10 z-[102] pointer-events-none">
         <div className="w-full max-w-4xl animate-in slide-in-from-bottom-10 duration-500 pointer-events-auto">
           
@@ -160,8 +192,14 @@ export default function GameGuide({ onClose, userName }) {
 
           <div className="bg-white border-8 border-black p-6 shadow-[12px_12px_0px_0px_rgba(168,85,247,1)] relative">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-black border-4 border-purple-500 flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shrink-0">
-                {guideSteps[currentStep].image}
+              {/* IMAGE KARAKTER PIXEL DENGAN LOGIKA SHAKE */}
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-black border-4 border-purple-500 flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shrink-0 overflow-hidden ${isTyping ? 'animate-character-shake' : ''}`}>
+                <img 
+                  src={guideSteps[currentStep].image} 
+                  alt="character" 
+                  className="w-full h-full object-cover pixelated" // Tambahkan pixelated untuk menjaga ketajaman pixel art
+                  style={{ imageRendering: 'pixelated' }}
+                />
               </div>
 
               <div className="flex-1">
