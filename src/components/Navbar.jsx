@@ -4,8 +4,18 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSub, setActiveSub] = useState(null);
 
-  const menuItems = ['Daftar Tugas', 'Mahasiswa', 'Mata Kuliah'];
 
+
+  const allMenuItems = [
+    { name: 'Daftar Tugas', allowedRoles: ['admin', 'student'] },
+    { name: 'Mahasiswa', allowedRoles: ['admin'] },
+    { name: 'Mata Kuliah', allowedRoles: ['admin'] }
+  ];
+
+  const userRole = currentUser?.role || 'student';
+  const menuItems = allMenuItems
+    .filter(item => item.allowedRoles.includes(userRole))
+    .map(item => item.name);
   const handleAction = (category, mode) => {
     onMenuAction(category, mode);
     // Kita biarkan sidebar dan menu accordion tetap terbuka saat action dipencet
