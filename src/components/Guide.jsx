@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function GameGuide({ onClose, userName }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -6,34 +6,38 @@ export default function GameGuide({ onClose, userName }) {
   const [isTyping, setIsTyping] = useState(true);
   const [spotlightStyle, setSpotlightStyle] = useState({ opacity: 0 });
 
+  // 1. Tambahkan useRef untuk menyimpan ID timeout dan interval
+  const typingIntervalRef = useRef(null);
+  const startTimeoutRef = useRef(null);
+
   const guideSteps = [
     {
       title: "SYSTEM_STARTUP",
       character: "💻 SYSTEM",
       message: `Halo, ${userName || 'User'}! Selamat datang di core system TI-25-KA. Aku akan memandu instalasi pemahamanmu di sini...`,
       image: "⚡",
-      target: null // Center screen
+      target: null
     },
     {
       title: "STATUS_MONITOR",
       character: "📊 ANALYST",
       message: "Di sini adalah ringkasan tugasmu. Jika angka di sini bukan nol, berarti ada pekerjaan yang menunggu!",
       image: "📁",
-      target: ".bg-gray-800" // Menunjuk kotak Ringkasan di Hero
+      target: ".bg-gray-800"
     },
     {
       title: "NAVIGATION_MENU",
       character: "☰ OPERATOR",
       message: "Gunakan tombol menu ini untuk navigasi ke Mahasiswa, Mata Kuliah, atau tambah data tugas baru.",
       image: "🛠️",
-      target: "button[aria-label='Toggle menu']" // Menunjuk tombol hamburger
+      target: "button[aria-label='Toggle menu']"
     },
     {
       title: "USER_PROFILE",
       character: "👤 IDENTITY",
       message: "Klik avatar ini untuk mengubah profil, mengganti foto, atau mengganti password sistemmu.",
       image: "🔑",
-      target: "button[title='Buka Profil']" // Menunjuk avatar
+      target: "button[title='Buka Profil']"
     },
     {
       title: "MISSION_COMPLETE",
@@ -44,32 +48,38 @@ export default function GameGuide({ onClose, userName }) {
     }
   ];
 
-  // Fix bug kata terpotong & Typewriter
+  // Fix: Gunakan useRef untuk mengontrol interval
   useEffect(() => {
     let i = 0;
     const fullText = guideSteps[currentStep].message;
-    setDisplayText(""); // Reset text
+    
+    // Reset state seketika
+    setDisplayText(""); 
     setIsTyping(true);
 
-    // Gunakan delay kecil sebelum mulai ngetik agar state reset selesai
-    const startTimeout = setTimeout(() => {
-      const typingInterval = setInterval(() => {
+    // Bersihkan sisa interval sebelumnya (jaga-jaga)
+    clearTimeout(startTimeoutRef.current);
+    clearInterval(typingIntervalRef.current);
+
+    startTimeoutRef.current = setTimeout(() => {
+      typingIntervalRef.current = setInterval(() => {
         if (i < fullText.length) {
-          // Menggunakan functional update untuk memastikan karakter tidak terlewat
           setDisplayText(fullText.substring(0, i + 1));
           i++;
         } else {
           setIsTyping(false);
-          clearInterval(typingInterval);
+          clearInterval(typingIntervalRef.current);
         }
       }, 30);
-      return () => clearInterval(typingInterval);
     }, 100);
 
-    // Update Spotlight Position
     updateSpotlight();
 
-    return () => clearTimeout(startTimeout);
+    // CLEANUP saat komponen unmount atau pindah step
+    return () => {
+      clearTimeout(startTimeoutRef.current);
+      clearInterval(typingIntervalRef.current);
+    };
   }, [currentStep]);
 
   const updateSpotlight = () => {
@@ -89,23 +99,33 @@ export default function GameGuide({ onClose, userName }) {
         width: rect.width + padding * 2,
         height: rect.height + padding * 2,
         opacity: 1,
-        boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)", // Hitam di luar lubang
+        boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)", 
       });
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
-  // Update posisi spotlight jika layar di-resize
   useEffect(() => {
     window.addEventListener('resize', updateSpotlight);
     return () => window.removeEventListener('resize', updateSpotlight);
   }, [currentStep]);
 
   const nextStep = () => {
-    if (currentStep < guideSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (isTyping) {
+      // 2. HENTIKAN INTERVAL SEKETIKA SAAT TOMBOL SKIP DITEKAN
+      clearTimeout(startTimeoutRef.current);
+      clearInterval(typingIntervalRef.current);
+      
+      // Tampilkan semua teks
+      setDisplayText(guideSteps[currentStep].message);
+      setIsTyping(false);
     } else {
-      onClose();
+      // Jika sudah selesai ngetik, baru pindah ke dialog selanjutnya
+      if (currentStep < guideSteps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        onClose();
+      }
     }
   };
 
@@ -117,13 +137,13 @@ export default function GameGuide({ onClose, userName }) {
         style={spotlightStyle}
       >
         {spotlightStyle.opacity === 1 && (
-          <div className="absolute -top-10 left-0 bg-green-400 text-black px-2 py-1 text-[10px] font-black uppercase animate-bounce">
+          <div className="absolute -top-10 left-0 bg-green-400 text-black px-2 py-1 text-[10px] font-black uppercase animate-bounce shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             LIHAT_KE_SINI!
           </div>
         )}
       </div>
 
-      {/* BACKGROUND DIM (Hanya jika spotlight tidak aktif) */}
+      {/* BACKGROUND DIM */}
       {!guideSteps[currentStep].target && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-[100]"></div>
       )}
@@ -160,12 +180,12 @@ export default function GameGuide({ onClose, userName }) {
                 onClick={nextStep}
                 className="bg-green-400 border-4 border-black px-6 py-2 font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:bg-yellow-400"
               >
-                {currentStep === guideSteps.length - 1 ? 'Selesai!' : 'Lanjut >>'}
+                {isTyping ? 'LEWATI ANIMASI' : (currentStep === guideSteps.length - 1 ? 'SELESAI!' : 'LANJUT >>')}
               </button>
             </div>
           </div>
 
-          <button onClick={onClose} className="mt-4 text-white/50 hover:text-white font-black text-[10px] uppercase underline tracking-widest block mx-auto">
+          <button onClick={onClose} className="mt-4 text-white/50 hover:text-white font-black text-[10px] uppercase underline tracking-widest block mx-auto transition-colors">
             [ Skip_Tutorial ]
           </button>
         </div>
