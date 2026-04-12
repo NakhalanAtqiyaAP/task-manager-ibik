@@ -247,7 +247,7 @@ export default function TaskTable({ studentId, onRefresh }) {
             href={`mailto:${link}`} 
             className="inline-flex items-center gap-1 mt-2 bg-yellow-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
           >
-            📧 Kirim di Sini (Email)
+            Kirim di Sini (Email)
           </a>
         );
       }
@@ -261,7 +261,7 @@ export default function TaskTable({ studentId, onRefresh }) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 mt-2 bg-blue-400 text-white border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
           >
-            🔗 Kirim di Sini (Link)
+            Kirim di Sini (Link)
           </a>
         );
       }

@@ -21,9 +21,9 @@ export default function FormTugas({ onComplete }) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
     
-    if (emailRegex.test(value)) return { label: '📧 EMAIL', color: 'bg-yellow-400' };
-    if (urlRegex.test(value)) return { label: '🔗 URL LINK', color: 'bg-blue-400' };
-    return { label: '📝 TEKS PERINTAH', color: 'bg-gray-300' };
+    if (emailRegex.test(value)) return { label: 'EMAIL', color: 'bg-yellow-400' };
+    if (urlRegex.test(value)) return { label: 'URL LINK', color: 'bg-blue-400' };
+    return { label: 'TEKS PERINTAH', color: 'bg-gray-300' };
   };
 
   const detectedType = getSubmissionType(formData.submission_link);
