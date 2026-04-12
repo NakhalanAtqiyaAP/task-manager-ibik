@@ -1,42 +1,4 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-
-export default function TaskTable() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  async function fetchInitialData() {
-  setLoading(true);
-  try {
-    const { data: monitorData, error } = await supabase
-      .from('student_tasks')
-      .select(`
-        id, deadline, is_completed,
-        students ( id, nama ),
-        tasks (
-          id, judul,
-          courses ( 
-            semester,
-            mata_kuliah:matkul_id ( nama_matkul ) 
-          )
-        )
-      `)
-      .order('deadline', { ascending: true });
-
-    if (error) throw error;
-
-    setTasks(monitorData || []);
-
-  } catch (error) {
-    console.error('Error:', error.message);
-  } finally {
-    setLoading(false);
-  }
-}
-
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
+export default function TaskTable({ tasks, loading, onRefresh }) {
 
   return (
     <div className="px-6 pb-24 mt-8">
@@ -45,7 +7,7 @@ export default function TaskTable() {
           <span>Monitor Tugas Mahasiswa</span>
           <div className="flex items-center gap-4">
              {loading && <span className="text-xs animate-pulse text-green-400">SYNCING_DATABASE...</span>}
-             <button onClick={fetchInitialData} className="text-green-400 text-sm border-2 border-green-400 px-2 py-1 tracking-widest hover:bg-green-400 hover:text-black transition-colors">
+             <button onClick={onRefresh} className="text-green-400 text-sm border-2 border-green-400 px-2 py-1 tracking-widest hover:bg-green-400 hover:text-black transition-colors">
                RE_SYNC
              </button>
           </div>

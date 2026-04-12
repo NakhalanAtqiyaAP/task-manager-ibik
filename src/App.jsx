@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import TaskTable from './components/TaskTable';
@@ -10,6 +10,7 @@ import StudentList from './components/MahasiswaList';
 import FormMataKuliah from './components/Form/FormMataKuliah';
 import DaftarTugasList from './components/DaftarTugasList';
 import MataKuliahList from './components/MataKuliahList';
+import { supabase } from './lib/supabase';
 
 export default function App() {
   const [modalConfig, setModalConfig] = useState({ 
@@ -17,6 +18,8 @@ export default function App() {
     category: '', 
     mode: '' 
   });
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const openModal = (category, mode) => {
     setModalConfig({ isOpen: true, category, mode });
@@ -27,6 +30,41 @@ export default function App() {
     // Tips: Jika ingin TaskTable refresh otomatis setelah modal tutup, 
     // kamu bisa tambahkan key state di TaskTable untuk trigger re-render.
   };
+
+  async function fetchInitialData() {
+    setLoading(true);
+    try {
+      const { data: monitorData, error } = await supabase
+        .from('student_tasks')
+        .select(`
+          id, deadline, is_completed,
+          students ( id, nama ),
+          tasks (
+            id, judul,
+            courses ( 
+              semester,
+              mata_kuliah:matkul_id ( nama_matkul ) 
+            )
+          )
+        `)
+        .order('deadline', { ascending: true });
+
+      if (error) throw error;
+
+      setTasks(monitorData || []);
+
+    } catch (error) {
+      console.error('Error:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const activeTasksCount = tasks.filter(task => !task.is_completed).length;
 
   return (
     <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-white relative">
@@ -40,9 +78,9 @@ export default function App() {
       <Navbar onMenuAction={openModal} />
 
       <main className="max-w-7xl mx-auto pt-8">
-        <Hero />
+        <Hero taskCount={activeTasksCount} loading={loading} />
         {/* TaskTable sekarang mandiri, tidak butuh props tasks/loading lagi */}
-        <TaskTable />
+        <TaskTable tasks={tasks} loading={loading} onRefresh={fetchInitialData} />
       </main>
 
       <Footer />
