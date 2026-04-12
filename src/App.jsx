@@ -183,7 +183,7 @@ export default function App() {
       {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
       <Navbar onMenuAction={openModal} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
-      <main className="max-w-7xl mx-auto pt-8 transition-all duration-300">
+      <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300">
         <Hero taskCount={activeTasksCount} loading={loading} />
         <TaskTable tasks={tasks} loading={loading} onRefresh={fetchInitialData} />
       </main>
@@ -201,13 +201,13 @@ export default function App() {
       {/* Overlay Gelap */}
       {isProfileOpen && (
         <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[90] transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90 transition-opacity"
           onClick={() => setIsProfileOpen(false)}
         ></div>
       )}
 
       {/* Laci Kanan */}
-      <div className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l-8 border-black z-[100] transform transition-transform duration-300 ease-in-out shadow-[-16px_0_0_0_rgba(0,0,0,1)] flex flex-col ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full sm:w-100 bg-white border-l-8 border-black z-100 transform transition-transform duration-300 ease-in-out shadow-[-16px_0_0_0_rgba(0,0,0,1)] flex flex-col ${isProfileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex justify-between items-center p-6 border-b-4 border-black bg-yellow-400">
           <h2 className="text-2xl font-black uppercase italic">// USER_PROFILE</h2>
           <button 

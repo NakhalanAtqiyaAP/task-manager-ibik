@@ -46,7 +46,7 @@ export default function FormMataKuliah({ onComplete }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE_MATKUL</label>
           <input 

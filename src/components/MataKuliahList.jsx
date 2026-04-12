@@ -19,8 +19,8 @@ export default function MataKuliahList() {
   }, []);
 
   return (
-    <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-      <table className="w-full text-left border-collapse">
+    <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden p-2 sm:p-4">
+      <table className="min-w-full w-full text-left border-collapse text-xs sm:text-sm">
         <thead>
           <tr className="bg-green-400 border-b-4 border-black font-black uppercase text-xs italic">
             <th className="p-3 border-r-4 border-black w-24">Kode</th>

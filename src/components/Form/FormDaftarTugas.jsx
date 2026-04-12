@@ -23,7 +23,7 @@ export default function FormDaftarTugas({ onComplete }) {
           onChange={(e) => setFormData({...formData, nama: e.target.value})}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NIM</label>
           <input 

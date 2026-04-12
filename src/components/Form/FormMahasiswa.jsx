@@ -27,13 +27,17 @@ export default function FormMahasiswa({ onComplete }) {
           onChange={(e) => setFormData({...formData, nama: e.target.value})}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NIM</label>
           <input 
             required
             className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
-            onChange={(e) => setFormData({...formData, nim: e.target.value})}
+            value={formData.nim}
+            onChange={(e) => {
+              const nim = e.target.value;
+              setFormData({ ...formData, nim, email: nim ? `${nim}@student.ibik.ac.id` : '' });
+            }}
           />
         </div>
         <div>
@@ -42,6 +46,7 @@ export default function FormMahasiswa({ onComplete }) {
             required
             placeholder="628..."
             className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
+            value={formData.phone_num}
             onChange={(e) => setFormData({...formData, phone_num: e.target.value})}
           />
         </div>
@@ -50,8 +55,9 @@ export default function FormMahasiswa({ onComplete }) {
         <label className="block font-black uppercase mb-1 text-sm text-gray-500">// EMAIL_ADDRESS</label>
         <input 
           type="email"
-          className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
-          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          className="w-full border-4 border-black p-3 font-bold bg-gray-100 outline-none"
+          value={formData.email}
+          readOnly
         />
       </div>
       <button className="w-full bg-green-400 border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">

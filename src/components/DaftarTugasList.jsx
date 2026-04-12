@@ -24,12 +24,12 @@ export default function DaftarTugasList() {
   }, []);
 
   return (
-    <div className="space-y-8 p-1">
+    <div className="space-y-8 p-2 sm:p-4">
       {/* SECTION MONITORING */}
       <section>
         <div className="border-4 border-black bg-white overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="min-w-full w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="bg-yellow-400 border-b-4 border-black text-xs font-black uppercase italic">
                   <th className="p-3 border-r-4 border-black">Mahasiswa</th>

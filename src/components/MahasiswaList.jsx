@@ -13,8 +13,8 @@ export default function StudentList() {
   }, []);
 
   return (
-    <div className="overflow-x-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-      <table className="w-full text-left">
+    <div className="overflow-x-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-2 sm:p-4">
+      <table className="min-w-full w-full text-left text-xs sm:text-sm">
         <thead className="bg-black text-green-400">
           <tr>
             <th className="p-3 uppercase font-black border-r-2 border-green-400">NIM</th>

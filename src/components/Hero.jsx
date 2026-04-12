@@ -1,6 +1,6 @@
 export default function Hero({ taskCount = 0, loading = false }) {
   return (
-    <section className="py-10 px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+    <section className="py-10 px-4 sm:px-6 md:px-0 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
       {/* Main Info Block */}
       <div className="border-4 border-black bg-purple-600 p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
         <h1 className="text-5xl md:text-6xl font-black text-white uppercase mb-4 leading-none tracking-tight">
