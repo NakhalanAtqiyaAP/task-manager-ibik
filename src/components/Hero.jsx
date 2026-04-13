@@ -9,7 +9,7 @@ export default function Hero({ taskCount = 0, loading = false, user = null }) {
     <>
       <section className="py-10 px-4 sm:px-6 md:px-0 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
         {/* Main Info Block */}
-        <div className="border-4 border-black bg-purple-700 p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] shimmer-container animate-entrance delay-300 relative overflow-hidden">
+        <div className="border-4 border-black bg-purple-700 p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] shimmer-container animate-spawn relative overflow-hidden">
           
           {/* Nama User - Gaya Neo-Brutalist Label */}
           <div className="mb-4">
@@ -39,7 +39,7 @@ export default function Hero({ taskCount = 0, loading = false, user = null }) {
         </div>
         
         {/* Decorative / Status Block */}
-        <div id="monitor" className="hidden md:block border-4 text-white border-black bg-white p-4 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative">
+        <div id="monitor" className="animate-glitch-load hidden md:block border-4 text-white border-black bg-white p-4 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative">
           <div className="absolute -top-5 -right-5 bg-green-400 border-4 border-black px-4 py-1 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black uppercase text-lg z-10">
             Semester 2
           </div>

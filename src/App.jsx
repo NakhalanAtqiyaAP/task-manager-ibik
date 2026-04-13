@@ -36,7 +36,36 @@
     });
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
+// [BARU] EVENT LISTENER SCROLL UNTUK ANIMASI
+  useEffect(() => {
+    const handleScroll = () => {
+      // Cari semua elemen yang mau dianimasikan
+      const reveals = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left');
+      
+      const windowHeight = window.innerHeight;
+      const elementVisible = 100; // Seberapa jauh jarak dari bawah layar agar animasi mulai (dalam pixel)
 
+      reveals.forEach((reveal) => {
+        const elementTop = reveal.getBoundingClientRect().top;
+
+        // Jika elemen sudah masuk ke dalam layar
+        if (elementTop < windowHeight - elementVisible) {
+          reveal.classList.add('is-visible');
+        }
+      });
+    };
+
+    // Jalankan satu kali saat pertama render (agar elemen yang sudah ada di layar paling atas langsung muncul)
+    handleScroll();
+
+    // Pasang listener ke layar
+    window.addEventListener('scroll', handleScroll);
+
+    // Cleanup saat komponen unmount atau update
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [activeView, loading]); // Pantau activeView dan loading
   useEffect(() => {
     const initAuth = async () => {
       try {

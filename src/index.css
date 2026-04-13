@@ -210,3 +210,73 @@ body {
 .animate-character-shake {
   animation: character-shake 0.3s infinite;
 }
+
+/* =========================================
+   KEYFRAMES DEFINITIONS
+   ========================================= */
+
+/* 1. Retro Spawn (Slide Up + Scale Up + Fade In) */
+@keyframes retroSpawn {
+  0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 2. Sequential Pop In (Scale from Center) */
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  80% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* 3. Block Reveal (Sweep from Left to Right - Menggunakan clip-path) */
+@keyframes blockReveal {
+  0% { clip-path: inset(0 100% 0 0); opacity: 0; }
+  1% { opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+/* 4. Glitch Blink (Brief bright flash before stabilizing) */
+@keyframes glitchBlink {
+  0% { opacity: 0; background-color: #4ade80; } /* green-400 flash */
+  10% { opacity: 1; background-color: #4ade80; }
+  11% { background-color: transparent; }
+  20% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* =========================================
+   ANIMATION CLASSES
+   ========================================= */
+
+/* Opsi 1: Retro Spawn (Paling Bagus untuk Card) */
+.animate-spawn {
+  animation: retroSpawn 0.6s ease-out forwards;
+}
+
+/* Opsi 2: Pop In (Paling Bagus untuk List Item atau Icon) */
+.animate-pop {
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Opsi 3: Reveal (Stylized, seperti scanline) */
+.animate-reveal {
+  animation: blockReveal 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+/* Opsi 4: Glitch Flash (Sangat "System Bootup" vibe) */
+.animate-glitch-load {
+  animation: glitchBlink 0.4s ease-out forwards;
+}
+
+/* =========================================
+   DELAYS UTILITIES (Sangat Penting untuk Sequence)
+   ========================================= */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+
