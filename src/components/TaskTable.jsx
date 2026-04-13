@@ -322,7 +322,8 @@ export default function TaskTable({ studentId, onRefresh }) {
             onClick={() => handleToggleTask(item.id, isDone)}
             className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${isDone ? 'bg-green-400' : 'bg-white hover:bg-gray-200'}`}
           >
-            {isDone && <CheckCircle2 className="w-6 h-6 text-black stroke-[3px]" />}
+            <CheckCircle2 className="w-6 h-6 text-black stroke-[3px]" />
+            {isDone}
           </button>
         </div>
 
