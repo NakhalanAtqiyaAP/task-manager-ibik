@@ -1,21 +1,33 @@
 import { useState } from 'react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  ClipboardList, 
+  UserSquare2, 
+  BookOpen, 
+  ChevronDown, 
+  ChevronUp, 
+  Search, 
+  PlusSquare,
+  X,
+  Menu 
+} from 'lucide-react'; // Import ikon yang dibutuhkan
 
 export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSub, setActiveSub] = useState(null);
 
+  // Tambahkan property 'icon' ke dalam array menu
   const allMenuItems = [
-    { name: 'Dashboard', allowedRoles: ['admin', 'student'] },
-    { name: 'Member', allowedRoles: ['admin', 'student'] },
-    { name: 'Daftar Tugas', allowedRoles: ['admin', 'student'] },
-    { name: 'Mahasiswa', allowedRoles: ['admin'] },
-    { name: 'Mata Kuliah', allowedRoles: ['admin'] }
+    { name: 'Dashboard', allowedRoles: ['admin', 'student'], icon: <LayoutDashboard size={18} strokeWidth={3} /> },
+    { name: 'Member', allowedRoles: ['admin', 'student'], icon: <Users size={18} strokeWidth={3} /> },
+    { name: 'Daftar Tugas', allowedRoles: ['admin', 'student'], icon: <ClipboardList size={18} strokeWidth={3} /> },
+    { name: 'Mahasiswa', allowedRoles: ['admin'], icon: <UserSquare2 size={18} strokeWidth={3} /> },
+    { name: 'Mata Kuliah', allowedRoles: ['admin'], icon: <BookOpen size={18} strokeWidth={3} /> }
   ];
 
   const userRole = currentUser?.role || 'student';
-  const menuItems = allMenuItems
-    .filter(item => item.allowedRoles.includes(userRole))
-    .map(item => item.name);
+  const filteredItems = allMenuItems.filter(item => item.allowedRoles.includes(userRole));
 
   const handleAction = (category, mode) => {
     onMenuAction(category, mode);
@@ -49,7 +61,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           <div className="flex items-center gap-2 sm:gap-4">
             {/* AVATAR */}
             <button
-            id ="profile"
+              id="profile"
               onClick={onToggleProfile}
               className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all overflow-hidden bg-purple-200"
             >
@@ -62,12 +74,12 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
 
             {/* HAMBURGER MENU */}
             <button 
-            id = "menu"
+              id="menu"
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-lg leading-none transition-all"
+              className="p-2 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black transition-all flex items-center justify-center"
             >
-              {menuOpen ? '✕' : '☰'}
+              {menuOpen ? <X size={24} strokeWidth={3} /> : <Menu size={24} strokeWidth={3} />}
             </button>
           </div>
         </div>
@@ -84,48 +96,55 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
         {/* Header Sidebar */}
         <div className="bg-purple-900 text-white p-4 border-b-4 border-black flex justify-between items-center">
           <h2 className="text-xl font-black uppercase italic">// Menu</h2>
-          <button onClick={closeSidebar} className="w-8 h-8 bg-white text-black border-4 border-black font-black flex items-center justify-center">✕</button>
+          <button onClick={closeSidebar} className="w-8 h-8 bg-white text-black border-4 border-black font-black flex items-center justify-center hover:bg-red-400">
+             <X size={18} strokeWidth={3} />
+          </button>
         </div>
 
         {/* Menu Items Loop */}
         <div className="flex-1 overflow-y-auto">
-          {menuItems.map((item, idx) => (
-            <div key={item} className={idx < menuItems.length - 1 ? 'border-b-4 border-black' : ''}>
+          {filteredItems.map((item, idx) => (
+            <div key={item.name} className={idx < filteredItems.length - 1 ? 'border-b-4 border-black' : ''}>
               <button
                 onClick={() => {
-                  // LOGIKA BARU: Jika Member/Dashboard, langsung eksekusi. Jika lain, buka sub-menu.
-                  if (item === 'Member' || item === 'Dashboard') {
-                    handleAction(item, 'view');
+                  if (item.name === 'Member' || item.name === 'Dashboard') {
+                    handleAction(item.name, 'view');
                     closeSidebar();
                   } else {
-                    setActiveSub(activeSub === item ? null : item);
+                    setActiveSub(activeSub === item.name ? null : item.name);
                   }
                 }}
                 className={`w-full text-left px-5 py-4 font-black uppercase text-sm flex justify-between items-center transition-colors ${
-                  activeSub === item ? 'bg-purple-600 text-white' : 'hover:bg-purple-100'
+                  activeSub === item.name ? 'bg-purple-600 text-white' : 'hover:bg-purple-100'
                 }`}
               >
-                <span>{item}</span>
-                {/* Hanya munculkan panah jika ada sub-menu */}
-                {item !== 'Member' && item !== 'Dashboard' && (
-                  <span className="text-xs">{activeSub === item ? '▲' : '▼'}</span>
+                <div className="flex items-center gap-3">
+                  {item.icon}
+                  <span>{item.name}</span>
+                </div>
+                {item.name !== 'Member' && item.name !== 'Dashboard' && (
+                  <span className="text-xs">
+                    {activeSub === item.name ? <ChevronUp size={16} strokeWidth={3} /> : <ChevronDown size={16} strokeWidth={3} />}
+                  </span>
                 )}
               </button>
 
-              {/* Sub Items (Hanya untuk yang punya mode CRUD) */}
-              {activeSub === item && item !== 'Member' && item !== 'Dashboard' && (
+              {/* Sub Items */}
+              {activeSub === item.name && item.name !== 'Member' && item.name !== 'Dashboard' && (
                 <div className="bg-gray-50 border-t-2 border-black">
                   <button
-                    onClick={() => { handleAction(item, 'view'); closeSidebar(); }}
-                    className="w-full text-left px-8 py-3 font-black uppercase text-sm border-b-2 border-gray-300 hover:bg-green-400"
+                    onClick={() => { handleAction(item.name, 'view'); closeSidebar(); }}
+                    className="w-full text-left px-8 py-3 font-black uppercase text-xs flex items-center gap-2 border-b-2 border-gray-300 hover:bg-green-400"
                   >
-                    🔍 Tampilkan Data
+                    <Search size={14} strokeWidth={3} />
+                    Tampilkan Data
                   </button>
                   <button
-                    onClick={() => { handleAction(item, 'create'); closeSidebar(); }}
-                    className="w-full text-left px-8 py-3 font-black uppercase text-sm hover:bg-green-400"
+                    onClick={() => { handleAction(item.name, 'create'); closeSidebar(); }}
+                    className="w-full text-left px-8 py-3 font-black uppercase text-xs flex items-center gap-2 hover:bg-green-400"
                   >
-                    ➕ Bikin Data
+                    <PlusSquare size={14} strokeWidth={3} />
+                    Bikin Data
                   </button>
                 </div>
               )}
