@@ -92,7 +92,7 @@ export default function MemberPage() {
 
       {/* HEADER SECTION */}
       <div className="mb-16 border-b-8 border-black pb-4 inline-block">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-black animate-brutal-header">
+        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header">
           TI-25-KA MEMBERS
         </h1>
         <br />
