@@ -59,11 +59,11 @@ export default function MemberPage() {
       {/* HEADER SECTION */}
       <div className="mb-16 border-b-8 border-black pb-4 inline-block">
         {/* Tambahkan class animasi ke <h1> */}
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-purple-600 animate-brutal-header">
+        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header">
           TI-25-KA MEMBERS
         </h1>
         <br />
-        <p className="font-bold text-gray-600 mt-2 uppercase bg-yellow-400 border-2 border-black inline-block px-2 py-1 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <p className="font-bold text-gray-600 mt-2 uppercase bg-green-400 border-2 border-black\ inline-block px-2 py-1 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
           Total Data: {members.length} Anggota 
         </p>
       </div>
