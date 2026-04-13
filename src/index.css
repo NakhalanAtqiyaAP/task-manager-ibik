@@ -132,9 +132,21 @@ body {
 .shimmer-container::after {
   content: "";
   position: absolute;
-  top: 0; left: 0; width: 40%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+  top: 0; 
+  left: 0; 
+  width: 40%; 
+  height: 100%;
+  background: linear-gradient(
+    to right, 
+    transparent, 
+    rgba(255,255,255,0.2), 
+    transparent
+  );
   animation: shimmer 4s infinite;
+  
+  /* --- KUNCINYA DI SINI --- */
+  pointer-events: none; /* Klik akan menembus elemen ini */
+  z-index: 5;          /* Berada di atas background tapi di bawah konten jika perlu */
 }
 
 @keyframes progress {
