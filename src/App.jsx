@@ -310,7 +310,7 @@ async function fetchInitialData() {
         ) : activeView === 'Member' ? (
           <MemberPage />
         ) : activeView === 'Leaderboard' ? (
-          <LeaderboardPage />
+          <LeaderboardPage studentId={currentUser?.id}/>
         ): null}
       </main>
 
