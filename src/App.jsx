@@ -246,7 +246,7 @@
         ) : null}
       </main>
 
-        <Footer />
+        <Footer onOpenGuide={() => setIsGuideOpen(true)}/>
 
         {/* MODAL BIASA UNTUK CRUD */}
         <Modal isOpen={modalConfig.isOpen} onClose={closeModal} title={`${modalConfig.mode === 'view' ? 'DATA' : 'INPUT'} ${modalConfig.category.toUpperCase()}`}>

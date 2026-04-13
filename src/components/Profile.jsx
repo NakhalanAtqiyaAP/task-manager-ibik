@@ -77,7 +77,8 @@ const removeTag = (tagToRemove) => {
       // Gabungkan kembali jadi string untuk disimpan di DB
       hobby: formData.hobby.join(', '), 
       password: formData.password,
-      avatar_url: formData.avatar_url
+      avatar_url: formData.avatar_url,
+      quotes: formData.quotes
     })
     .eq('email', userEmail);
     // ... sisa logic handleUpdate
@@ -136,7 +137,7 @@ const removeTag = (tagToRemove) => {
       <div className="border-t-4 border-black border-dashed pt-6 flex-1">
         <div className="space-y-4">
          <div>
-  <label className="block font-black text-xs uppercase mb-1 text-gray-500">// SISTEM_HOBI_TAGS</label>
+  <label className="block font-black text-xs uppercase mb-1 text-gray-500">HOBBY TAGS</label>
   
   <div className="border-4 border-black p-2 min-h-[60px] bg-white flex flex-wrap gap-2 mb-2">
     {formData.hobby && formData.hobby.length > 0 ? (
@@ -178,6 +179,16 @@ const removeTag = (tagToRemove) => {
       </button>
     </div>
   )}
+  <div>
+  <label className="block font-black text-xs uppercase mb-1 text-gray-500">// QUOTE_HIDUP</label>
+  <textarea 
+    disabled={!isEditing}
+    placeholder="Tulis sesuatu yang bermakna..."
+    className="w-full border-4 border-black p-3 font-bold focus:bg-blue-100 disabled:bg-gray-100 resize-none h-20"
+    value={formData.quotes || ''}
+    onChange={(e) => setFormData({...formData, quotes: e.target.value})}
+  />
+</div>
             <label className="block font-black text-xs uppercase mb-1 text-gray-500">// PASSWORD_SISTEM</label>
             <input 
               type={isEditing ? "text" : "password"}
