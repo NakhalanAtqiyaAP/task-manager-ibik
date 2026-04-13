@@ -177,16 +177,47 @@
     const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
 
     // ... (fungsi fetchInitialData TETAP SAMA) ...
-    async function fetchInitialData() {
-      setLoading(true);
-      try {
-        const { data: monitorData, error } = await supabase.from('student_tasks').select(`id, deadline, is_completed, students ( id, nama ), tasks ( id, judul, courses ( semester, mata_kuliah:matkul_id ( nama_matkul ) ) )`).order('deadline', { ascending: true });
-        if (error) throw error;
-        setTasks(monitorData || []);
-      } catch (error) { console.error('Error:', error.message); } finally { setLoading(false); }
-    }
+    // Di dalam App.jsx
+async function fetchInitialData() {
+  // Pastikan user sudah ada sebelum melakukan fetch
+  if (!currentUser?.id) return; 
 
-    useEffect(() => { if (isAuthorized) fetchInitialData(); }, [isAuthorized]);
+  setLoading(true);
+  try {
+    const { data: monitorData, error } = await supabase
+      .from('student_tasks')
+      .select(`
+        id, 
+        deadline, 
+        is_completed, 
+        students ( id, nama ), 
+        tasks ( 
+          id, 
+          judul, 
+          courses ( 
+            semester, 
+            mata_kuliah:matkul_id ( nama_matkul ) 
+          ) 
+        )
+      `)
+      // FILTER KUNCINYA DI SINI:
+      .eq('student_id', currentUser.id) 
+      .order('deadline', { ascending: true });
+
+    if (error) throw error;
+    setTasks(monitorData || []);
+  } catch (error) { 
+    console.error('Error:', error.message); 
+  } finally { 
+    setLoading(false); 
+  }
+}
+
+  useEffect(() => { 
+  if (isAuthorized && currentUser) {
+    fetchInitialData(); 
+  }
+}, [isAuthorized, currentUser]);
 
     const activeTasksCount = tasks.filter(task => !task.is_completed).length;
 
