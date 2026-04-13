@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Globe } from 'lucide-react'; // Kita sisakan Globe dari Lucide sebagai cadangan
+import { Globe } from 'lucide-react'; 
 
 export default function MemberPage() {
   const [members, setMembers] = useState([]);
@@ -34,6 +34,7 @@ export default function MemberPage() {
           </svg>
         );
       case 'twitter':
+      case 'x':
         return (
           <svg viewBox="0 0 24 24" style={fillStyle}>
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -61,27 +62,28 @@ export default function MemberPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center font-black uppercase text-2xl animate-pulse">
+      <div className="flex h-64 items-center justify-center font-black uppercase text-lg sm:text-2xl animate-pulse text-center p-4">
         MEMUAT_DATABASE_SQUAD...
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-8 relative">
+    <div className="p-3 sm:p-6 md:p-8 relative overflow-hidden">
       {/* HEADER SECTION */}
-      <div className="mb-16 border-b-8 border-black pb-4 inline-block">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header">
+      <div className="mb-12 sm:mb-16 border-b-4 sm:border-b-8 border-black pb-4 inline-block w-full sm:w-auto">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header break-words">
           TI-25-KA MEMBERS
         </h1>
-        <br />
-        <p className="font-bold text-gray-600 mt-2 uppercase bg-green-400 border-2 border-black inline-block px-2 py-1 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-          Total Data: {members.length} Anggota 
-        </p>
+        <div className="mt-2">
+          <p className="font-bold text-gray-900 uppercase bg-green-400 border-2 border-black inline-block px-3 py-1 text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            Total Data: {members.length} Anggota 
+          </p>
+        </div>
       </div>
 
       {/* GRID KARTU ANGGOTA */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-16 mt-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-16 sm:gap-y-20 mt-12 sm:mt-16">
         {members.map((member, index) => {
           const hobbies = member.hobby ? member.hobby.split(',').map(h => h.trim()) : [];
           const socials = member.media_sosial || [];
@@ -92,11 +94,11 @@ export default function MemberPage() {
           return (
             <div 
               key={member.id}
-              className="group relative bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-2 hover:translate-y-2 hover:shadow-none transition-all duration-300 p-6 flex flex-col items-center animate-squad-entrance"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="group relative bg-white border-2 sm:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 sm:hover:translate-x-2 sm:hover:translate-y-2 hover:shadow-none transition-all duration-300 p-4 sm:p-6 flex flex-col items-center animate-squad-entrance"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               {/* ROUNDED AVATAR */}
-              <div className="absolute -top-12 w-24 h-24 rounded-full border-4 border-black bg-purple-200 overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 group-hover:rotate-[10deg] transition-transform duration-300 z-10">
+              <div className="absolute -top-10 sm:-top-12 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 sm:border-4 border-black bg-purple-200 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 group-hover:rotate-[10deg] transition-transform duration-300 z-10 flex-shrink-0">
                 <img 
                   src={member.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${member.nama}`} 
                   alt={`Avatar ${member.nama}`}
@@ -105,38 +107,39 @@ export default function MemberPage() {
               </div>
 
               {/* INFO UTAMA */}
-              <div className="mt-10 text-center w-full">
-                <h2 className="text-xl font-black uppercase leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
+              <div className="mt-8 sm:mt-10 text-center w-full min-w-0">
+                <h2 className="text-lg sm:text-xl font-black uppercase leading-tight truncate group-hover:text-purple-600 transition-colors" title={member.nama}>
                   {member.nama}
                 </h2>
-                <div className="inline-block mt-2 bg-black text-white px-3 py-1 font-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]">
+                <div className="inline-block mt-2 bg-black text-white px-2 py-1 sm:px-3 sm:py-1 font-black text-[10px] sm:text-xs uppercase shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]">
                   NIM: {member.nim}
                 </div>
               </div>
 
               {/* QUOTE SECTION */}
               <div className="w-full mt-4 relative">
-                <div className="bg-blue-100 border-2 border-black p-3 italic text-[11px] font-bold text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative">
-                  <span className="absolute -top-3 -left-1 bg-black text-white text-[10px] px-1 not-italic">"</span>
+                <div className="bg-blue-100 border-2 border-black p-2 sm:p-3 italic text-[10px] sm:text-[11px] font-bold text-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative">
+                  <span className="absolute -top-2 -left-1 sm:-top-3 sm:-left-1 bg-black text-white text-[8px] sm:text-[10px] px-1 not-italic leading-none py-0.5">"</span>
                   <p className="line-clamp-3">
                     {displayQuote}
                   </p>
-                  <span className="absolute -bottom-3 -right-1 bg-black text-white text-[10px] px-1 not-italic">"</span>
+                  <span className="absolute -bottom-2 -right-1 sm:-bottom-3 sm:-right-1 bg-black text-white text-[8px] sm:text-[10px] px-1 not-italic leading-none py-0.5">"</span>
                 </div>
               </div>
 
               {/* KONTAK TELEPON */}
               <div className="w-full mt-4 border-t-2 border-black border-dashed pt-4 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xl">📞</span>
-                  <span className="font-bold text-sm bg-gray-100 border-2 border-black px-2 py-1 w-full truncate">
+                <div className="flex items-center justify-center gap-2 max-w-full">
+                  <span className="text-lg sm:text-xl flex-shrink-0">📞</span>
+                  {/* min-w-0 mencegah flex item melampaui container parentnya */}
+                  <span className="font-bold text-xs sm:text-sm bg-gray-100 border-2 border-black px-2 py-1 w-full truncate min-w-0" title={member.phone_num || 'BELUM_ADA_NOMOR'}>
                     {member.phone_num || 'BELUM_ADA_NOMOR'}
                   </span>
                 </div>
               </div>
 
-              {/* MEDIA SOSIAL ICONS (PENGGUNAAN HELPER BARU) */}
-              <div className="w-full mt-4 flex justify-center gap-2">
+              {/* MEDIA SOSIAL ICONS */}
+              <div className="w-full mt-4 flex flex-wrap justify-center gap-2">
                 {socials.length > 0 ? (
                   socials.map((social, idx) => (
                     <a 
@@ -145,9 +148,9 @@ export default function MemberPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       title={social.platform}
-                      className="bg-white border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-green-400 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all text-black flex items-center justify-center"
+                      className="bg-white border-2 border-black p-1.5 sm:p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-green-400 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all text-black flex items-center justify-center"
                     >
-                      {getSocialIcon(social.platform, 18)}
+                      {getSocialIcon(social.platform, 16)}
                     </a>
                   ))
                 ) : (
@@ -156,12 +159,12 @@ export default function MemberPage() {
               </div>
 
               {/* TAGS HOBI */}
-              <div className="w-full mt-4 flex flex-wrap gap-1 justify-center content-start border-t-2 border-black border-dashed pt-4">
+              <div className="w-full mt-auto pt-4 flex flex-wrap gap-1 justify-center content-start border-t-2 border-black border-dashed">
                 {hobbies.length > 0 ? (
                   hobbies.slice(0, 3).map((hobby, i) => (
                     <span 
                       key={i} 
-                      className="bg-green-400 border-2 border-black text-[9px] font-black uppercase px-2 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
+                      className="bg-green-400 border-2 border-black text-[8px] sm:text-[9px] font-black uppercase px-2 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
                     >
                       {hobby}
                     </span>
@@ -171,7 +174,7 @@ export default function MemberPage() {
                 )}
                 
                 {hobbies.length > 3 && (
-                  <span className="bg-gray-200 border-2 border-black text-[9px] font-black uppercase px-1 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                  <span className="bg-gray-200 border-2 border-black text-[8px] sm:text-[9px] font-black uppercase px-1 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] cursor-help" title={hobbies.slice(3).join(', ')}>
                     +{hobbies.length - 3}
                   </span>
                 )}
