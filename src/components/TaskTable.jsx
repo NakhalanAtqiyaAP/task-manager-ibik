@@ -1,7 +1,11 @@
 import { useEffect, useState, useRef } from 'react'; // Tambahkan useRef
+import confetti from 'canvas-confetti';
+import { CheckCircle2 } from 'lucide-react';
+
 import { supabase } from '../lib/supabase';
 import HistoryDashboard from './HistoryDashboard';
 import DateRangePicker from './DateRangePicker';
+
 
 export default function TaskTable({ studentId, onRefresh }) {
   const [tasks, setTasks] = useState([]);
@@ -148,6 +152,10 @@ export default function TaskTable({ studentId, onRefresh }) {
         .eq('id', taskId);
 
       if (error) throw error;
+
+      if (!currentStatus) {
+        triggerConfetti();
+      }
       
       // Refresh UI (sekarang aman dari double request)
       await fetchStudentTasks();
@@ -156,6 +164,38 @@ export default function TaskTable({ studentId, onRefresh }) {
       alert("Gagal mengupdate tugas!");
       console.error(error);
     }
+  };
+
+  const triggerConfetti = () => {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      
+      // Tembakan konfeti dari kiri dan kanan
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#4ade80', '#9333ea', '#ffffff', '#000000'] // Hijau, Ungu, Putih, Hitam (Vibe kamu)
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#4ade80', '#9333ea', '#ffffff', '#000000']
+      });
+    }, 250);
   };
 
   const fmtDate = (iso) =>
@@ -282,7 +322,7 @@ export default function TaskTable({ studentId, onRefresh }) {
             onClick={() => handleToggleTask(item.id, isDone)}
             className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${isDone ? 'bg-green-400' : 'bg-white hover:bg-gray-200'}`}
           >
-            {isDone && <span className="font-black text-xl text-black">✓</span>}
+            {isDone && <CheckCircle2 className="w-6 h-6 text-black stroke-[3px]" />}
           </button>
         </div>
 
