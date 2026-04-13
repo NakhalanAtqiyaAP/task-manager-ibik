@@ -23,7 +23,7 @@ const Footer = () => {
             // TI-25-KA
           </h4>
           <p className="font-bold text-sm text-black leading-relaxed border-l-4 border-black pl-4">
-           TI-25-KA solid solid solid.
+           Website TI-25-KA akan hadir karena kesolidan setiap membernya dan website ini terlahir dari permasalahan hingga pada akhirnya permasalahan itu menjadi website ini'(ngerti kan?)'.
           </p>
         </div>
         
