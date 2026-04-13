@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import DateRangePicker from './DateRangePicker';
 
-// Tambahkan prop studentId di sini
 export default function DaftarTugasList({ studentId }) {
   const [assignments, setAssignments] = useState([]);
   const [filteredAssignments, setFilteredAssignments] = useState([]);
@@ -19,8 +18,7 @@ export default function DaftarTugasList({ studentId }) {
 
   useEffect(() => {
     async function fetchAssignments() {
-      if (!studentId) return; // Jangan fetch kalau ID tidak ada
-      
+      if (!studentId) return;
       setLoading(true);
       const { data, error } = await supabase
         .from('student_tasks')
@@ -29,7 +27,7 @@ export default function DaftarTugasList({ studentId }) {
           students ( nama ),
           tasks ( judul, mata_kuliah:courses(mata_kuliah(nama_matkul)) )
         `)
-        .eq('student_id', studentId); // KUNCINYA: Filter berdasarkan ID Mahasiswa
+        .eq('student_id', studentId);
 
       if (!error) {
         setAssignments(data || []);
@@ -42,17 +40,13 @@ export default function DaftarTugasList({ studentId }) {
       const { data, error } = await supabase
         .from('courses')
         .select('id, mata_kuliah(nama_matkul)');
-
-      if (!error) {
-        setCourses(data || []);
-      }
+      if (!error) setCourses(data || []);
     }
 
     fetchAssignments();
     fetchCourses();
-  }, [studentId]); // Jalankan ulang jika studentId berubah
+  }, [studentId]);
 
-  // ... (Logika useEffect untuk filtering & sorting tetap sama) ...
   useEffect(() => {
     let filtered = [...assignments];
 
@@ -106,21 +100,22 @@ export default function DaftarTugasList({ studentId }) {
 
   const uniqueCourses = [...new Set(courses.map(c => c.mata_kuliah?.nama_matkul).filter(Boolean))];
 
-  if (loading) return <div className="p-10 text-center font-black animate-pulse">MEMUAT DATA TUGAS...</div>;
+  if (loading) return <div className="p-10 text-center font-black animate-pulse text-white">MEMUAT DATA TUGAS...</div>;
 
   return (
     <div className="space-y-8">
       <section>
-        <div className="border-4 border-black bg-white overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+        <div className="border-4 border-black bg-white overflow-visible shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
           {/* Header & Filter UI */}
-          <div className="bg-black text-white p-5 font-black uppercase text-lg flex flex-col gap-5">
+          <div className="bg-black text-white p-5 font-black uppercase text-lg flex flex-col gap-5 relative z-20">
             <div className="flex justify-between items-center">
               <span>Riwayat Tugas Saya</span>
               <span className="text-xs bg-green-400 text-black px-2 py-1">Personal Access</span>
             </div>
 
+            {/* BARIS FILTER */}
             <div className="flex flex-wrap gap-4 items-center">
-              {/* Filter Course */}
+              {/* 1. Filter Matkul */}
               <div className="flex items-center gap-2">
                 <label className="text-xs font-bold uppercase text-gray-300">Matkul:</label>
                 <select
@@ -135,15 +130,56 @@ export default function DaftarTugasList({ studentId }) {
                 </select>
               </div>
 
-              {/* Date Picker & Sort Buttons (Sama seperti sebelumnya) */}
-              {/* ... (bagian filter UI lainnya) ... */}
-              <button onClick={clearFilters} className="px-3 py-1.5 border-2 border-red-400 text-red-400 font-black text-xs uppercase hover:bg-red-400 hover:text-white transition-colors">
+              {/* 2. Date Range Picker (Filter Tanggal) */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold uppercase text-gray-300">Periode:</label>
+                <div className="bg-white text-black border-2 border-white">
+                  <DateRangePicker
+                    startDate={filters.dateFrom}
+                    endDate={filters.dateTo}
+                    onStartDateChange={(v) => handleFilterChange('dateFrom', v)}
+                    onEndDateChange={(v) => handleFilterChange('dateTo', v)}
+                    onClear={() => {
+                      handleFilterChange('dateFrom', '');
+                      handleFilterChange('dateTo', '');
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 3. Tombol Sortir */}
+              {/* <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase text-gray-300">Sort:</span>
+                <button
+                  onClick={() => toggleSort('deadline')}
+                  className={`px-3 py-1.5 border-2 border-white font-black text-xs uppercase hover:bg-white hover:text-black transition-colors ${
+                    filters.sortBy === 'deadline' ? 'bg-white text-black' : ''
+                  }`}
+                >
+                  TGL {filters.sortBy === 'deadline' ? (filters.sortOrder === 'asc' ? '↑' : '↓') : ''}
+                </button>
+                <button
+                  onClick={() => toggleSort('course')}
+                  className={`px-3 py-1.5 border-2 border-white font-black text-xs uppercase hover:bg-white hover:text-black transition-colors ${
+                    filters.sortBy === 'course' ? 'bg-white text-black' : ''
+                  }`}
+                >
+                  MK {filters.sortBy === 'course' ? (filters.sortOrder === 'asc' ? 'A-Z' : 'Z-A') : ''}
+                </button>
+              </div> */}
+
+              {/* 4. Reset Button */}
+              <button 
+                onClick={clearFilters} 
+                className="px-3 py-1.5 border-2 border-red-400 text-red-400 font-black text-xs uppercase hover:bg-red-400 hover:text-white transition-colors ml-auto"
+              >
                 CLEAR
               </button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* TABLE AREA */}
+          <div className="overflow-x-auto relative z-10">
             <table className="min-w-full w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="border-b-4 border-black bg-purple-600 text-white">
@@ -176,7 +212,7 @@ export default function DaftarTugasList({ studentId }) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="p-10 text-center italic font-bold text-gray-400 uppercase">Tidak ada data tugas ditemukan</td>
+                    <td colSpan="3" className="p-10 text-center italic font-bold text-gray-400 uppercase bg-white">Tidak ada data tugas ditemukan</td>
                   </tr>
                 )}
               </tbody>
