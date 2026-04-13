@@ -49,6 +49,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           <div className="flex items-center gap-2 sm:gap-4">
             {/* AVATAR */}
             <button
+            id ="profile"
               onClick={onToggleProfile}
               className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all overflow-hidden bg-purple-200"
             >
@@ -60,7 +61,8 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
             </button>
 
             {/* HAMBURGER MENU */}
-            <button
+            <button 
+            id = "menu"
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-2 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-lg leading-none transition-all"

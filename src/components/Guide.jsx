@@ -24,21 +24,21 @@ export default function GameGuide({ onClose, userName }) {
       character: "Udin",
       message: "Di sini adalah ringkasan tugasmu. Jika angka di sini bukan nol, berarti ada pekerjaan yang menunggu!",
       image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
-      target: ".bg-gray-800"
+      target: "#monitor"
     },
     {
       title: "NAVIGATION MENU",
       character: "Udin",
       message: "Gunakan tombol menu ini untuk navigasi ke Mahasiswa, Mata Kuliah, atau tambah data tugas baru.",
       image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
-      target: "button[aria-label='Toggle menu']"
+      target: "#menu"
     },
     {
       title: "USER PROFILE",
       character: "Udin",
       message: "Klik avatar ini untuk mengubah profil, mengganti foto, atau mengganti password.",
       image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
-      target: "button[title='Buka Profil']"
+      target: "#profile"
     },
     {
       title: "HISTORY DASHBOARD",

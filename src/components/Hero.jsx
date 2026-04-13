@@ -39,7 +39,7 @@ export default function Hero({ taskCount = 0, loading = false, user = null }) {
         </div>
         
         {/* Decorative / Status Block */}
-        <div className="hidden md:block border-4 text-white border-black bg-white p-4 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative">
+        <div id="monitor" className="hidden md:block border-4 text-white border-black bg-white p-4 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative">
           <div className="absolute -top-5 -right-5 bg-green-400 border-4 border-black px-4 py-1 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black uppercase text-lg z-10">
             Semester 2
           </div>
