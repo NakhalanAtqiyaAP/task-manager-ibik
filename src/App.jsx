@@ -280,11 +280,22 @@ async function fetchInitialData() {
         <Footer onOpenGuide={() => setIsGuideOpen(true)}/>
 
         {/* MODAL BIASA UNTUK CRUD */}
-        <Modal isOpen={modalConfig.isOpen} onClose={closeModal} title={`${modalConfig.mode === 'view' ? 'DATA' : 'INPUT'} ${modalConfig.category.toUpperCase()}`}>
-          {modalConfig.category === 'Mahasiswa' && (modalConfig.mode === 'create' ? <FormMahasiswa onComplete={closeModal} /> : <StudentList />)}
-          {modalConfig.category === 'Daftar Tugas' && (modalConfig.mode === 'create' ? <FormTugas onComplete={closeModal} /> : <DaftarTugasList />)}
-          {modalConfig.category === 'Mata Kuliah' && (modalConfig.mode === 'create' ? <FormMataKuliah onComplete={closeModal} /> : <MataKuliahList />)}
-        </Modal>
+        <Modal 
+      isOpen={modalConfig.isOpen} 
+      onClose={closeModal} 
+      title={`${modalConfig.mode === 'view' ? 'DATA' : 'INPUT'} ${modalConfig.category.toUpperCase()}`}
+    >
+      {modalConfig.category === 'Mahasiswa' && (modalConfig.mode === 'create' ? <FormMahasiswa onComplete={closeModal} /> : <StudentList />)}
+      
+      {/* UPDATE BAGIAN INI: Kirimkan studentId */}
+      {modalConfig.category === 'Daftar Tugas' && (
+        modalConfig.mode === 'create' 
+          ? <FormTugas onComplete={closeModal} /> 
+          : <DaftarTugasList studentId={currentUser?.id} /> // Tambahkan prop ini!
+      )}
+
+      {modalConfig.category === 'Mata Kuliah' && (modalConfig.mode === 'create' ? <FormMataKuliah onComplete={closeModal} /> : <MataKuliahList />)}
+    </Modal>
 
         {/* PROFILE SIDEBAR DRAWER */}
         {/* Overlay Gelap */}
