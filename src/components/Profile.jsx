@@ -387,9 +387,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
         </div>
       </motion.div>
 
-      {/* ================================================= */}
-      {/* MODAL CROP GAMBAR DENGAN GAYA NEO-BRUTALISM       */}
-      {/* ================================================= */}
       <AnimatePresence>
         {isCropModalOpen && imageSrc && (
           <motion.div 

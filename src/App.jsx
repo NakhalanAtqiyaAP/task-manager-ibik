@@ -311,7 +311,7 @@ async function fetchInitialData() {
         ) : null}
       </main>
 
-        <Footer onOpenGuide={() => setIsGuideOpen(true)}/>
+        <Footer user={currentUser}  />
 
         {/* MODAL BIASA UNTUK CRUD */}
         <Modal 

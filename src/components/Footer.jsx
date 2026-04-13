@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Guide from './Guide'; // Pastikan path file Guide.jsx sudah benar
 
-const Footer = () => {
+const Footer = ({user}) => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const currentYear = new Date().getFullYear();
 
@@ -75,7 +75,7 @@ const Footer = () => {
 
       {/* MODAL PANDUAN */}
       {isGuideOpen && (
-        <Guide isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+        <Guide isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} userName={user?.nama}/>
       )}
     </footer>
   );
