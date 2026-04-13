@@ -251,7 +251,9 @@ async function fetchInitialData() {
     const activeTasksCount = tasks.filter(task => !task.is_completed).length;
 
     if (isCheckingAuth) {
-      return <div className="min-h-screen flex items-center justify-center bg-purple-900"><div className="font-black uppercase text-2xl animate-pulse">Memvalidasi Akses...</div></div>;
+      return <div className="min-h-screen flex items-center justify-center bg-purple-900">
+        <div className="font-black text-green-400 uppercase text-2xl animate-pulse">Memvalidasi Akses...</div>
+        </div>;
     }
 
     if (!isAuthorized) return <Login />;
