@@ -126,7 +126,7 @@ export default function LeaderboardPage({ studentId }) {
 
   // LOGIKA TANGGAL & PEMENANG
   const today = new Date();
-  const isAwardDay = today.getDate() === 20; 
+  const isAwardDay = today.getDate() === 28; 
   const isWinner = leaders.length > 0 && 
                  studentId && 
                  leaders[0].student_id.toString() === studentId.toString();
@@ -141,7 +141,7 @@ export default function LeaderboardPage({ studentId }) {
         <br />
         <div className="flex gap-2 mt-2">
           <p className="font-bold text-black uppercase bg-green-400 border-2 border-black inline-block px-3 py-1 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            KLAIM SERTIFIKAT SETIAP TANGGAL 20
+            KLAIM SERTIFIKAT SETIAP TANGGAL 28
           </p>
         </div>
       </div>
@@ -227,7 +227,7 @@ export default function LeaderboardPage({ studentId }) {
       {/* FOOTER INFORMASI */}
       {!isAwardDay && (
         <div className="mt-12 bg-white border-4 border-black p-4 inline-block font-black uppercase text-xs italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          * Hari Penghargaan selanjutnya: Tanggal 20 {new Date(today.getFullYear(), today.getMonth() + (today.getDate() > 20 ? 1 : 0), 20).toLocaleDateString('id-ID', { month: 'long' })}
+          * Hari Penghargaan selanjutnya: Tanggal 28 {new Date(today.getFullYear(), today.getMonth() + (today.getDate() > 20 ? 1 : 0), 20).toLocaleDateString('id-ID', { month: 'long' })}
         </div>
       )}
     </div>
