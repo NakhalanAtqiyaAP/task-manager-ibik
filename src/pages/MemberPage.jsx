@@ -69,27 +69,6 @@ export default function MemberPage() {
 
   return (
     <div className="p-4 sm:p-8 relative">
-      <style>{`
-        @keyframes slideUpFade {
-          0% { opacity: 0; transform: translateY(40px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-squad-entrance {
-          animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          opacity: 0;
-        }
-        @keyframes brutalJiggle {
-          0%, 100% { transform: rotate(0deg) scale(1); text-shadow: 4px 4px 0px rgba(0,0,0,1); }
-          25% { transform: rotate(-2deg) scale(1.02); text-shadow: 6px 2px 0px rgba(0,0,0,1); }
-          50% { transform: rotate(0deg) scale(1); text-shadow: 4px 6px 0px rgba(0,0,0,1); }
-          75% { transform: rotate(2deg) scale(1.02); text-shadow: 2px 4px 0px rgba(0,0,0,1); }
-        }
-        .animate-brutal-header {
-          display: inline-block;
-          animation: brutalJiggle 3s infinite ease-in-out;
-        }
-      `}</style>
-
       {/* HEADER SECTION */}
       <div className="mb-16 border-b-8 border-black pb-4 inline-block">
         <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header">

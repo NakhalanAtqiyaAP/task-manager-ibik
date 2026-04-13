@@ -22,58 +22,46 @@ export default function TaskTable({ studentId, onRefresh }) {
 
   const displayedTasks = showAll ? tasks : tasks.slice(0, 3);
 
-  // Fungsi untuk memindahkan tugas yang lewat deadline ke riwayat
   const syncExpiredTasks = async () => {
-    // Gunakan syncLock.current untuk mengecek apakah proses sedang berjalan
-    if (!studentId || syncLock.current) return; 
-    
-    syncLock.current = true; // Kunci pintunya!
-    const now = new Date().toISOString();
+  if (!studentId || syncLock.current) return; 
+  syncLock.current = true;
+  const now = new Date().toISOString();
 
-    try {
-      // Cari tugas aktif yang deadline-nya sudah lewat
-      const { data: expiredTasks } = await supabase
-        .from('student_tasks')
-        .select('id, task_id, is_completed')
-        .eq('student_id', studentId)
-        .lt('deadline', now);
+  try {
+    // 1. Ambil semua tugas yang sudah LEWAT deadline
+    const { data: expiredTasks } = await supabase
+      .from('student_tasks')
+      .select('id, task_id, is_completed')
+      .eq('student_id', studentId)
+      .lt('deadline', now);
 
-      if (expiredTasks && expiredTasks.length > 0) {
-        // Filter untuk hanya tugas yang belum di-move ke history
-        const { data: existingHistory } = await supabase
-          .from('histories_task')
-          .select('task_id')
-          .eq('student_id', studentId);
+    if (expiredTasks && expiredTasks.length > 0) {
+      // 2. Siapkan data untuk pindah ke history
+      const historyPayload = expiredTasks.map(t => ({
+        student_id: studentId,
+        task_id: t.task_id,
+        // Jika is_completed true berarti On-Time, jika false berarti Overdue
+        status: t.is_completed ? 'COMPLETED' : 'OVERDUE',
+        completed_at: now
+      }));
 
-        const existingTaskIds = new Set(existingHistory?.map(h => h.task_id) || []);
-        
-        // Hanya move tugas yang belum ada di history
-        const tasksToMove = expiredTasks.filter(t => !existingTaskIds.has(t.task_id));
-
-        if (tasksToMove.length > 0) {
-          const historyPayload = tasksToMove.map(t => ({
-            student_id: studentId,
-            task_id: t.task_id,
-            status: t.is_completed ? 'COMPLETED' : 'OVERDUE',
-            completed_at: now
-          }));
-
-          // Insert ke history
-          const { error: insertError } = await supabase.from('histories_task').insert(historyPayload);
-          
-          if (!insertError) {
-            // Hapus dari daftar aktif HANYA jika insert berhasil
-            const idsToDelete = tasksToMove.map(t => t.id);
-            await supabase.from('student_tasks').delete().in('id', idsToDelete);
-          }
-        }
+      // 3. Masukkan ke history_task
+      const { error: insertError } = await supabase
+        .from('histories_task')
+        .insert(historyPayload);
+      
+      if (!insertError) {
+        // 4. Hapus dari student_tasks karena sudah jadi "sejarah"
+        const idsToDelete = expiredTasks.map(t => t.id);
+        await supabase.from('student_tasks').delete().in('id', idsToDelete);
       }
-    } catch (error) {
-      console.error("Error syncing expired tasks:", error);
-    } finally {
-      syncLock.current = false; // Buka kembali pintunya setelah selesai/error
     }
-  };
+  } catch (error) {
+    console.error("Gagal menyinkronkan tugas basi:", error);
+  } finally {
+    syncLock.current = false;
+  }
+};
 
   // Fetch tugas yang masih aktif
   const fetchStudentTasks = async () => {

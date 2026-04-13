@@ -6,7 +6,8 @@
 
   import Login from './pages/LoginPage';
   import MemberPage from './pages/MemberPage';
-  
+  import LeaderboardPage from './pages/LeaderboardPage';
+
   import Navbar from './components/Navbar';
   import Hero from './components/Hero';
   import TaskTable from './components/TaskTable';
@@ -196,7 +197,7 @@
       supabase.auth.signOut();
       setIsAuthorized(false);
       setCurrentUser(null);
-    } else if (category === 'Dashboard' || category === 'Member') {
+    } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard') {
       // GANTI HALAMAN UTAMA
       setActiveView(category);
       setModalConfig({ ...modalConfig, isOpen: false });
@@ -308,7 +309,9 @@ async function fetchInitialData() {
           </>
         ) : activeView === 'Member' ? (
           <MemberPage />
-        ) : null}
+        ) : activeView === 'Leaderboard' ? (
+          <LeaderboardPage />
+        ): null}
       </main>
 
         <Footer user={currentUser}  />
