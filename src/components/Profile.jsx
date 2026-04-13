@@ -7,15 +7,37 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
   const [formData, setFormData] = useState({});
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    async function getProfile() {
-      if (!userEmail) return;
-      const { data } = await supabase.from('students').select('*').eq('email', userEmail).single();
-      setProfile(data);
-      setFormData(data);
+useEffect(() => {
+  async function getProfile() {
+    if (!userEmail) return;
+    const { data } = await supabase.from('students').select('*').eq('email', userEmail).single();
+    setProfile(data);
+    // Jika hobby di DB berupa string "Coding, Gaming", ubah jadi array
+    const hobbyArray = data.hobby ? data.hobby.split(',').map(h => h.trim()) : [];
+    setFormData({ ...data, hobby: hobbyArray });
+  }
+  getProfile();
+}, [userEmail]);
+
+const [tagInput, setTagInput] = useState("");
+const addTag = (e) => {
+  if (e.key === 'Enter' || e.type === 'click') {
+    e.preventDefault();
+    const val = tagInput.trim().toUpperCase();
+    if (val && !formData.hobby.includes(val)) {
+      setFormData({ ...formData, hobby: [...formData.hobby, val] });
+      setTagInput("");
     }
-    getProfile();
-  }, [userEmail]);
+  }
+};
+
+// Fungsi Hapus Tag
+const removeTag = (tagToRemove) => {
+  setFormData({
+    ...formData,
+    hobby: formData.hobby.filter(tag => tag !== tagToRemove)
+  });
+};
 
   // FUNGSI UPLOAD FILE
   const handleFileUpload = async (event) => {
@@ -48,15 +70,17 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
     }
   };
 
-  const handleUpdate = async () => {
-    const { error } = await supabase
-      .from('students')
-      .update({
-        hobby: formData.hobby,
-        password: formData.password,
-        avatar_url: formData.avatar_url
-      })
-      .eq('email', userEmail);
+ const handleUpdate = async () => {
+  const { error } = await supabase
+    .from('students')
+    .update({
+      // Gabungkan kembali jadi string untuk disimpan di DB
+      hobby: formData.hobby.join(', '), 
+      password: formData.password,
+      avatar_url: formData.avatar_url
+    })
+    .eq('email', userEmail);
+    // ... sisa logic handleUpdate
 
     if (!error) {
       alert("Profil Berhasil Diperbarui!");
@@ -111,16 +135,49 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
 
       <div className="border-t-4 border-black border-dashed pt-6 flex-1">
         <div className="space-y-4">
-          <div>
-            <label className="block font-black text-xs uppercase mb-1 text-gray-500">// HOBI_KAMU</label>
-            <input 
-              disabled={!isEditing}
-              className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 disabled:bg-gray-100"
-              value={formData.hobby || ''}
-              onChange={(e) => setFormData({...formData, hobby: e.target.value})}
-            />
-          </div>
-          <div>
+         <div>
+  <label className="block font-black text-xs uppercase mb-1 text-gray-500">// SISTEM_HOBI_TAGS</label>
+  
+  <div className="border-4 border-black p-2 min-h-[60px] bg-white flex flex-wrap gap-2 mb-2">
+    {formData.hobby && formData.hobby.length > 0 ? (
+      formData.hobby.map((tag, index) => (
+        <span 
+          key={index} 
+          className="bg-yellow-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+        >
+          {tag}
+          {isEditing && (
+            <button 
+              onClick={() => removeTag(tag)}
+              className="hover:text-red-600 font-black"
+            >
+              ✕
+            </button>
+          )}
+        </span>
+      ))
+    ) : (
+      <span className="text-[10px] text-gray-400 italic p-1">Belum ada hobi terdaftar...</span>
+    )}
+  </div>
+  {isEditing && (
+    <div className="flex gap-2">
+      <input 
+        placeholder="TAMBAH HOBI..."
+        className="flex-1 border-4 border-black p-2 font-bold focus:bg-yellow-100 outline-none text-xs uppercase"
+        value={tagInput}
+        onChange={(e) => setTagInput(e.target.value)}
+        onKeyDown={addTag}
+      />
+      <button 
+        type="button"
+        onClick={addTag}
+        className="bg-black text-white border-4 border-black px-4 font-black text-xs hover:bg-gray-800"
+      >
+        +
+      </button>
+    </div>
+  )}
             <label className="block font-black text-xs uppercase mb-1 text-gray-500">// PASSWORD_SISTEM</label>
             <input 
               type={isEditing ? "text" : "password"}

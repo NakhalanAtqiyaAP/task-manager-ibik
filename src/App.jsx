@@ -3,6 +3,8 @@
   import { supabase } from './lib/supabase';
 
   import Login from './pages/LoginPage';
+  import MemberPage from './pages/MemberPage';
+  
   import Navbar from './components/Navbar';
   import Hero from './components/Hero';
   import TaskTable from './components/TaskTable';
@@ -16,7 +18,11 @@
   import MataKuliahList from './components/MataKuliahList';
   import Profile from './components/Profile';
 
+  
+
   export default function App() {
+    const [activeView, setActiveView] = useState('Dashboard');
+
     const [session, setSession] = useState(null);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -154,19 +160,20 @@
     };
 
     const handleMenuAction = (category, mode) => {
-      if (category === 'Logout' && mode === 'logout') {
-        // Handle logout
-        localStorage.removeItem('manual_auth_user');
-        supabase.auth.signOut();
-        setIsAuthorized(false);
-        setCurrentUser(null);
-        setSession(null);
-        setIsProfileOpen(false);
-      } else {
-        // Handle modal opening for other actions
-        setModalConfig({ isOpen: true, category, mode });
-      }
-    };
+    if (category === 'Logout') {
+      localStorage.removeItem('manual_auth_user');
+      supabase.auth.signOut();
+      setIsAuthorized(false);
+      setCurrentUser(null);
+    } else if (category === 'Dashboard' || category === 'Member') {
+      // GANTI HALAMAN UTAMA
+      setActiveView(category);
+      setModalConfig({ ...modalConfig, isOpen: false });
+    } else {
+      // BUKA MODAL UNTUK CRUD (Tugas, Mahasiswa, MK)
+      setModalConfig({ isOpen: true, category, mode });
+    }
+  };
     const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
 
     // ... (fungsi fetchInitialData TETAP SAMA) ...
@@ -224,10 +231,20 @@
           {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
         <Navbar onMenuAction={handleMenuAction} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
-        <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300">
-          <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
-          <TaskTable tasks={tasks} studentId={currentUser?.id} loading={loading} onRefresh={fetchInitialData}/>
-        </main>
+        <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 min-h-screen">
+        {/* LOGIKA SWITCH PAGE */}
+        {activeView === 'Dashboard' ? (
+          <>
+            <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
+            <TaskTable 
+              studentId={currentUser?.id} 
+              onRefresh={fetchInitialData}
+            />
+          </>
+        ) : activeView === 'Member' ? (
+          <MemberPage />
+        ) : null}
+      </main>
 
         <Footer />
 
