@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import toast from 'react-hot-toast'; // 1. Import toast
 
 export default function FormTugas({ onComplete }) {
   const [activeCourses, setActiveCourses] = useState([]);
   const [allStudents, setAllStudents] = useState([]); 
   const [selectedStudents, setSelectedStudents] = useState([]); 
+  const [isDeploying, setIsDeploying] = useState(false); // State untuk loading
   
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
@@ -12,10 +14,9 @@ export default function FormTugas({ onComplete }) {
     deskripsi: '', 
     course_id: '', 
     deadline: '',
-    submission_link: '' // Tambahan state baru
+    submission_link: '' 
   });
 
-  // Fungsi Deteksi Tipe Input (URL, Email, atau Teks)
   const getSubmissionType = (value) => {
     if (!value) return '';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,8 +77,14 @@ export default function FormTugas({ onComplete }) {
     e.preventDefault();
 
     if (selectedStudents.length === 0) {
-      return alert("Pilih minimal satu mahasiswa untuk menerima tugas ini!");
+      // Toast Peringatan
+      return toast.error("PILIH MINIMAL 1 MAHASISWA!", {
+        position:"top-center",
+        className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
     }
+
+    setIsDeploying(true); // Mulai loading
     
     let deadline = formData.deadline;
     if (deadline) {
@@ -85,34 +92,46 @@ export default function FormTugas({ onComplete }) {
       deadline = localDate.toISOString();
     }
     
-    // 1. Simpan ke Master Tasks (Tanpa submission_link di sini)
-    const { data: newTask, error: taskError } = await supabase
-      .from('tasks')
-      .insert([{
-        kode_tugas: formData.kode_tugas,
-        judul: formData.judul,
-        deskripsi: formData.deskripsi,
-        course_id: formData.course_id
-      }])
-      .select().single();
+    try {
+      // 1. Simpan ke Master Tasks
+      const { data: newTask, error: taskError } = await supabase
+        .from('tasks')
+        .insert([{
+          kode_tugas: formData.kode_tugas,
+          judul: formData.judul,
+          deskripsi: formData.deskripsi,
+          course_id: formData.course_id
+        }])
+        .select().single();
 
-    if (taskError) return alert("Error Master Task: " + taskError.message);
+      if (taskError) throw new Error(`Master Task: ${taskError.message}`);
 
-    // 2. Distribusi ke student_tasks (Sertakan submission_link di sini)
-    const dist = selectedStudents.map(studentId => ({
-      task_id: newTask.id,
-      student_id: studentId,
-      deadline: deadline,
-      submission_link: formData.submission_link // Dipindahkan ke sini
-    }));
+      // 2. Distribusi ke student_tasks
+      const dist = selectedStudents.map(studentId => ({
+        task_id: newTask.id,
+        student_id: studentId,
+        deadline: deadline,
+        submission_link: formData.submission_link
+      }));
 
-    const { error: distError } = await supabase.from('student_tasks').insert(dist);
+      const { error: distError } = await supabase.from('student_tasks').insert(dist);
+      if (distError) throw new Error(`Distribusi: ${distError.message}`);
 
-    if (distError) {
-      alert("Gagal mendistribusikan tugas: " + distError.message);
-    } else {
-      alert(`Tugas ${formData.kode_tugas} dideploy ke ${selectedStudents.length} mahasiswa!`);
+      // Sukses
+      toast.success(`TASK DEPLOYED TO ${selectedStudents.length} STUDENTS!`, {
+        position:"top-center",
+        className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]',
+        duration: 4000
+      });
+      
       onComplete();
+    } catch (err) {
+      toast.error(err.message, {
+        position:"top-center",
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
+    } finally {
+      setIsDeploying(false); // Selesai loading
     }
   };
 
@@ -122,7 +141,7 @@ export default function FormTugas({ onComplete }) {
         <div>
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// PILIH_MATKUL</label>
           <select required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
-            value={formData.course_id} onChange={handleCourseChange}>
+            value={formData.course_id} onChange={handleCourseChange} disabled={isDeploying}>
             <option value="">-- PILIH MATKUL --</option>
             {activeCourses.map(c => (
               <option key={c.id} value={c.id}>{c.mata_kuliah?.nama_matkul} (Smtr {c.semester})</option>
@@ -139,16 +158,17 @@ export default function FormTugas({ onComplete }) {
         <div className="col-span-1">
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// JUDUL_TUGAS</label>
           <input required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
+            disabled={isDeploying}
             onChange={(e) => setFormData({...formData, judul: e.target.value})} />
         </div>
         <div>
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DEADLINE</label>
           <input required type="datetime-local" className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
+            disabled={isDeploying}
             onChange={(e) => setFormData({...formData, deadline: e.target.value})} />
         </div>
       </div>
 
-      {/* METODE PENGUMPULAN */}
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
           <span>// METODE_PENGUMPULAN</span>
@@ -160,25 +180,25 @@ export default function FormTugas({ onComplete }) {
         </label>
         <input 
           required 
-          placeholder="Cth: dosen@ibik.ac.id, https://github.com/..., atau 'Kumpulkan di kelas'"
+          disabled={isDeploying}
+          placeholder="Cth: dosen@ibik.ac.id, https://github.com/..."
           className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
           value={formData.submission_link}
           onChange={(e) => setFormData({...formData, submission_link: e.target.value})} 
         />
       </div>
 
-      {/* DESKRIPSI TUGAS */}
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DESKRIPSI_TUGAS</label>
         <textarea 
           required 
           rows="3"
+          disabled={isDeploying}
           className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none resize-none"
           onChange={(e) => setFormData({...formData, deskripsi: e.target.value})} 
         />
       </div>
 
-      {/* CHECKLIST MAHASISWA */}
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500">// TARGET_MAHASISWA ({selectedStudents.length})</label>
         <div className="border-4 border-black h-48 overflow-y-auto bg-gray-50 p-2 space-y-2">
@@ -187,6 +207,7 @@ export default function FormTugas({ onComplete }) {
               <input 
                 type="checkbox" 
                 className="w-5 h-5 accent-black" 
+                disabled={isDeploying}
                 checked={selectedStudents.includes(s.id)}
                 onChange={() => toggleStudent(s.id)}
               />
@@ -194,14 +215,19 @@ export default function FormTugas({ onComplete }) {
             </label>
           ))}
         </div>
-        <div className="flex gap-2 mt-2">
-          <button type="button" onClick={() => setSelectedStudents(allStudents.map(s => s.id))} className="text-[10px] font-black underline hover:text-purple-600">PILIH SEMUA</button>
-          <button type="button" onClick={() => setSelectedStudents([])} className="text-[10px] font-black underline text-red-600 hover:text-red-800">RESET</button>
-        </div>
+        {!isDeploying && (
+          <div className="flex gap-2 mt-2">
+            <button type="button" onClick={() => setSelectedStudents(allStudents.map(s => s.id))} className="text-[10px] font-black underline hover:text-purple-600">PILIH SEMUA</button>
+            <button type="button" onClick={() => setSelectedStudents([])} className="text-[10px] font-black underline text-red-600 hover:text-red-800">RESET</button>
+          </div>
+        )}
       </div>
 
-      <button className="w-full bg-green-400 border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:bg-yellow-400">
-        DEPLOY TASK
+      <button 
+        disabled={isDeploying}
+        className={`w-full ${isDeploying ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-400 active:bg-yellow-400'} border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all`}
+      >
+        {isDeploying ? 'EXECUTING...' : 'DEPLOY TASK'}
       </button>
     </form>
   );

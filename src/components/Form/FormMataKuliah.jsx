@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import toast from 'react-hot-toast'; // 1. Import toast
 
 export default function FormMataKuliah({ onComplete }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ 
     kode_matkul: '', 
     nama_matkul: '', 
@@ -11,36 +13,48 @@ export default function FormMataKuliah({ onComplete }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // 1. Simpan ke master mata_kuliah
-    const { data: matkul, error: subError } = await supabase
-      .from('mata_kuliah')
-      .insert([{ 
-        kode_matkul: formData.kode_matkul.toUpperCase(), 
-        nama_matkul: formData.nama_matkul,
-        sks: parseInt(formData.sks)
-      }])
-      .select()
-      .single();
+    try {
+      // 1. Simpan ke master mata_kuliah
+      const { data: matkul, error: subError } = await supabase
+        .from('mata_kuliah')
+        .insert([{ 
+          kode_matkul: formData.kode_matkul.toUpperCase(), 
+          nama_matkul: formData.nama_matkul,
+          sks: parseInt(formData.sks)
+        }])
+        .select()
+        .single();
 
-    if (subError) return alert("Gagal simpan matkul: " + subError.message);
+      if (subError) throw new Error(`Master: ${subError.message}`);
 
-    // 2. Daftarkan ke tabel courses
-    // PERBAIKAN: Kita sertakan kode_matkul karena tabel courses memintanya (Not-Null)
-    const { error: courseError } = await supabase
-      .from('courses')
-      .insert([{
-        matkul_id: matkul.id, // Foreign Key UUID
-        kode_matkul: matkul.kode_matkul, // Kolom yang menyebabkan error tadi
-        semester: parseInt(formData.semester)
-      }]);
+      // 2. Daftarkan ke tabel courses
+      const { error: courseError } = await supabase
+        .from('courses')
+        .insert([{
+          matkul_id: matkul.id,
+          kode_matkul: matkul.kode_matkul,
+          semester: parseInt(formData.semester)
+        }]);
 
-    if (!courseError) {
-      alert("Mata Kuliah & Semester Aktif Berhasil Disimpan!");
+      if (courseError) throw new Error(`Semester: ${courseError.message}`);
+
+      // SUCCESS TOAST - POSISI ATAS TENGAH
+      toast.success("MATA_KULIAH: REGISTERED SUCCESSFULLY!", {
+        position: "top-center", // Sesuai permintaanmu
+        className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] uppercase text-sm',
+        duration: 3000,
+      });
+
       onComplete();
-    } else {
-      // Jika masih error, periksa kembali nama kolom di tabel 'courses'
-      alert("Gagal daftar semester di tabel courses: " + courseError.message);
+    } catch (err) {
+      toast.error(`ERROR: ${err.message}`, {
+        position: "top-center",
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase text-xs',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -51,8 +65,9 @@ export default function FormMataKuliah({ onComplete }) {
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE_MATKUL</label>
           <input 
             required 
+            disabled={isSubmitting}
             placeholder="E.g. MK002" 
-            className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none uppercase"
+            className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none uppercase disabled:bg-gray-200"
             onChange={(e) => setFormData({...formData, kode_matkul: e.target.value})}
           />
         </div>
@@ -61,7 +76,8 @@ export default function FormMataKuliah({ onComplete }) {
           <input 
             required 
             type="number" 
-            className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
+            disabled={isSubmitting}
+            className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none disabled:bg-gray-200"
             value={formData.sks} 
             onChange={(e) => setFormData({...formData, sks: e.target.value})}
           />
@@ -72,8 +88,9 @@ export default function FormMataKuliah({ onComplete }) {
         <label className="block font-black uppercase text-xs mb-1 text-gray-500">// NAMA_MATA_KULIAH</label>
         <input 
           required 
+          disabled={isSubmitting}
           placeholder="E.g. Matematika Dasar"
-          className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
+          className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none disabled:bg-gray-200"
           onChange={(e) => setFormData({...formData, nama_matkul: e.target.value})}
         />
       </div>
@@ -82,7 +99,8 @@ export default function FormMataKuliah({ onComplete }) {
         <label className="block font-black uppercase text-xs mb-1 text-gray-500">// SEMESTER_AKTIF</label>
         <select 
           required 
-          className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none appearance-none"
+          disabled={isSubmitting}
+          className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none appearance-none disabled:bg-gray-200"
           value={formData.semester}
           onChange={(e) => setFormData({...formData, semester: e.target.value})}
         >
@@ -92,8 +110,11 @@ export default function FormMataKuliah({ onComplete }) {
         </select>
       </div>
 
-      <button className="w-full bg-yellow-400 border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all mt-4">
-        SIMPAN DATA
+      <button 
+        disabled={isSubmitting}
+        className={`w-full ${isSubmitting ? 'bg-gray-400' : 'bg-yellow-400'} border-4 border-black p-4 font-black uppercase text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all mt-4`}
+      >
+        {isSubmitting ? 'SAVING...' : 'SIMPAN DATA'}
       </button>
     </form>
   );

@@ -1,5 +1,7 @@
   // src/App.jsx
   import { useState, useEffect } from 'react';
+  import { Toaster } from 'react-hot-toast';
+
   import { supabase } from './lib/supabase';
 
   import Login from './pages/LoginPage';
@@ -291,6 +293,7 @@ async function fetchInitialData() {
     return (
       <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
           {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
+          <Toaster position="bottom-right" reverseOrder={false} />
         <Navbar onMenuAction={handleMenuAction} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
 
         <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 min-h-screen">
