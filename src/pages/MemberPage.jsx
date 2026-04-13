@@ -10,7 +10,7 @@ export default function MemberPage() {
       // Mengambil data seluruh mahasiswa dari tabel students
       const { data, error } = await supabase
         .from('students')
-        .select('id, nama, nim, avatar_url, hobby, telepon')
+        .select('id, nama, nim, avatar_url, hobby, phone_num')
         .order('nama', { ascending: true });
 
       if (!error && data) {
@@ -90,7 +90,7 @@ export default function MemberPage() {
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-xl">📞</span>
                   <span className="font-bold text-sm bg-gray-100 border-2 border-black px-2 py-1 w-full truncate">
-                    {member.telepon || 'BELUM_ADA_NOMOR'}
+                    {member.phone_num || 'BELUM_ADA_NOMOR'}
                   </span>
                 </div>
               </div>
