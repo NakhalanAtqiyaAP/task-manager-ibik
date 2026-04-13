@@ -57,7 +57,7 @@ export default function GameGuide({ onClose, userName }) {
     {
       title: "TASK TABLE",
       character: "Udin",
-      message: "Klik tombong ceklis ini jika kamu sudah mengerjakan tugasnya.",
+      message: "Klik tombol ceklis ini jika kamu sudah mengerjakan tugasnya.",
       image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: "#task-done"
     },
@@ -71,7 +71,7 @@ export default function GameGuide({ onClose, userName }) {
     {
       title: "MISSION_COMPLETE",
       character: "Udin",
-      message: "HAVE UN!",
+      message: "HAVE FUN!",
       image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: null
     }
