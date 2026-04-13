@@ -292,29 +292,49 @@ async function fetchInitialData() {
   }
 };
     return (
+      <>
+      <Toaster 
+      position="top-center" 
+      reverseOrder={false} 
+      toastOptions={{
+        // Opsional: Bisa set styling default neo-brutalist di sini juga
+        style: {
+          border: '4px solid black',
+          borderRadius: '0px',
+          fontWeight: '900',
+        },
+      }}
+    />
+      {isCheckingAuth ? (
+      <div className="min-h-screen flex items-center justify-center bg-purple-900">
+        <div className="font-black text-green-400 uppercase text-2xl animate-pulse">
+          Memvalidasi Akses...
+        </div>
+      </div>
+    ) : !isAuthorized ? (
+      <Login />
+    ) : (
       <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
-          {/* Kirim currentUser dan fungsi toggle profil ke Navbar */}
-          <Toaster position="bottom-right" reverseOrder={false} />
-        <Navbar onMenuAction={handleMenuAction} currentUser={currentUser} onToggleProfile={() => setIsProfileOpen(true)} />
+        <Navbar 
+          onMenuAction={handleMenuAction} 
+          currentUser={currentUser} 
+          onToggleProfile={() => setIsProfileOpen(true)} 
+        />
 
         <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 min-h-screen">
-        {/* LOGIKA SWITCH PAGE */}
-        {activeView === 'Dashboard' ? (
-          <>
-            <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
-            <TaskTable 
-              studentId={currentUser?.id} 
-              onRefresh={fetchInitialData}
-            />
-          </>
-        ) : activeView === 'Member' ? (
-          <MemberPage />
-        ) : activeView === 'Leaderboard' ? (
-          <LeaderboardPage studentId={currentUser?.id}/>
-        ): null}
-      </main>
+          {activeView === 'Dashboard' ? (
+            <>
+              <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
+              <TaskTable studentId={currentUser?.id} onRefresh={fetchInitialData} />
+            </>
+          ) : activeView === 'Member' ? (
+            <MemberPage />
+          ) : activeView === 'Leaderboard' ? (
+            <LeaderboardPage studentId={currentUser?.id}/>
+          ) : null}
+        </main>
 
-        <Footer user={currentUser}  />
+        <Footer user={currentUser} />
 
         {/* MODAL BIASA UNTUK CRUD */}
         <Modal 
@@ -377,5 +397,7 @@ async function fetchInitialData() {
           </div>
         </div>
       </div>
+      )}
+      </>
     )
   }
