@@ -3,10 +3,11 @@ import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Cropper from 'react-easy-crop'; // IMPORT LIBRARY CROP
+import { jsPDF } from 'jspdf';
 
 import { 
   Camera, Plus, X, Save, Edit3, LogOut, Hash, Quote, Lock,
-  Link as LinkIcon, Globe, Check
+  Link as LinkIcon, Globe, Check, Download, Trophy
 } from 'lucide-react';
 
 // ==========================================
@@ -210,6 +211,90 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
     </div>
   );
 
+  const downloadCertificate = (certData) => {
+  const doc = new jsPDF({ 
+    orientation: 'landscape', 
+    unit: 'mm', 
+    format: 'a4' 
+  });
+
+  const purple800 = [91, 33, 182];
+  const green400 = [74, 222, 128];
+
+  // 1. BACKGROUND
+  doc.setFillColor(purple800[0], purple800[1], purple800[2]);
+  doc.rect(0, 0, 297, 210, 'F');
+
+  // 2. BORDER
+  doc.setDrawColor(green400[0], green400[1], green400[2]);
+  doc.setLineWidth(5);
+  doc.rect(5, 5, 287, 200, 'S');
+
+  // 3. AKSEN SUDUT (Ini yang tadi hilang)
+  doc.setFillColor(green400[0], green400[1], green400[2]);
+  doc.rect(0, 0, 50, 20, 'F');
+  doc.rect(247, 190, 50, 20, 'F');
+
+  // 4. HEADER
+  doc.setTextColor(green400[0], green400[1], green400[2]);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(45);
+  doc.text("SERTIFIKAT PENGHARGAAN", 20, 40);
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.text(`${certData.title} TI-25-KA`, 20, 55);
+
+  // 5. PENERIMA
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "normal");
+  doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
+
+  // --- LOGIKA RESPONSIVE NAMA ---
+  let fontSize = 60;
+  const cleanName = profile.nama.toUpperCase();
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(fontSize);
+  while (doc.getTextWidth(cleanName) > 250 && fontSize > 20) {
+    fontSize -= 2;
+    doc.setFontSize(fontSize);
+  }
+  doc.setTextColor(green400[0], green400[1], green400[2]);
+  doc.text(cleanName, 148, 120, { align: "center" });
+
+  // 6. KETERANGAN PRESTASI
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "italic");
+  doc.text(`Telah mendominasi bulan ${certData.month} dengan menyelesaikan`, 148, 140, { align: "center" });
+  doc.setFont("helvetica", "bold");
+  doc.text(`${certData.score} TUGAS TEPAT WAKTU (ON-TIME)`, 148, 148, { align: "center" });
+
+  // 7. TANGGAL TERBIT (Bagian ini juga tadi terlewat)
+  doc.setLineWidth(1);
+  doc.setDrawColor(255, 255, 255);
+  doc.line(100, 165, 197, 165);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(green400[0], green400[1], green400[2]);
+  doc.text("TANGGAL TERBIT:", 148, 175, { align: "center" });
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  // Kita gunakan certData.date jika ada di database, kalau tidak ada pakai tanggal hari ini
+  const tgl = certData.date || new Date().toLocaleDateString('id-ID', { 
+    day: 'numeric', month: 'long', year: 'numeric' 
+  });
+  doc.text(tgl.toUpperCase(), 148, 183, { align: "center" });
+
+  // 8. FOOTER
+  doc.setFontSize(10);
+  doc.text("TI-25-KA", 20, 200);
+
+  doc.save(`Sertifikat_${certData.month.replace(/\s+/g, '_')}_${profile.nama}.pdf`);
+};
+
   return (
     <>
       <motion.div 
@@ -292,6 +377,40 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
               </motion.div>
             )}
           </section>
+          <section>
+  <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
+    <Trophy size={12} /> // ACHIEVEMENT_LOCKED
+  </label>
+  <div className="border-4 border-black p-4 bg-gray-50 flex flex-wrap gap-4 shadow-inner min-h-[100px]">
+    {profile.sertifikat && profile.sertifikat.length > 0 ? (
+      profile.sertifikat.map((cert, index) => (
+        <motion.div 
+          key={index}
+          whileHover={{ scale: 1.05, rotate: 2 }}
+          className="group relative bg-yellow-400 border-4 border-black p-3 flex flex-col items-center justify-center min-w-[110px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        >
+          <Trophy size={28} className="mb-2 text-black" strokeWidth={2.5} />
+          <span className="text-[9px] font-black uppercase text-center leading-tight mb-1">{cert.title}</span>
+          <span className="text-[8px] font-bold bg-white border-2 border-black px-2 py-0.5 uppercase">{cert.month}</span>
+          
+          {/* Tombol Download Overlay */}
+          <button 
+            onClick={() => downloadCertificate(cert)}
+            className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-200"
+          >
+            <Download size={20} className="text-green-400 mb-1" strokeWidth={3} />
+            <span className="text-[8px] text-white font-black uppercase">Download</span>
+          </button>
+        </motion.div>
+      ))
+    ) : (
+      <div className="flex flex-col items-center justify-center w-full py-4 opacity-30 grayscale">
+        <Trophy size={32} className="mb-2" />
+        <span className="text-[10px] font-black uppercase italic tracking-widest">NO_ACHIEVEMENTS_YET</span>
+      </div>
+    )}
+  </div>
+</section>
 
           {/* SOCIAL MEDIA SECTION */}
           <section>

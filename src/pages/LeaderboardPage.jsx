@@ -22,93 +22,93 @@ export default function LeaderboardPage({ studentId }) {
     fetchLeaderboard();
   }, []);
 
-  const generateCertificate = (name, score) => {
-    const doc = new jsPDF({ 
-      orientation: 'landscape', 
-      unit: 'mm', 
-      format: 'a4' 
-    });
+ const downloadPDF = (score, studentName, certData) => {
+  const doc = new jsPDF({ 
+    orientation: 'landscape', 
+    unit: 'mm', 
+    format: 'a4' 
+  });
 
-    const purple800 = [91, 33, 182];
-    const green400 = [74, 222, 128];
+  const purple800 = [91, 33, 182];
+  const green400 = [74, 222, 128];
 
-    // 1. BACKGROUND
-    doc.setFillColor(purple800[0], purple800[1], purple800[2]);
-    doc.rect(0, 0, 297, 210, 'F');
+  // 1. BACKGROUND
+  doc.setFillColor(purple800[0], purple800[1], purple800[2]);
+  doc.rect(0, 0, 297, 210, 'F');
 
-    // 2. BORDER
-    doc.setDrawColor(green400[0], green400[1], green400[2]);
-    doc.setLineWidth(5);
-    doc.rect(5, 5, 287, 200, 'S');
+  // 2. BORDER
+  doc.setDrawColor(green400[0], green400[1], green400[2]);
+  doc.setLineWidth(5);
+  doc.rect(5, 5, 287, 200, 'S');
 
-    // 3. AKSEN SUDUT
-    doc.setFillColor(green400[0], green400[1], green400[2]);
-    doc.rect(0, 0, 50, 20, 'F');
-    doc.rect(247, 190, 50, 20, 'F');
+  // 3. AKSEN SUDUT
+  doc.setFillColor(green400[0], green400[1], green400[2]);
+  doc.rect(0, 0, 50, 20, 'F');
+  doc.rect(247, 190, 50, 20, 'F');
 
-    // 4. HEADER
-    doc.setTextColor(green400[0], green400[1], green400[2]);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(45);
-    doc.text("SERTIFIKAT PENGHARGAAN", 20, 40);
+  // 4. HEADER
+  doc.setTextColor(green400[0], green400[1], green400[2]);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(45);
+  doc.text("SERTIFIKAT PENGHARGAAN", 20, 40);
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.text("KING OF THE MONTH // TI-25-KA", 20, 55);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.text(`${certData?.title || "KING OF THE MONTH"} TI-25-KA`, 20, 55);
 
-    // 5. PENERIMA
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "normal");
-    doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
+  // 5. PENERIMA
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "normal");
+  doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
 
-    // --- LOGIKA RESPONSIVE NAMA ---
-    let fontSize = 60;
-    const maxWidth = 250;
-    const cleanName = name.toUpperCase();
-    
-    doc.setFont("helvetica", "bold");
+  // --- LOGIKA RESPONSIVE NAMA ---
+  let fontSize = 60;
+  const maxWidth = 250;
+  const cleanName = studentName.toUpperCase();
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(fontSize);
+
+  while (doc.getTextWidth(cleanName) > maxWidth && fontSize > 20) {
+    fontSize -= 2;
     doc.setFontSize(fontSize);
+  }
 
-    while (doc.getTextWidth(cleanName) > maxWidth && fontSize > 20) {
-      fontSize -= 2;
-      doc.setFontSize(fontSize);
-    }
+  doc.setTextColor(green400[0], green400[1], green400[2]);
+  doc.text(cleanName, 148, 120, { align: "center" });
 
-    doc.setTextColor(green400[0], green400[1], green400[2]);
-    doc.text(cleanName, 148, 120, { align: "center" });
-    // ------------------------------
+  // 6. KETERANGAN PRESTASI
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "italic");
+  // Menggunakan certData.month agar dinamis
+  doc.text(`Telah mendominasi bulan ${certData?.month} dengan menyelesaikan`, 148, 140, { align: "center" });
+  doc.setFont("helvetica", "bold");
+  doc.text(`${score} TUGAS TEPAT WAKTU (ON-TIME)`, 148, 148, { align: "center" });
 
-    // 6. KETERANGAN PRESTASI
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "italic");
-    doc.text(`Telah mendominasi bulan ini dengan menyelesaikan`, 148, 140, { align: "center" });
-    doc.setFont("helvetica", "bold");
-    doc.text(`${score} TUGAS TEPAT WAKTU (ON-TIME)`, 148, 148, { align: "center" });
+  // 7. TANGGAL TERBIT
+  doc.setLineWidth(1);
+  doc.setDrawColor(255, 255, 255);
+  doc.line(100, 165, 197, 165);
 
-    // 7. TANGGAL TERBIT
-    doc.setLineWidth(1);
-    doc.setDrawColor(255, 255, 255);
-    doc.line(100, 165, 197, 165);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(green400[0], green400[1], green400[2]);
+  doc.text("TANGGAL TERBIT:", 148, 175, { align: "center" });
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  const tgl = new Date().toLocaleDateString('id-ID', { 
+    day: 'numeric', month: 'long', year: 'numeric' 
+  });
+  doc.text(tgl.toUpperCase(), 148, 183, { align: "center" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(green400[0], green400[1], green400[2]);
-    doc.text("TANGGAL TERBIT:", 148, 175, { align: "center" });
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    const tgl = new Date().toLocaleDateString('id-ID', { 
-      day: 'numeric', month: 'long', year: 'numeric' 
-    });
-    doc.text(tgl.toUpperCase(), 148, 183, { align: "center" });
+  // 8. FOOTER
+  doc.setFontSize(10);
+  doc.text("TI-25-KA", 20, 200);
 
-    // 8. FOOTER
-    doc.setFontSize(10);
-    doc.text("TI-25-KA", 20, 200);
-
-    doc.save(`Sertifikat_TI25KA_${name.replace(/\s+/g, '_')}.pdf`);
-  };
+  doc.save(`Sertifikat_TI25KA_${studentName.replace(/\s+/g, '_')}.pdf`);
+};
 
   const getRankStyle = (index) => {
     switch (index) {
@@ -154,7 +154,11 @@ export default function LeaderboardPage({ studentId }) {
                 Kamu telah mendominasi TI-25-KA bulan ini. Mahkotamu sudah siap.
               </p>
               <button 
-                onClick={() => generateCertificate(leaders[0].nama, leaders[0].completed_count)}
+                onClick={() => downloadPDF(leaders[0].completed_count, leaders[0].nama,{ 
+      title: "KING OF THE MONTH", 
+      month: new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) 
+    }
+ )}
                 className="bg-black text-white px-4 py-3 sm:px-10 sm:py-5 font-black text-lg sm:text-2xl uppercase hover:bg-white hover:text-black transition-all border-4 border-black flex items-center justify-center gap-2 sm:gap-4 mx-auto w-full sm:w-auto"
               >
                 <Download className="w-6 h-6 sm:w-8 sm:h-8" /> 
