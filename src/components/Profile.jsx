@@ -6,9 +6,10 @@ import Cropper from 'react-easy-crop'; // IMPORT LIBRARY CROP
 import { jsPDF } from 'jspdf';
 
 import { 
-  Camera, Plus, X, Save, Edit3, LogOut, Hash, Quote, Lock,
+  Camera, Plus, X, Save, Edit3, LogOut, Hash, Quote, Lock, Eye, EyeOff,
   Link as LinkIcon, Globe, Check, Download, Trophy
 } from 'lucide-react';
+
 
 // ==========================================
 // UTILITY FUNCTION UNTUK MEMOTONG GAMBAR (CANVAS)
@@ -67,6 +68,8 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     async function getProfile() {
@@ -346,7 +349,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           {/* HOBBY SECTION */}
           <section>
             <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
-              <Hash size={12} /> // HOBBY_STACK
+              <Hash size={12} /> HOBBY_STACK
             </label>
             <div className="border-4 border-black p-3 bg-gray-50 flex flex-wrap gap-2 mb-3 shadow-inner min-h-[60px]">
               <AnimatePresence>
@@ -379,7 +382,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           </section>
           <section>
   <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
-    <Trophy size={12} /> // ACHIEVEMENT_LOCKED
+    <Trophy size={12} /> ACHIEVEMENT_LOCKED
   </label>
   <div className="border-4 border-black p-4 bg-gray-50 flex flex-wrap gap-4 shadow-inner min-h-[100px]">
     {profile.sertifikat && profile.sertifikat.length > 0 ? (
@@ -415,7 +418,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           {/* SOCIAL MEDIA SECTION */}
           <section>
             <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
-              <LinkIcon size={12} /> // SOCIAL_NETWORK
+              <LinkIcon size={12} /> SOCIAL_NETWORK
             </label>
             <div className="border-4 border-black p-3 bg-gray-50 flex flex-wrap gap-3 shadow-inner min-h-[60px]">
               {formData.media_sosial?.map((social, index) => (
@@ -463,7 +466,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           {/* QUOTES SECTION */}
           <section>
             <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
-              <Quote size={12} /> // QUOTE_LIFE
+              <Quote size={12} /> QUOTE LIFE
             </label>
             <textarea 
               disabled={!isEditing} value={formData.quotes || ''} onChange={(e) => setFormData({...formData, quotes: e.target.value})}
@@ -473,14 +476,33 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
 
           {/* PASSWORD SECTION */}
           <section>
-            <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
-              <Lock size={12} /> // SYSTEM_AUTH
-            </label>
+          <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
+            <Lock size={12} /> PASSWORD
+          </label>
+          <div className="relative group">
             <input 
-              type={isEditing ? "text" : "password"} disabled={!isEditing} value={formData.password || ''} onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="w-full border-4 border-black p-4 font-black tracking-widest focus:bg-red-50 disabled:bg-gray-100 text-red-600 outline-none"
+              // Logika tipe input: jika showPassword true, tampilkan teks. 
+              type={showPassword ? "text" : "password"} 
+              disabled={!isEditing} 
+              value={formData.password || ''} 
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              className="w-full border-4 border-black p-4 font-black tracking-widest focus:bg-red-50 disabled:bg-gray-100 text-red-600 outline-none transition-colors"
             />
-          </section>
+            
+            {/* Tombol Show/Hide Password */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-black hover:text-white transition-all border-2 border-transparent active:border-black"
+            >
+              {showPassword ? (
+                <EyeOff size={20} strokeWidth={3} />
+              ) : (
+                <Eye size={20} strokeWidth={3} />
+              )}
+            </button>
+          </div>
+        </section>
 
           {/* ACTION BUTTONS */}
           <div className="pt-4 space-y-3 pb-8">
@@ -500,7 +522,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
             )}
             
             <button onClick={onLogout} className="w-full bg-red-600 text-white py-4 font-black uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-red-700 transition-all flex items-center justify-center gap-3 mt-4">
-              <LogOut size={20} strokeWidth={3} /> Secure Logout
+              <LogOut size={20} strokeWidth={3} /> Logout
             </button>
           </div>
         </div>
