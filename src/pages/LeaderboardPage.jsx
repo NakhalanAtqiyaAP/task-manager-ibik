@@ -115,9 +115,9 @@ export default function LeaderboardPage({ studentId }) {
       case 0:
         return { bg: "bg-yellow-400", border: "border-4 sm:border-8 border-black", text: "text-xl sm:text-2xl md:text-3xl", icon: <Trophy className="w-6 h-6 sm:w-10 sm:h-10" />, shadow: "shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]", title: "KING OF THE MONTH", avatarSize: "w-12 h-12 sm:w-16 sm:h-16" };
       case 1:
-        return { bg: "bg-gray-300", border: "border-4 border-black", text: "text-lg sm:text-xl", icon: <Medal className="w-5 h-5 sm:w-8 sm:h-8" />, shadow: "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]", title: "RUNNER UP", avatarSize: "w-10 h-10 sm:w-14 sm:h-14" };
+        return { bg: "bg-orange-300", border: "border-4 border-black", text: "text-lg sm:text-xl", icon: <Medal className="w-5 h-5 sm:w-8 sm:h-8" />, shadow: "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]", title: "RUNNER UP", avatarSize: "w-10 h-10 sm:w-14 sm:h-14" };
       case 2:
-        return { bg: "bg-orange-400", border: "border-4 border-black", text: "text-lg sm:text-xl", icon: <Award className="w-5 h-5 sm:w-8 sm:h-8" />, shadow: "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]", title: "BRONZE TIER", avatarSize: "w-10 h-10 sm:w-14 sm:h-14" };
+        return { bg: "bg-gray-400", border: "border-4 border-black", text: "text-lg sm:text-xl", icon: <Award className="w-5 h-5 sm:w-8 sm:h-8" />, shadow: "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]", title: "BRONZE TIER", avatarSize: "w-10 h-10 sm:w-14 sm:h-14" };
       default:
         return { bg: "bg-white", border: "border-2 sm:border-4 border-black", text: "text-base sm:text-lg", icon: <span className="font-black text-sm sm:text-base">#{index + 1}</span>, shadow: "shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]", title: "CONTENDER", avatarSize: "w-8 h-8 sm:w-12 sm:h-12" };
     }
