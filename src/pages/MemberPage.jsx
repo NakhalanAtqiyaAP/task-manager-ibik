@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Globe } from 'lucide-react'; 
+import { Globe, Crown, Trophy } from 'lucide-react'; // Hapus import Download
 
 export default function MemberPage() {
   const [members, setMembers] = useState([]);
+  const [topStudentId, setTopStudentId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // HELPER SVG MENTAH (ANTI-ERROR)
   const getSocialIcon = (platform, size = 18) => {
     const p = platform?.toLowerCase();
     const svgStyle = { width: size, height: size, fill: 'none', stroke: 'currentColor', strokeWidth: '2.5', strokeLinecap: 'round', strokeLinejoin: 'round' };
@@ -46,18 +46,33 @@ export default function MemberPage() {
   };
 
   useEffect(() => {
-    async function fetchMembers() {
-      const { data, error } = await supabase
+    async function fetchData() {
+      // 1. CARI SIAPA JUARA 1 SAAT INI DARI LEADERBOARD
+      // Sesuaikan 'monthly_leaderboard', 'score', dan 'student_id' dengan nama tabel/kolom aslimu
+      const { data: leaderData } = await supabase
+        .from('monthly_leaderboard') 
+        .select('student_id')
+        .order('completed_count', { ascending: false }) // Urutkan berdasarkan skor terbanyak
+        .limit(1)
+        .single();
+
+      if (leaderData) {
+        setTopStudentId(leaderData.student_id);
+      }
+
+      // 2. TARIK DATA MEMBERS
+      const { data: studentsData, error } = await supabase
         .from('students')
-        .select('id, nama, nim, avatar_url, hobby, phone_num, quotes, media_sosial')
+        // Pastikan kolom untuk relasi (misal id atau student_id) ikut di-select
+        .select('id, nama, nim, avatar_url, hobby, phone_num, quotes, media_sosial, sertifikat') 
         .order('nama', { ascending: true });
 
-      if (!error && data) {
-        setMembers(data);
+      if (!error && studentsData) {
+        setMembers(studentsData);
       }
       setLoading(false);
     }
-    fetchMembers();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -91,14 +106,32 @@ export default function MemberPage() {
             ? member.quotes 
             : "Belum ada quotes";
 
+          // Cek apakah sertifikat berupa array, objek tunggal, atau kosong
+          let certs = [];
+          if (member.sertifikat) {
+             certs = Array.isArray(member.sertifikat) ? member.sertifikat : [member.sertifikat];
+          }
+
+          // LOGIKA MAHKOTA: Berdasarkan coding (kecocokan ID dengan top 1 leaderboard)
+          // Jika di tabel members kamu pakai 'id' sebagai penanda unik, gunakan member.id
+          // Jika pakai 'student_id', ganti jadi member.student_id
+          const isCurrentKing = topStudentId && member.id === topStudentId;
+
           return (
             <div 
               key={member.id}
-              className="group relative bg-white border-2 sm:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 sm:hover:translate-x-2 sm:hover:translate-y-2 hover:shadow-none transition-all duration-300 p-4 sm:p-6 flex flex-col items-center animate-squad-entrance"
+              className={`group relative bg-white border-2 sm:border-4 ${isCurrentKing ? 'border-yellow-400' : 'border-black'} shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 sm:hover:translate-x-2 sm:hover:translate-y-2 hover:shadow-none transition-all duration-300 p-4 sm:p-6 flex flex-col items-center animate-squad-entrance`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
+              {/* ICON MAHKOTA (Jika Peringkat 1 Saat Ini) */}
+              {isCurrentKing && (
+                <div className="absolute -top-6 -right-4 sm:-top-8 sm:-right-6 bg-yellow-400 border-2 sm:border-4 border-black w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-20 animate-bounce-slow" title="Reigning King of the Month">
+                  <Crown size={24} className="text-black fill-yellow-400" strokeWidth={2.5} />
+                </div>
+              )}
+
               {/* ROUNDED AVATAR */}
-              <div className="absolute -top-10 sm:-top-12 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 sm:border-4 border-black bg-purple-200 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 group-hover:rotate-[10deg] transition-transform duration-300 z-10 flex-shrink-0">
+              <div className={`absolute -top-10 sm:-top-12 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 sm:border-4 ${isCurrentKing ? 'border-yellow-400' : 'border-black'} bg-purple-200 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform duration-300 z-10 flex-shrink-0`}>
                 <img 
                   src={member.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${member.nama}`} 
                   alt={`Avatar ${member.nama}`}
@@ -108,13 +141,31 @@ export default function MemberPage() {
 
               {/* INFO UTAMA */}
               <div className="mt-8 sm:mt-10 text-center w-full min-w-0">
-                <h2 className="text-lg sm:text-xl font-black uppercase leading-tight truncate group-hover:text-purple-600 transition-colors" title={member.nama}>
+                <h2 className={`text-lg sm:text-xl font-black uppercase leading-tight truncate transition-colors ${isCurrentKing ? 'text-yellow-600 group-hover:text-yellow-500' : 'group-hover:text-purple-600'}`} title={member.nama}>
                   {member.nama}
                 </h2>
                 <div className="inline-block mt-2 bg-black text-white px-2 py-1 sm:px-3 sm:py-1 font-black text-[10px] sm:text-xs uppercase shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]">
                   NIM: {member.nim}
                 </div>
               </div>
+
+              {/* LENCANA PENGHARGAAN (Sekarang hanya <div> visual, bukan <button>) */}
+              {certs.length > 0 && (
+                <div className="w-full mt-4 flex flex-col gap-2">
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {certs.map((cert, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-1.5 bg-yellow-400 border-2 border-black px-2 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[9px] sm:text-[10px] font-black uppercase text-black cursor-default select-none"
+                        title="Penghargaan King of the Month"
+                      >
+                        <Trophy size={14} className="text-black" />
+                        <span>{cert.month || "Bulan Ini"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* QUOTE SECTION */}
               <div className="w-full mt-4 relative">
@@ -131,7 +182,6 @@ export default function MemberPage() {
               <div className="w-full mt-4 border-t-2 border-black border-dashed pt-4 text-center">
                 <div className="flex items-center justify-center gap-2 max-w-full">
                   <span className="text-lg sm:text-xl flex-shrink-0">📞</span>
-                  {/* min-w-0 mencegah flex item melampaui container parentnya */}
                   <span className="font-bold text-xs sm:text-sm bg-gray-100 border-2 border-black px-2 py-1 w-full truncate min-w-0" title={member.phone_num || 'BELUM_ADA_NOMOR'}>
                     {member.phone_num || 'BELUM_ADA_NOMOR'}
                   </span>
