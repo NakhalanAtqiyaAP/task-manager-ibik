@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Trophy, Medal, Award, Frown, Download, Star, Rocket, Flame } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { motion } from 'framer-motion'; // <-- Tambahkan import Framer Motion
 
 export default function LeaderboardPage({ studentId }) {
   const [leaders, setLeaders] = useState([]);
@@ -22,93 +23,92 @@ export default function LeaderboardPage({ studentId }) {
     fetchLeaderboard();
   }, []);
 
- const downloadPDF = (score, studentName, certData) => {
-  const doc = new jsPDF({ 
-    orientation: 'landscape', 
-    unit: 'mm', 
-    format: 'a4' 
-  });
+  const downloadPDF = (score, studentName, certData) => {
+    const doc = new jsPDF({ 
+      orientation: 'landscape', 
+      unit: 'mm', 
+      format: 'a4' 
+    });
 
-  const purple800 = [91, 33, 182];
-  const green400 = [74, 222, 128];
+    const purple800 = [91, 33, 182];
+    const green400 = [74, 222, 128];
 
-  // 1. BACKGROUND
-  doc.setFillColor(purple800[0], purple800[1], purple800[2]);
-  doc.rect(0, 0, 297, 210, 'F');
+    // 1. BACKGROUND
+    doc.setFillColor(purple800[0], purple800[1], purple800[2]);
+    doc.rect(0, 0, 297, 210, 'F');
 
-  // 2. BORDER
-  doc.setDrawColor(green400[0], green400[1], green400[2]);
-  doc.setLineWidth(5);
-  doc.rect(5, 5, 287, 200, 'S');
+    // 2. BORDER
+    doc.setDrawColor(green400[0], green400[1], green400[2]);
+    doc.setLineWidth(5);
+    doc.rect(5, 5, 287, 200, 'S');
 
-  // 3. AKSEN SUDUT
-  doc.setFillColor(green400[0], green400[1], green400[2]);
-  doc.rect(0, 0, 50, 20, 'F');
-  doc.rect(247, 190, 50, 20, 'F');
+    // 3. AKSEN SUDUT
+    doc.setFillColor(green400[0], green400[1], green400[2]);
+    doc.rect(0, 0, 50, 20, 'F');
+    doc.rect(247, 190, 50, 20, 'F');
 
-  // 4. HEADER
-  doc.setTextColor(green400[0], green400[1], green400[2]);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(45);
-  doc.text("SERTIFIKAT PENGHARGAAN", 20, 40);
+    // 4. HEADER
+    doc.setTextColor(green400[0], green400[1], green400[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(45);
+    doc.text("SERTIFIKAT PENGHARGAAN", 20, 40);
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.text(`${certData?.title || "KING OF THE MONTH"} TI-25-KA`, 20, 55);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text(`${certData?.title || "KING OF THE MONTH"} TI-25-KA`, 20, 55);
 
-  // 5. PENERIMA
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "normal");
-  doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
+    // 5. PENERIMA
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "normal");
+    doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
 
-  // --- LOGIKA RESPONSIVE NAMA ---
-  let fontSize = 60;
-  const maxWidth = 250;
-  const cleanName = studentName.toUpperCase();
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(fontSize);
-
-  while (doc.getTextWidth(cleanName) > maxWidth && fontSize > 20) {
-    fontSize -= 2;
+    // --- LOGIKA RESPONSIVE NAMA ---
+    let fontSize = 60;
+    const maxWidth = 250;
+    const cleanName = studentName.toUpperCase();
+    
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(fontSize);
-  }
 
-  doc.setTextColor(green400[0], green400[1], green400[2]);
-  doc.text(cleanName, 148, 120, { align: "center" });
+    while (doc.getTextWidth(cleanName) > maxWidth && fontSize > 20) {
+      fontSize -= 2;
+      doc.setFontSize(fontSize);
+    }
 
-  // 6. KETERANGAN PRESTASI
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "italic");
-  // Menggunakan certData.month agar dinamis
-  doc.text(`Telah mendominasi bulan ${certData?.month} dengan menyelesaikan`, 148, 140, { align: "center" });
-  doc.setFont("helvetica", "bold");
-  doc.text(`${score} TUGAS TEPAT WAKTU (ON-TIME)`, 148, 148, { align: "center" });
+    doc.setTextColor(green400[0], green400[1], green400[2]);
+    doc.text(cleanName, 148, 120, { align: "center" });
 
-  // 7. TANGGAL TERBIT
-  doc.setLineWidth(1);
-  doc.setDrawColor(255, 255, 255);
-  doc.line(100, 165, 197, 165);
+    // 6. KETERANGAN PRESTASI
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "italic");
+    doc.text(`Telah mendominasi bulan ${certData?.month} dengan menyelesaikan`, 148, 140, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.text(`${score} TUGAS TEPAT WAKTU (ON-TIME)`, 148, 148, { align: "center" });
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(green400[0], green400[1], green400[2]);
-  doc.text("TANGGAL TERBIT:", 148, 175, { align: "center" });
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(14);
-  const tgl = new Date().toLocaleDateString('id-ID', { 
-    day: 'numeric', month: 'long', year: 'numeric' 
-  });
-  doc.text(tgl.toUpperCase(), 148, 183, { align: "center" });
+    // 7. TANGGAL TERBIT
+    doc.setLineWidth(1);
+    doc.setDrawColor(255, 255, 255);
+    doc.line(100, 165, 197, 165);
 
-  // 8. FOOTER
-  doc.setFontSize(10);
-  doc.text("TI-25-KA", 20, 200);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(green400[0], green400[1], green400[2]);
+    doc.text("TANGGAL TERBIT:", 148, 175, { align: "center" });
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    const tgl = new Date().toLocaleDateString('id-ID', { 
+      day: 'numeric', month: 'long', year: 'numeric' 
+    });
+    doc.text(tgl.toUpperCase(), 148, 183, { align: "center" });
 
-  doc.save(`Sertifikat_TI25KA_${studentName.replace(/\s+/g, '_')}.pdf`);
-};
+    // 8. FOOTER
+    doc.setFontSize(10);
+    doc.text("TI-25-KA", 20, 200);
+
+    doc.save(`Sertifikat_TI25KA_${studentName.replace(/\s+/g, '_')}.pdf`);
+  };
 
   const getRankStyle = (index) => {
     switch (index) {
@@ -128,6 +128,28 @@ export default function LeaderboardPage({ studentId }) {
   const isWinner = leaders.length > 0 && 
                  studentId && 
                  leaders[0].student_id.toString() === studentId.toString();
+
+  // Konfigurasi Variasi Animasi Framer Motion untuk List Container
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15 // Efek muncul bergantian (delay per item)
+      }
+    }
+  };
+
+  // Konfigurasi Variasi Animasi untuk tiap Item (Siswa)
+  const itemVariants = {
+    hidden: { opacity: 0, x: -50, y: 20 },
+    show: { 
+      opacity: 1, 
+      x: 0, 
+      y: 0, 
+      transition: { type: "spring", stiffness: 120, damping: 12 } 
+    }
+  };
 
   return (
     <div className="p-3 sm:p-6 md:p-8 relative overflow-hidden">
@@ -155,10 +177,9 @@ export default function LeaderboardPage({ studentId }) {
               </p>
               <button 
                 onClick={() => downloadPDF(leaders[0].completed_count, leaders[0].nama,{ 
-      title: "KING OF THE MONTH", 
-      month: new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) 
-    }
- )}
+                  title: "KING OF THE MONTH", 
+                  month: new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) 
+                })}
                 className="bg-black text-white px-4 py-3 sm:px-10 sm:py-5 font-black text-lg sm:text-2xl uppercase hover:bg-white hover:text-black transition-all border-4 border-black flex items-center justify-center gap-2 sm:gap-4 mx-auto w-full sm:w-auto"
               >
                 <Download className="w-6 h-6 sm:w-8 sm:h-8" /> 
@@ -182,14 +203,26 @@ export default function LeaderboardPage({ studentId }) {
         </div>
       )}
 
-      {/* LEADERBOARD LIST */}
-      <div className="flex flex-col gap-4 sm:gap-6 max-w-4xl">
+      {/* LEADERBOARD LIST - ANIMATED CONTAINER */}
+      <motion.div 
+        className="flex flex-col gap-4 sm:gap-6 max-w-4xl"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
         {leaders.map((student, index) => {
           const style = getRankStyle(index);
           return (
-            <div 
-              key={student.student_id} 
-              className={`flex items-center justify-between p-3 sm:p-6 ${style.bg} ${style.border} ${style.shadow} transition-all duration-200 gap-2 sm:gap-4`}
+            <motion.div 
+              key={student.student_id}
+              variants={itemVariants}
+              whileHover={{ 
+                scale: 1.02, 
+                x: 10, // Bergeser sedikit ke kanan saat di-hover
+                transition: { type: "spring", stiffness: 300 }
+              }}
+              whileTap={{ scale: 0.98 }}
+              className={`flex items-center justify-between p-3 sm:p-6 cursor-pointer ${style.bg} ${style.border} ${style.shadow} transition-colors duration-200 gap-2 sm:gap-4`}
             >
               {/* Kiri: Icon + Avatar + Nama */}
               <div className="flex items-center gap-2 sm:gap-6 flex-1 min-w-0">
@@ -206,7 +239,6 @@ export default function LeaderboardPage({ studentId }) {
                     />
                   </div>
                   
-                  {/* Nama dibungkus dengan min-w-0 dan truncate agar tidak merusak layout saat di mobile */}
                   <div className="flex-1 min-w-0">
                     <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest mb-0.5 sm:mb-1 opacity-70 truncate">{style.title}</div>
                     <h2 className={`${style.text} font-black uppercase leading-none truncate`} title={student.nama}>
@@ -221,11 +253,11 @@ export default function LeaderboardPage({ studentId }) {
                 <span className="text-xl sm:text-3xl font-black">{student.completed_count}</span>
                 <span className="text-[6px] sm:text-[8px] font-black uppercase block mt-0.5">DONE</span>
               </div>
-            </div>
+            </motion.div>
           );
         })}
 
-        {/* LOADING STATE (Optional namun baik untuk UX) */}
+        {/* LOADING STATE */}
         {loading && (
           <div className="bg-gray-100 border-4 border-black p-6 sm:p-8 text-center font-black uppercase text-base sm:text-xl animate-pulse">
             MEMUAT DATA...
@@ -237,7 +269,7 @@ export default function LeaderboardPage({ studentId }) {
             <Frown className="w-8 h-8 sm:w-12 sm:h-12" /> DATA KOSONG.
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* FOOTER INFORMASI */}
       {!isAwardDay && (
