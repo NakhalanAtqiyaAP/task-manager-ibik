@@ -77,8 +77,8 @@ export default function MemberPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center font-black uppercase text-lg sm:text-2xl animate-pulse text-center p-4">
-        MEMUAT_DATABASE_SQUAD...
+      <div className="text-green-400 flex h-64 items-center justify-center font-black uppercase text-lg sm:text-2xl animate-pulse text-center p-4">
+        MEMUAT DATABASE SQUAD...
       </div>
     );
   }
@@ -114,7 +114,7 @@ export default function MemberPage() {
 
           // LOGIKA MAHKOTA: Berdasarkan coding (kecocokan ID dengan top 1 leaderboard)
           // Jika di tabel members kamu pakai 'id' sebagai penanda unik, gunakan member.id
-          // Jika pakai 'student_id', ganti jadi member.student_id
+          // Jika pakai 'student_id', ganti jadi member.student_id  
           const isCurrentKing = topStudentId && member.id === topStudentId;
 
           return (
