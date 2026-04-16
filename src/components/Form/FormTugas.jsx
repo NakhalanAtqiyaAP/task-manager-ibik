@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import toast from 'react-hot-toast'; // 1. Import toast
+import toast from 'react-hot-toast';
 
 export default function FormTugas({ onComplete }) {
   const [activeCourses, setActiveCourses] = useState([]);
   const [allStudents, setAllStudents] = useState([]); 
   const [selectedStudents, setSelectedStudents] = useState([]); 
-  const [isDeploying, setIsDeploying] = useState(false); // State untuk loading
+  const [isDeploying, setIsDeploying] = useState(false);
   
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
@@ -14,7 +14,8 @@ export default function FormTugas({ onComplete }) {
     deskripsi: '', 
     course_id: '', 
     deadline: '',
-    submission_link: '' 
+    submission_link: '',
+    materi: '' // Tambahan: state materi
   });
 
   const getSubmissionType = (value) => {
@@ -28,6 +29,8 @@ export default function FormTugas({ onComplete }) {
   };
 
   const detectedType = getSubmissionType(formData.submission_link);
+  // Cek apakah materi berisi link
+  const isMateriLink = /^(http|https):\/\/[^ "]+$/.test(formData.materi);
 
   useEffect(() => {
     async function fetchData() {
@@ -77,14 +80,13 @@ export default function FormTugas({ onComplete }) {
     e.preventDefault();
 
     if (selectedStudents.length === 0) {
-      // Toast Peringatan
       return toast.error("PILIH MINIMAL 1 MAHASISWA!", {
         position:"top-center",
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
     }
 
-    setIsDeploying(true); // Mulai loading
+    setIsDeploying(true);
     
     let deadline = formData.deadline;
     if (deadline) {
@@ -93,13 +95,14 @@ export default function FormTugas({ onComplete }) {
     }
     
     try {
-      // 1. Simpan ke Master Tasks
+      // 1. Simpan ke Master Tasks (Menambahkan kolom materi)
       const { data: newTask, error: taskError } = await supabase
         .from('tasks')
         .insert([{
           kode_tugas: formData.kode_tugas,
           judul: formData.judul,
           deskripsi: formData.deskripsi,
+          materi: formData.materi, // Tambahan: Input materi
           course_id: formData.course_id
         }])
         .select().single();
@@ -117,7 +120,6 @@ export default function FormTugas({ onComplete }) {
       const { error: distError } = await supabase.from('student_tasks').insert(dist);
       if (distError) throw new Error(`Distribusi: ${distError.message}`);
 
-      // Sukses
       toast.success(`TASK DEPLOYED TO ${selectedStudents.length} STUDENTS!`, {
         position:"top-center",
         className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]',
@@ -131,7 +133,7 @@ export default function FormTugas({ onComplete }) {
         className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
     } finally {
-      setIsDeploying(false); // Selesai loading
+      setIsDeploying(false);
     }
   };
 
@@ -139,7 +141,7 @@ export default function FormTugas({ onComplete }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// PILIH_MATKUL</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// PILIH MATKUL</label>
           <select required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             value={formData.course_id} onChange={handleCourseChange} disabled={isDeploying}>
             <option value="">-- PILIH MATKUL --</option>
@@ -149,14 +151,14 @@ export default function FormTugas({ onComplete }) {
           </select>
         </div>
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE_TUGAS</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE TUGAS</label>
           <input readOnly value={formData.kode_tugas} className="w-full border-4 border-black p-3 font-black bg-gray-200 focus:outline-none" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="col-span-1">
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// JUDUL_TUGAS</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// JUDUL TUGAS</label>
           <input required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             disabled={isDeploying}
             onChange={(e) => setFormData({...formData, judul: e.target.value})} />
@@ -169,9 +171,27 @@ export default function FormTugas({ onComplete }) {
         </div>
       </div>
 
+      {/* FIELD BARU: MATERI PEMBELAJARAN */}
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
-          <span>// METODE_PENGUMPULAN</span>
+          <span>// MATERI_PEMBELAJARAN</span>
+          {formData.materi && isMateriLink && (
+            <span className="bg-blue-400 border-2 border-black px-2 py-0.5 text-[10px] text-black font-black uppercase">LINK MATERI TERDETEKSI</span>
+          )}
+        </label>
+        <textarea 
+          rows="2"
+          disabled={isDeploying}
+          placeholder="Masukkan link atau teks materi"
+          className={`w-full border-4 border-black p-3 font-bold outline-none resize-none transition-colors ${isMateriLink ? 'focus:bg-blue-50' : 'focus:bg-purple-100'}`}
+          value={formData.materi}
+          onChange={(e) => setFormData({...formData, materi: e.target.value})} 
+        />
+      </div>
+
+      <div>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
+          <span>// METODE PENGUMPULAN</span>
           {formData.submission_link && (
             <span className={`${detectedType.color} border-2 border-black px-2 py-0.5 text-[10px] text-black font-black uppercase`}>
               {detectedType.label}
@@ -189,7 +209,7 @@ export default function FormTugas({ onComplete }) {
       </div>
 
       <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DESKRIPSI_TUGAS</label>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DESKRIPSI TUGAS</label>
         <textarea 
           required 
           rows="3"
@@ -200,7 +220,7 @@ export default function FormTugas({ onComplete }) {
       </div>
 
       <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// TARGET_MAHASISWA ({selectedStudents.length})</label>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// TARGET MAHASISWA ({selectedStudents.length})</label>
         <div className="border-4 border-black h-48 overflow-y-auto bg-gray-50 p-2 space-y-2">
           {allStudents.map(s => (
             <label key={s.id} className="flex items-center gap-3 p-2 border-2 border-black bg-white cursor-pointer hover:bg-green-100 transition-colors">
