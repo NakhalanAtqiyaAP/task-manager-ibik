@@ -76,7 +76,7 @@ export default function TaskTable({ studentId, onRefresh }) {
     .select(`
       id, deadline, is_completed, task_id, submission_link, 
       tasks ( 
-        id, judul, 
+        id, judul, materi, 
         courses ( mata_kuliah (nama_matkul), semester )
       )
     `)
@@ -153,7 +153,39 @@ export default function TaskTable({ studentId, onRefresh }) {
       console.error(error);
     }
   };
+const renderMateriAction = (materi) => {
+  if (!materi) return null;
 
+  const urlRegex = /^(http|https):\/\/[^ "]+$/;
+  const isLink = urlRegex.test(materi);
+
+  return (
+    <div className="relative group/materi inline-block mr-2">
+      {isLink ? (
+        <a 
+          href={materi} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+        >
+           Buka Materi
+        </a>
+      ) : (
+        <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          Catatan Materi
+        </div>
+      )}
+
+      {/* TOOLTIP HOVER: Menampilkan isi materi/link saat dihover */}
+      <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
+        <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
+          <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
+          {materi}
+        </div>
+      </div>
+    </div>
+  );
+};
   const triggerConfetti = () => {
     const duration = 3 * 1000;
     const animationEnd = Date.now() + duration;
@@ -324,8 +356,14 @@ export default function TaskTable({ studentId, onRefresh }) {
               {item.tasks?.courses?.mata_kuliah?.nama_matkul} (Sem {item.tasks?.courses?.semester})
             </p>
             
-            {/* TAMPILKAN ACTION SUBMISSION DI SINI */}
-            {!isDone && renderSubmissionAction()}
+            {/* CONTAINER ACTION */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* TAMPILKAN MATERI */}
+              {!isDone && renderMateriAction(item.tasks?.materi)}
+              
+              {/* TAMPILKAN ACTION SUBMISSION */}
+              {!isDone && renderSubmissionAction()}
+            </div>
           </div>
 
           <div className="text-right flex flex-col items-end flex-shrink-0">
