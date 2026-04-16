@@ -77,13 +77,13 @@ export default function GalleryPage({ user }) {
     }
   };
 
-  if (loading) return <div className="text-center p-10 font-black text-white animate-pulse">MEMUAT_MEMORI_SQUAD...</div>;
+  if (loading) return <div className="text-center p-10 font-black text-green-400 animate-pulse">MEMUAT GALLERY...</div>;
 
   return (
     <div className="max-w-4xl mx-auto pb-20">
       <header className="mb-12 border-b-8 border-black pb-4">
         <h1 className="text-5xl font-black text-white uppercase italic">TI-25-KA GALLERY</h1>
-        <p className="bg-yellow-400 border-2 border-black inline-block px-3 py-1 font-bold uppercase mt-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        <p className="bg-green-400 border-2 border-black inline-block px-3 py-1 font-bold uppercase mt-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           Abadikan Momen Kuliah Kita
         </p>
       </header>
@@ -118,7 +118,7 @@ export default function GalleryPage({ user }) {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => startEdit(post)}
-                      className="p-1.5 bg-yellow-400 border-2 border-black hover:translate-x-0.5 hover:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
+                      className="p-1.5 bg-green-400 border-2 border-black hover:translate-x-0.5 hover:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
                       title="Edit Teks"
                     >
                       <Edit3 size={16} strokeWidth={3} />
