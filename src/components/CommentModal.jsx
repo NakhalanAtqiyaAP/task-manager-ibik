@@ -88,7 +88,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
           {/* Header */}
           <div className="p-4 border-b-4 border-black bg-green-400 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-black uppercase italic text-lg">// DISKUSI_SQUAD</h3>
+              <h3 className="font-black uppercase italic text-lg">Postingan</h3>
             </div>
             <button onClick={onClose} className="bg-white border-2 border-black p-1 hover:bg-red-500 transition-colors">
               <X size={20} strokeWidth={3} />
