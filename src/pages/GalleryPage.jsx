@@ -4,6 +4,7 @@ import { Heart, MessageSquare, Trash2, Edit3, X, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CreatePost from '../components/Form/FormGallery'; 
 import CommentModal from '../components/CommentModal'
+import ConfirmModal from '../components/Form/ConfirmModal';
 
 export default function GalleryPage({ user }) {
   const [posts, setPosts] = useState([]);
@@ -14,6 +15,13 @@ export default function GalleryPage({ user }) {
   // State untuk mode edit
   const [editingPostId, setEditingPostId] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
+
+  const triggerDelete = (postId) => {
+    setPostToDelete(postId);
+    setIsConfirmOpen(true);
+  };
 
   const fetchPosts = async () => {
     const { data, error } = await supabase
@@ -42,17 +50,18 @@ export default function GalleryPage({ user }) {
   };
 
   // FUNGSI HAPUS POSTINGAN
-  const handleDelete = async (postId) => {
-    if (!window.confirm('Yakin ingin menghapus postingan ini?')) return;
-
+  const handleConfirmDelete = async () => {
     try {
-      const { error } = await supabase.from('posts').delete().eq('id', postId);
+      const { error } = await supabase.from('posts').delete().eq('id', postToDelete);
       if (error) throw error;
       
-      toast.success('Postingan berhasil dihapus!');
+      toast.success('Data Berhasil Dihapus!');
       fetchPosts();
     } catch (error) {
-      toast.error('Gagal menghapus postingan: ' + error.message);
+      toast.error('Gagal Dihapus');
+    } finally {
+      setIsConfirmOpen(false);
+      setPostToDelete(null);
     }
   };
 
@@ -124,7 +133,7 @@ export default function GalleryPage({ user }) {
                   {isOwner && !isEditing && (
                     <div className="flex items-center gap-2">
                       <button onClick={() => startEdit(post)} className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"><Edit3 size={16} strokeWidth={3} /></button>
-                      <button onClick={() => handleDelete(post.id)} className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"><Trash2 size={16} strokeWidth={3} /></button>
+                      <button onClick={() => triggerDelete(post.id)} className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"><Trash2 size={16} strokeWidth={3} /></button>
                     </div>
                   )}
                 </div>
@@ -169,7 +178,14 @@ export default function GalleryPage({ user }) {
         </div>
       </div>
 
-      {/* PINDAHKAN KE SINI (Di dalam Return, di bawah Div utama) */}
+      <ConfirmModal 
+        isOpen={isConfirmOpen}
+        title="Konfirmasi Untuk Menghapus!"
+        message="Apakah kamu yakin ingin menghapusnya?"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsConfirmOpen(false)}
+      />
+
       {selectedPost && (
         <CommentModal 
           post={selectedPost} 
