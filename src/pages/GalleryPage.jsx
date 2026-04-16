@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Heart, MessageSquare, Trash2 } from 'lucide-react';
-import CreatePost from '../components/Form/FormGallery'; // Impor form yang tadi
+import { Heart, MessageSquare, Trash2, Edit3, X, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
+import CreatePost from '../components/Form/FormGallery'; 
 
 export default function GalleryPage({ user }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // State untuk mode edit
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editContent, setEditContent] = useState('');
 
   const fetchPosts = async () => {
     const { data, error } = await supabase
@@ -33,6 +38,45 @@ export default function GalleryPage({ user }) {
     fetchPosts();
   };
 
+  // FUNGSI HAPUS POSTINGAN
+  const handleDelete = async (postId) => {
+    if (!window.confirm('Yakin ingin menghapus postingan ini?')) return;
+
+    try {
+      const { error } = await supabase.from('posts').delete().eq('id', postId);
+      if (error) throw error;
+      
+      toast.success('Postingan berhasil dihapus!');
+      fetchPosts();
+    } catch (error) {
+      toast.error('Gagal menghapus postingan: ' + error.message);
+    }
+  };
+
+  // FUNGSI MULAI EDIT
+  const startEdit = (post) => {
+    setEditingPostId(post.id);
+    setEditContent(post.content_text || '');
+  };
+
+  // FUNGSI SIMPAN EDIT
+  const saveEdit = async (postId) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ content_text: editContent })
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      toast.success('Postingan diperbarui!');
+      setEditingPostId(null);
+      fetchPosts();
+    } catch (error) {
+      toast.error('Gagal mengedit: ' + error.message);
+    }
+  };
+
   if (loading) return <div className="text-center p-10 font-black text-white animate-pulse">MEMUAT_MEMORI_SQUAD...</div>;
 
   return (
@@ -49,6 +93,8 @@ export default function GalleryPage({ user }) {
       <div className="grid grid-cols-1 gap-12">
         {posts.map((post) => {
           const hasLiked = post.post_likes.some(l => l.student_id === user.id);
+          const isOwner = post.student_id === user.id; // KUNCI: Cek apakah user adalah pemilik postingan
+          const isEditing = editingPostId === post.id;
           
           return (
             <div key={post.id} className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden group">
@@ -56,14 +102,36 @@ export default function GalleryPage({ user }) {
               <div className="p-4 border-b-4 border-black flex items-center justify-between bg-purple-100">
                 <div className="flex items-center gap-3">
                   <img 
-                    src={post.students.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${post.students.nama}`} 
+                    src={post.students?.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${post.students?.nama}`} 
                     className="w-10 h-10 rounded-full border-2 border-black bg-white"
                   />
-                  <span className="font-black uppercase text-sm">{post.students.nama}</span>
+                  <div>
+                    <span className="font-black uppercase text-sm block leading-none">{post.students?.nama}</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase">
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold text-gray-500 uppercase">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </span>
+
+                {/* TOMBOL EDIT & HAPUS (Hanya Muncul Jika isOwner true) */}
+                {isOwner && !isEditing && (
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => startEdit(post)}
+                      className="p-1.5 bg-yellow-400 border-2 border-black hover:translate-x-0.5 hover:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
+                      title="Edit Teks"
+                    >
+                      <Edit3 size={16} strokeWidth={3} />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(post.id)}
+                      className="p-1.5 bg-red-500 text-white border-2 border-black hover:translate-x-0.5 hover:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
+                      title="Hapus Postingan"
+                    >
+                      <Trash2 size={16} strokeWidth={3} />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Media Content */}
@@ -77,9 +145,33 @@ export default function GalleryPage({ user }) {
                 </div>
               )}
 
-              {/* Teks Content */}
+              {/* Teks Content & Edit Mode */}
               <div className="p-6">
-                <p className="font-bold text-lg leading-tight">{post.content_text}</p>
+                {isEditing ? (
+                  <div className="flex flex-col gap-3">
+                    <textarea 
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full border-4 border-black p-3 font-bold focus:outline-none focus:bg-yellow-50 min-h-[100px]"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button 
+                        onClick={() => setEditingPostId(null)}
+                        className="flex items-center gap-1 bg-gray-200 border-2 border-black px-3 py-1 font-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
+                      >
+                        <X size={14} /> Batal
+                      </button>
+                      <button 
+                        onClick={() => saveEdit(post.id)}
+                        className="flex items-center gap-1 bg-green-400 border-2 border-black px-3 py-1 font-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
+                      >
+                        <Check size={14} /> Simpan
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="font-bold text-lg leading-tight whitespace-pre-wrap">{post.content_text}</p>
+                )}
               </div>
 
               {/* Actions Footer */}
