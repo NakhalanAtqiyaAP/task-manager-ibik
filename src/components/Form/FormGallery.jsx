@@ -85,7 +85,7 @@ export default function CreatePost({ user, onPostCreated }) {
 
   return (
     <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-12">
-      <h3 className="text-xl font-black uppercase mb-4 italic">// BUAT_POSTINGAN</h3>
+      <h3 className="text-xl font-black uppercase mb-4 italic">BUAT POSTINGAN</h3>
       <form onSubmit={handleSubmit}>
         <textarea 
           className="w-full border-4 border-black p-4 font-bold focus:outline-none focus:bg-yellow-50 min-h-[100px]"
@@ -109,8 +109,7 @@ export default function CreatePost({ user, onPostCreated }) {
                 <button 
                   type="button"
                   onClick={() => removeFile(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white border-2 border-black p-1 hover:scale-110 transition-transform"
-                >
+                  className="absolute -top-2 -right-2 bg-red-500 text-white border-2 border-black p-1 hover:scale-110 transition-transform">
                   <X size={14} strokeWidth={4} />
                 </button>
               </div>
