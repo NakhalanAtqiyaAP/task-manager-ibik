@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { X, Send, Trash2, Heart, Reply } from 'lucide-react';
+import { X, Heart, Reply } from 'lucide-react';
 import toast from 'react-hot-toast';
+import MediaSlider from './MediaSlider';
 
 export default function CommentModal({ post, user, onClose, onCommentAdded }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [replyingTo, setReplyingTo] = useState(null); // Menyimpan objek komentar yang sedang dibalas
+  const [replyingTo, setReplyingTo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchComments = async () => {
@@ -68,19 +69,16 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
       {/* Container Modal Besar */}
       <div className="relative w-full max-w-6xl h-full md:h-[85vh] bg-white border-4 border-black shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row overflow-hidden">
         
-        {/* KOLOM KIRI: Media (Hanya tampil di Desktop) */}
-        <div className="hidden md:flex flex-[1.5] bg-black items-center justify-center border-r-4 border-black relative">
-          {post.media_url ? (
-            post.media_type === 'image' ? (
-              <img src={post.media_url} className="w-full h-full object-contain" />
-            ) : (
-              <video src={post.media_url} controls className="w-full max-h-full" />
-            )
-          ) : (
-            <div className="text-white font-black text-2xl uppercase italic p-10 text-center">
-              "{post.content_text}"
+        {/* KOLOM KIRI: Media & MediaSlider */}
+        <div className="hidden md:flex flex-[1.5] bg-black items-center justify-center border-r-4 border-black relative h-full">
+        {post.media_urls && post.media_urls.length > 0 ? (
+            /* MediaSlider sekarang akan mengisi penuh kolom kiri ini */
+            <MediaSlider urls={post.media_urls} types={post.media_types} />
+        ) : (
+            <div className="text-white font-black text-2xl uppercase italic p-10 text-center w-full break-words">
+            "{post.content_text}"
             </div>
-          )}
+        )}
         </div>
 
         {/* KOLOM KANAN: Komentar */}
@@ -90,7 +88,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
             <div className="flex items-center gap-2">
               <h3 className="font-black uppercase italic text-lg">Postingan</h3>
             </div>
-            <button onClick={onClose} className="bg-white border-2 border-black p-1 hover:bg-red-500 transition-colors">
+            <button onClick={onClose} className="bg-white border-2 border-black p-1 hover:bg-red-500 hover:text-white transition-colors">
               <X size={20} strokeWidth={3} />
             </button>
           </div>
@@ -108,6 +106,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
                     <img 
                       src={comment.students?.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${comment.students?.nama}`} 
                       className="w-10 h-10 rounded-full border-2 border-black bg-purple-200 shrink-0"
+                      alt="Avatar"
                     />
                     <div className="flex-1">
                       <div className="bg-white border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative">
@@ -144,6 +143,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
                          <img 
                           src={reply.students?.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${reply.students?.nama}`} 
                           className="w-7 h-7 rounded-full border-2 border-black bg-green-200 shrink-0"
+                          alt="Avatar"
                         />
                         <div className="flex-1">
                           <div className="bg-gray-100 border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
