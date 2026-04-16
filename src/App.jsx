@@ -1,4 +1,3 @@
-  // src/App.jsx
   import { useState, useEffect } from 'react';
   import { Toaster } from 'react-hot-toast';
 
@@ -7,6 +6,7 @@
   import Login from './pages/LoginPage';
   import MemberPage from './pages/MemberPage';
   import LeaderboardPage from './pages/LeaderboardPage';
+  import GalleryPage from './pages/GalleryPage';
 
   import Navbar from './components/Navbar';
   import Hero from './components/Hero';
@@ -20,6 +20,7 @@
   import DaftarTugasList from './components/DaftarTugasList';
   import MataKuliahList from './components/MataKuliahList';
   import Profile from './components/Profile';
+
 
   
 
@@ -197,8 +198,7 @@
       supabase.auth.signOut();
       setIsAuthorized(false);
       setCurrentUser(null);
-    } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard') {
-      // GANTI HALAMAN UTAMA
+    } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard' || category === 'Gallery') {
       setActiveView(category);
       setModalConfig({ ...modalConfig, isOpen: false });
     } else {
@@ -331,6 +331,8 @@ async function fetchInitialData() {
             <MemberPage />
           ) : activeView === 'Leaderboard' ? (
             <LeaderboardPage studentId={currentUser?.id}/>
+          ) : activeView === 'Gallery' ? (
+            <GalleryPage user={currentUser}/>
           ) : null}
         </main>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { Image, Film, Type, Send, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 

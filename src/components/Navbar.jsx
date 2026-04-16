@@ -11,6 +11,7 @@ import {
   PlusSquare,
   X,
   Trophy,
+  Image,
   Menu 
 } from 'lucide-react'; // Import ikon yang dibutuhkan
 
@@ -23,6 +24,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
     { name: 'Dashboard', allowedRoles: ['admin', 'student'], icon: <LayoutDashboard size={18} strokeWidth={3} /> },
     { name: 'Member', allowedRoles: ['admin', 'student'], icon: <Users size={18} strokeWidth={3} /> },
     { name: 'Leaderboard', allowedRoles: ['admin', 'student'], icon: <Trophy size={18} strokeWidth={3} /> },
+    { name: 'Gallery', allowedRoles: ['admin', 'student'], icon: <Image size={18} strokeWidth={3} /> },
     { name: 'Daftar Tugas', allowedRoles: ['admin', 'student'], icon: <ClipboardList size={18} strokeWidth={3} /> },
     { name: 'Mahasiswa', allowedRoles: ['admin'], icon: <UserSquare2 size={18} strokeWidth={3} /> },
     { name: 'Mata Kuliah', allowedRoles: ['admin'], icon: <BookOpen size={18} strokeWidth={3} /> }
@@ -109,7 +111,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
             <div key={item.name} className={idx < filteredItems.length - 1 ? 'border-b-4 border-black' : ''}>
               <button
                 onClick={() => {
-                  if (item.name === 'Member' || item.name === 'Dashboard' || item.name === "Leaderboard") {
+                  if (item.name === 'Member' || item.name === 'Dashboard' || item.name === "Leaderboard" || item.name === 'Gallery') {
                     handleAction(item.name, 'view');
                     closeSidebar();
                   } else {
@@ -124,7 +126,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
                   {item.icon}
                   <span>{item.name}</span>
                 </div>
-                {item.name !== 'Member' && item.name !== 'Dashboard' && item.name !== 'Leaderboard' && (
+                {item.name !== 'Member' && item.name !== 'Dashboard' && item.name !== 'Leaderboard' && item.name !== 'Gallery' && (
                   <span className="text-xs">
                     {activeSub === item.name ? <ChevronUp size={16} strokeWidth={3} /> : <ChevronDown size={16} strokeWidth={3} />}
                   </span>
@@ -132,7 +134,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
               </button>
 
               {/* Sub Items */}
-              {activeSub === item.name && item.name !== 'Member' && item.name !== 'Dashboard' && item.name !== 'Leaderboard' && (
+              {activeSub === item.name && item.name !== 'Member' && item.name !== 'Dashboard' && item.name !== 'Leaderboard' && item.name !== 'Gallery' &&(
                 <div className="bg-gray-50 border-t-2 border-black">
                   <button
                     onClick={() => { handleAction(item.name, 'view'); closeSidebar(); }}

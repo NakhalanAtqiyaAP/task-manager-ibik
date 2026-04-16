@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Heart, MessageSquare, Trash2 } from 'lucide-react';
-import CreatePost from './CreatePost'; // Impor form yang tadi
+import CreatePost from '../components/Form/FormGallery'; // Impor form yang tadi
 
 export default function GalleryPage({ user }) {
   const [posts, setPosts] = useState([]);
