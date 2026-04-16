@@ -298,3 +298,106 @@ body {
           display: inline-block;
           animation: brutalJiggle 3s infinite ease-in-out;
         }
+@keyframes blurReveal {
+  0% {
+    filter: blur(10px);
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-blur-reveal {
+  animation: blurReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes blockReveal {
+  0% { transform: translateX(-110%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(110%); }
+}
+
+@keyframes textAppear {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.animate-text-reveal {
+  animation: textAppear 1.2s ease-out forwards;
+}
+
+.reveal-block {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #4ade80; /* Warna Hijau khas kamu */
+  transform: translateX(-110%);
+  animation: blockReveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+@keyframes titleRoll {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.clip-path-container {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  overflow: hidden;
+}
+
+.animate-title-roll {
+  display: inline-block;
+  animation: titleRoll 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+/* Efek melayang halus */
+@keyframes brutal-shiver {
+  0%, 90%, 100% {
+    transform: translate(0, 0);
+    text-shadow: 4px 4px 0px rgba(0,0,0,1); /* Shadow default */
+  }
+  91% {
+    transform: translate(-1px, 1px);
+    text-shadow: 2px -2px 0px rgba(74, 222, 128, 0.7); /* Green-400 glitch */
+  }
+  92% {
+    transform: translate(1px, -1px);
+    text-shadow: -3px 3px 0px rgba(168, 85, 247, 0.7); /* Purple-500 glitch */
+  }
+  93% {
+    transform: translate(-1px, -1px);
+    text-shadow: 5px 2px 0px rgba(0,0,0,1);
+  }
+  94% {
+    transform: translate(1px, 1px);
+    text-shadow: 0px 5px 0px rgba(0,0,0,1);
+  }
+}
+
+.animate-brutal-shiver {
+  /* Berjalan terus menerus, durasi 3 detik, tapi glitch hanya terjadi di akhir siklus */
+  animation: brutal-shiver 3s cubic-bezier(.42,0,.58,1) infinite;
+  /* Memastikan hardware acceleration untuk performa smooth */
+  will-change: transform, text-shadow;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 0.8s step-end infinite;
+}
+
+/* Tambahkan efek glow pada teks agar lebih 'Digital' */
+.typewriter-text {
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+}
