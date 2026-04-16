@@ -85,12 +85,16 @@ export default function GalleryPage({ user }) {
   return (
     <>
       <div className="max-w-4xl mx-auto pb-20">
-        <header className="mb-12 border-b-8 border-black pb-4">
-          <h1 className="text-5xl font-black text-white uppercase italic">TI-25-KA GALLERY</h1>
-          <p className="bg-green-400 border-2 border-black inline-block px-3 py-1 font-bold uppercase mt-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            Abadikan Momen Kuliah Kita
+        <div className="mb-12 sm:mb-16 border-b-4 sm:border-b-8 border-black pb-4 inline-block w-full sm:w-auto">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header break-words">
+          TI-25-KA GALLERY
+        </h1>
+        <div className="mt-2">
+          <p className="font-bold text-gray-900 uppercase bg-green-400 border-2 border-black inline-block px-3 py-1 text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            Abadikan Sebuah Moment 
           </p>
-        </header>
+        </div>
+      </div>
 
         <CreatePost user={user} onPostCreated={fetchPosts} />
 

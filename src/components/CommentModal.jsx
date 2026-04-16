@@ -86,7 +86,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
         {/* KOLOM KANAN: Komentar */}
         <div className="flex flex-1 flex-col h-full bg-gray-50">
           {/* Header */}
-          <div className="p-4 border-b-4 border-black bg-yellow-400 flex justify-between items-center shrink-0">
+          <div className="p-4 border-b-4 border-black bg-green-400 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
               <h3 className="font-black uppercase italic text-lg">// DISKUSI_SQUAD</h3>
             </div>
@@ -184,7 +184,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
               />
               <button 
                 type="submit"
-                className="bg-blue-500 text-white border-2 border-black px-6 py-2 font-black hover:bg-blue-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 transition-all"
+                className="bg-green-500 text-white border-2 border-black px-6 py-2 font-black hover:bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 transition-all"
               >
                 KIRIM
               </button>
