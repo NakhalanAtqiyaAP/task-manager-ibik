@@ -139,10 +139,20 @@ export default function GalleryPage({ user }) {
                 </div>
 
                 {/* ... Media & Text Content ... */}
-                {post.media_url && (
-                  <div className="border-b-4 border-black bg-black flex justify-center max-h-[500px] overflow-hidden">
-                    {post.media_type === 'image' ? <img src={post.media_url} className="w-full h-auto object-contain" /> : <video src={post.media_url} controls className="w-full" />}
-                  </div>
+                {post.media_urls && post.media_urls.length > 0 && (
+                <div className={`border-b-4 border-black bg-black grid gap-1 ${
+                    post.media_urls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+                }`}>
+                    {post.media_urls.map((url, idx) => (
+                    <div key={idx} className="relative overflow-hidden aspect-video bg-gray-900 flex items-center justify-center">
+                        {post.media_types[idx] === 'image' ? (
+                        <img src={url} className="w-full h-full object-contain" alt="post" />
+                        ) : (
+                        <video src={url} controls className="w-full h-full" />
+                        )}
+                    </div>
+                    ))}
+                </div>
                 )}
 
                 <div className="p-6">
