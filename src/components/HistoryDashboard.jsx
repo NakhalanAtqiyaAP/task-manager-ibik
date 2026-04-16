@@ -81,44 +81,61 @@ export default function HistoryDashboard({ studentId }) {
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-6 text-center">
-        <div className="bg-green-400 border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <div className="text-4xl font-black">{stats.completed}</div>
+        {/* KARTU BERHASIL */}
+        <div className="group relative bg-green-400 border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:-translate-x-1 transition-all duration-200 cursor-help">
+          <div className="text-4xl font-black group-hover:scale-110 transition-transform duration-200">{stats.completed}</div>
           <div className="text-xs font-bold uppercase mt-1">Total Selesai</div>
+          
+          {/* Tooltip Aesthetic */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+            Keep it up! 
+          </div>
         </div>
-        <div className="bg-red-500 text-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <div className="text-4xl font-black">{stats.overdue}</div>
+
+        {/* KARTU GAGAL */}
+        <div className="group relative bg-red-500 text-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:-translate-x-1 transition-all duration-200 cursor-help">
+          <div className="text-4xl font-black group-hover:scale-110 transition-transform duration-200">{stats.overdue}</div>
           <div className="text-xs font-bold uppercase mt-1">Total Terlewat</div>
+
+          {/* Tooltip Aesthetic */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black border-2 border-black text-[10px] px-2 py-1 font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+            Don't give up!
+          </div>
         </div>
       </div>
 
-      {/* BAR CHART */}
+      {/* BAR CHART (Tetap sama, tapi kita tambah hover di segment) */}
       <div className="space-y-2">
         <div className="flex justify-between items-end">
-          <div className="text-xs font-black uppercase text-gray-500">Rasio Keberhasilan ({stats.total} Tugas Terdeteksi)</div>
-          <div className="text-xs font-black text-green-600 uppercase">{completedPct}% Success</div>
+          <div className="text-xs font-black uppercase text-gray-500">Rasio Keberhasilan ({stats.total} Tugas)</div>
+          <div className="text-xs font-black text-green-600 uppercase tracking-tighter">{completedPct}% Success Rate</div>
         </div>
-        <div className="flex h-10 border-4 border-black w-full bg-gray-200 overflow-hidden relative">
+        <div className="flex h-10 border-4 border-black w-full bg-gray-200 overflow-hidden relative group/bar">
           {stats.total === 0 ? (
             <div className="w-full h-full flex items-center justify-center text-[10px] font-black italic">TIDAK ADA AKTIVITAS BULAN INI</div>
           ) : (
             <>
               <div 
-                className="bg-green-400 h-full flex items-center justify-center font-black text-xs border-r-4 border-black transition-all duration-1000 ease-out"
+                className="bg-green-400 h-full flex items-center justify-center font-black text-xs border-r-4 border-black transition-all duration-1000 ease-out hover:brightness-110"
                 style={{ width: `${completedPct}%` }}
+                title={`${stats.completed} Tugas Berhasil`}
               >
-                {completedPct > 5 && 'WIN'}
+                {completedPct > 10 && <span className="animate-pulse">WIN</span>}
               </div>
               <div 
-                className="bg-red-500 h-full flex items-center justify-center font-black text-xs text-white transition-all duration-1000 ease-out"
+                className="bg-red-500 h-full flex items-center justify-center font-black text-xs text-white transition-all duration-1000 ease-out hover:brightness-110"
                 style={{ width: `${overduePct}%` }}
+                title={`${stats.overdue} Tugas Terlewat`}
               >
-                {overduePct > 5 && 'FAIL'}
+                {overduePct > 10 && <span className="animate-pulse">FAIL</span>}
               </div>
             </>
           )}
         </div>
-        <p className="text-[9px] font-bold text-gray-400 italic mt-2 uppercase">
-          *Statistik mencakup tugas yang sudah selesai (aktif) dan riwayat bulan ini.
+        
+        {/* Progress Bar Label on Hover */}
+        <p className="text-[9px] font-bold text-gray-400 italic mt-2 uppercase text-center group-hover/bar:text-black transition-colors">
+          {stats.total > 0 ? "" : "*Belum ada data pengerjaan tugas."}
         </p>
       </div>
     </div>
