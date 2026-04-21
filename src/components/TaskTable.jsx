@@ -140,38 +140,44 @@ export default function TaskTable({ studentId, onRefresh }) {
     }
   };
 
-  const renderMateriAction = (materi) => {
-    if (!materi) return null;
+  // Temukan fungsi ini di TaskTable.jsx dan ubah menjadi:
+const renderMateriAction = (materi) => {
+  if (!materi) return null;
 
-    const urlRegex = /^(http|https):\/\/[^ "]+$/;
-    const isLink = urlRegex.test(materi);
+  const urlRegex = /^(http|https):\/\/[^ "]+$/;
+  const isLink = urlRegex.test(materi);
 
-    return (
-      <div className="relative group/materi inline-block mr-2">
-        {isLink ? (
-          <a 
-            href={materi} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-          >
-             Buka Materi
-          </a>
-        ) : (
-          <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            Catatan Materi
-          </div>
-        )}
+  // Deteksi apakah link berasal dari bucket supabase kamu
+  const isSupabaseFile = isLink && materi.includes('materi_tugas'); 
 
-        <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
-          <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
-            <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
-            {materi}
-          </div>
+  return (
+    <div className="relative group/materi inline-block mr-2">
+      {isLink ? (
+        <a 
+          href={materi} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          download={isSupabaseFile} // Memicu download paksa jika itu file
+          className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+        >
+           {isSupabaseFile ? 'UNDUH MATERI (FILE/ZIP)' : 'BUKA MATERI (LINK)'}
+        </a>
+      ) : (
+        <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          Catatan Materi
+        </div>
+      )}
+
+      {/* Pop up catatan materi */}
+      <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
+        <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
+          <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
+          {isSupabaseFile ? 'Materi siap diunduh.' : materi}
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   const triggerConfetti = () => {
     const duration = 3 * 1000;
