@@ -343,7 +343,7 @@ export default function FormTugas({ onComplete }) {
             <label key={s.id} className="flex items-center gap-3 p-2 border-2 border-black bg-white cursor-pointer hover:bg-green-100 transition-colors">
               <input 
                 type="checkbox" 
-                className="w-5 h-5 accent-black" 
+                className="w-5 h-5 accent-green-400" 
                 disabled={isDeploying}
                 checked={selectedStudents.includes(s.id)}
                 onChange={() => toggleStudent(s.id)}
