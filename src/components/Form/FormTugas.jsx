@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import JSZip from 'jszip'; // IMPORT JSZIP
 
 export default function FormTugas({ onComplete }) {
   const [activeCourses, setActiveCourses] = useState([]);
@@ -8,9 +9,9 @@ export default function FormTugas({ onComplete }) {
   const [selectedStudents, setSelectedStudents] = useState([]); 
   const [isDeploying, setIsDeploying] = useState(false);
   
-  // State untuk kontrol tipe materi
-  const [materiType, setMateriType] = useState('teks'); // 'teks', 'link', 'file'
-  const [materiFile, setMateriFile] = useState(null); // Menyimpan objek file yang diupload
+  const [materiType, setMateriType] = useState('teks'); 
+  // UBAH STATE INI JADI ARRAY UNTUK MULTIPLE FILES
+  const [materiFiles, setMateriFiles] = useState([]); 
 
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
@@ -76,9 +77,10 @@ export default function FormTugas({ onComplete }) {
     setFormData({ ...formData, course_id: selectedCourseId, kode_tugas: generatedKode });
   };
 
+  // UBAH HANDLER FILE UNTUK MULTIPLE
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setMateriFile(e.target.files[0]);
+    if (e.target.files) {
+      setMateriFiles(Array.from(e.target.files));
     }
   };
 
@@ -92,7 +94,7 @@ export default function FormTugas({ onComplete }) {
       });
     }
 
-    if (materiType === 'file' && !materiFile) {
+    if (materiType === 'file' && materiFiles.length === 0) {
       return toast.error("FILE MATERI BELUM DIPILIH!", {
         position:"top-center",
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
@@ -111,22 +113,51 @@ export default function FormTugas({ onComplete }) {
       let finalMateriValue = formData.materi;
 
       // PROSES UPLOAD FILE JIKA TIPE MATERI = FILE
-      if (materiType === 'file' && materiFile) {
-        toast.loading("Mengunggah file materi...", { id: "upload-toast" });
+      if (materiType === 'file' && materiFiles.length > 0) {
+        toast.loading(materiFiles.length > 1 ? "Mengekstrak ke ZIP & Mengunggah..." : "Mengunggah file materi...", { id: "upload-toast" });
         
-        // Buat nama file unik
-        const fileExt = materiFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        let fileToUpload;
+        let filePath;
+        let contentType;
+
+        // JIKA HANYA 1 FILE: UPLOAD BIASA
+        if (materiFiles.length === 1) {
+          fileToUpload = materiFiles[0];
+          const fileExt = fileToUpload.name.split('.').pop();
+          filePath = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          contentType = fileToUpload.type;
+        } 
+        // JIKA LEBIH DARI 1 FILE: JADIKAN ZIP
+        else {
+          const zip = new JSZip();
+          materiFiles.forEach(file => {
+            zip.file(file.name, file);
+          });
+          
+          fileToUpload = await zip.generateAsync({ type: 'blob' });
+          
+          // GENERATE NAMA FILE ZIP SESUAI REQUEST
+          const course = activeCourses.find(c => c.id === formData.course_id);
+          const namaMatkul = course?.mata_kuliah?.nama_matkul.replace(/\s+/g, '_') || 'Matkul';
+          const judulTugas = formData.judul.replace(/\s+/g, '_') || 'Tugas';
+          
+          const date = new Date();
+          const tglTerbit = `${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getFullYear()).slice(-2)}`;
+          
+          // Format: nama tugas_namamatkul_tanggalterbit.zip
+          const zipName = `${judulTugas}_${namaMatkul}_${tglTerbit}.zip`;
+          filePath = `${Date.now()}-${zipName}`; // Tambah timestamp agar tidak menimpa file bernama sama di storage
+          contentType = 'application/zip';
+        }
 
         // Upload ke bucket Supabase bernama 'materi_tugas'
         const { error: uploadError } = await supabase.storage
           .from('materi_tugas')
-          .upload(filePath, materiFile);
+          .upload(filePath, fileToUpload, { contentType });
 
         if (uploadError) throw new Error(`Gagal upload file: ${uploadError.message}`);
 
-        // Ambil URL public dari file yang diupload
+        // Ambil URL public dari file/zip yang diupload
         const { data: { publicUrl } } = supabase.storage
           .from('materi_tugas')
           .getPublicUrl(filePath);
@@ -180,6 +211,7 @@ export default function FormTugas({ onComplete }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* ... [BAGIAN ATAS TETAP SAMA] ... */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">// PILIH MATKUL</label>
@@ -212,11 +244,9 @@ export default function FormTugas({ onComplete }) {
         </div>
       </div>
 
-      {/* FIELD BARU: MATERI PEMBELAJARAN (MULTI TIPE) */}
       <div className="border-4 border-black p-3 bg-white">
         <label className="block font-black uppercase text-xs mb-3 text-gray-500">// MATERI PEMBELAJARAN</label>
         
-        {/* Toggle Tipe Materi */}
         <div className="flex gap-2 mb-3">
           {['teks', 'link', 'file'].map((type) => (
             <button
@@ -224,8 +254,8 @@ export default function FormTugas({ onComplete }) {
               type="button"
               onClick={() => {
                 setMateriType(type);
-                setFormData({...formData, materi: ''}); // Reset input jika ganti tipe
-                setMateriFile(null);
+                setFormData({...formData, materi: ''});
+                setMateriFiles([]);
               }}
               className={`flex-1 py-1 px-2 border-2 border-black font-black text-[10px] sm:text-xs uppercase transition-all ${materiType === type ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]' : 'bg-white text-black hover:bg-gray-100'}`}
             >
@@ -234,7 +264,6 @@ export default function FormTugas({ onComplete }) {
           ))}
         </div>
 
-        {/* Input Render Berdasarkan Tipe */}
         {materiType === 'teks' && (
           <textarea 
             rows="2"
@@ -257,16 +286,26 @@ export default function FormTugas({ onComplete }) {
           />
         )}
 
+        {/* INPUT FILE DIBUAT MULTIPLE */}
         {materiType === 'file' && (
-          <input 
-            type="file"
-            disabled={isDeploying}
-            className="w-full border-4 border-black p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:text-black hover:file:bg-green-300 cursor-pointer"
-            onChange={handleFileChange} 
-          />
+          <div>
+            <input 
+              type="file"
+              multiple 
+              disabled={isDeploying}
+              className="w-full border-4 border-black p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:text-black hover:file:bg-green-300 cursor-pointer"
+              onChange={handleFileChange} 
+            />
+            {materiFiles.length > 0 && (
+              <div className="mt-2 text-[10px] font-black uppercase text-purple-600">
+                {materiFiles.length} file dipilih {materiFiles.length > 1 && '(Akan otomatis di-bundling ke .ZIP)'}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
+      {/* ... [BAGIAN BAWAH TETAP SAMA SEPERTI SEBELUMNYA] ... */}
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
           <span>// METODE PENGUMPULAN</span>
