@@ -30,6 +30,8 @@
     const [session, setSession] = useState(null);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+    const [showOAuthBooting, setShowOAuthBooting] = useState(false);
+    const [oauthBootUserName, setOAuthBootUserName] = useState('');
     
     // State baru untuk User Saat Ini dan Toggle Profil
     const [currentUser, setCurrentUser] = useState(null);
@@ -89,9 +91,13 @@
         }
 
         // 2. Jika tidak ada manual, baru cek session Supabase (untuk Google Login)
+        const oauthBootRequest = !!localStorage.getItem('oauth_booting');
+        if (oauthBootRequest) {
+          localStorage.removeItem('oauth_booting');
+        }
         const { data, error } = await supabase.auth.getSession();
         if (data?.session) {
-          await handleSession(data.session);
+          await handleSession(data.session, oauthBootRequest);
         } else {
           setIsAuthorized(false);
           setIsCheckingAuth(false);
@@ -107,7 +113,7 @@
     // Listener untuk perubahan auth (seperti login Google)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        handleSession(session);
+        handleSession(session, !!localStorage.getItem('oauth_booting'));
       }
     });
 
@@ -140,13 +146,18 @@
       };
     }, [isAuthorized]);
 
-    const handleSession = async (currentSession) => {
+    const handleSession = async (currentSession, shouldBoot = false) => {
       if (!currentSession) {
         setSession(null);
         setIsAuthorized(false);
         setCurrentUser(null);
         setIsCheckingAuth(false);
         return;
+      }
+
+      const oauthBootRequest = shouldBoot || !!localStorage.getItem('oauth_booting');
+      if (oauthBootRequest) {
+        localStorage.removeItem('oauth_booting');
       }
 
       try {
@@ -166,6 +177,16 @@
           setSession(currentSession);
           setIsAuthorized(true);
           setCurrentUser(student);
+
+          if (oauthBootRequest) {
+            setOAuthBootUserName(student.nama || userEmail || 'Pengguna');
+            setShowOAuthBooting(true);
+
+            setTimeout(() => {
+              setShowOAuthBooting(false);
+              setIsCheckingAuth(false);
+            }, 5000);
+          }
 
           const lastLogin = localStorage.getItem('last_log_at');
           const now = new Date().getTime();
@@ -188,7 +209,9 @@
         setIsAuthorized(false);
         setCurrentUser(null);
       } finally {
-        setIsCheckingAuth(false);
+        if (!oauthBootRequest) {
+          setIsCheckingAuth(false);
+        }
       }
     };
 
@@ -257,6 +280,35 @@ async function fetchInitialData() {
       return <div className="min-h-screen flex items-center justify-center bg-purple-900">
         <div className="font-black text-green-400 uppercase text-2xl animate-pulse">Memvalidasi Akses...</div>
         </div>;
+    }
+
+    if (showOAuthBooting) {
+      return (
+        <div className="fixed inset-0 z-50 bg-purple-900 flex flex-col items-center justify-center text-white font-mono p-4 overflow-hidden">
+          <div className="space-y-8 text-center">
+            <h2 className="text-xl md:text-2xl uppercase tracking-[0.2em] opacity-0 animate-text-seq" style={{ animationDelay: '0.5s' }}>
+              Welcome <span className="text-green-400 font-black">{oauthBootUserName}</span>...
+            </h2>
+            <p className="text-lg uppercase tracking-widest opacity-0 animate-text-seq" style={{ animationDelay: '1.8s' }}>
+              To Website...
+            </p>
+            <h1 className="text-5xl md:text-7xl font-black italic underline decoration-green-400 opacity-0 animate-text-seq" style={{ animationDelay: '2.8s' }}>
+              TI-25-KA
+            </h1>
+          </div>
+
+          <div className="absolute bottom-20 w-full max-w-xs px-4" style={{ maxWidth: '250px' }}>
+            <div className="h-1 bg-gray-900 w-full overflow-hidden border border-white/10">
+              <div className="h-full bg-green-500 animate-progress"></div>
+            </div>
+            <div className="flex justify-between mt-2">
+              <p className="text-[10px] text-gray-500 animate-pulse uppercase">Loading_to_website...</p>
+              <p className="text-[10px] text-green-500 font-bold uppercase">Ready</p>
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-black opacity-0 animate-final-fade z-50 pointer-events-none" style={{ animationDelay: '4s' }}></div>
+        </div>
+      );
     }
 
     if (!isAuthorized) return <Login />;

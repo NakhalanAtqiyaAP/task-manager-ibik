@@ -49,6 +49,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
+    localStorage.setItem('oauth_booting', 'true');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin }
@@ -121,7 +122,7 @@ export default function Login() {
 
       {/* CUTSCENE OVERLAY */}
       {isBooting && (
-        <div className="fixed inset-0 z-[100] bg-purple-900 flex flex-col items-center justify-center text-white font-mono p-4 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-purple-900 flex flex-col items-center justify-center text-white font-mono p-4 overflow-hidden">
           <div className="space-y-8 text-center">
             <h2 className="text-xl md:text-2xl uppercase tracking-[0.2em] opacity-0 animate-text-seq" style={{ animationDelay: '0.5s' }}>
               Welcome <span className="text-green-400 font-black">{studentName}</span>...
@@ -134,7 +135,7 @@ export default function Login() {
             </h1>
           </div>
 
-          <div className="absolute bottom-20 w-full max-w-[250px] px-4">
+          <div className="absolute bottom-20 w-full max-w-xs px-4" style={{ maxWidth: '250px' }}>
             <div className="h-1 bg-gray-900 w-full overflow-hidden border border-white/10">
               <div className="h-full bg-green-500 animate-progress"></div>
             </div>
@@ -143,7 +144,7 @@ export default function Login() {
               <p className="text-[10px] text-green-500 font-bold uppercase">Ready</p>
             </div>
           </div>
-          <div className="absolute inset-0 bg-black opacity-0 animate-final-fade z-[110] pointer-events-none" style={{ animationDelay: '4s' }}></div>
+          <div className="absolute inset-0 bg-black opacity-0 animate-final-fade z-50 pointer-events-none" style={{ animationDelay: '4s' }}></div>
         </div>
       )}
     </>
