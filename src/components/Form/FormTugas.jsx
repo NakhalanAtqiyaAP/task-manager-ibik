@@ -8,6 +8,10 @@ export default function FormTugas({ onComplete }) {
   const [selectedStudents, setSelectedStudents] = useState([]); 
   const [isDeploying, setIsDeploying] = useState(false);
   
+  // State untuk kontrol tipe materi
+  const [materiType, setMateriType] = useState('teks'); // 'teks', 'link', 'file'
+  const [materiFile, setMateriFile] = useState(null); // Menyimpan objek file yang diupload
+
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
     judul: '', 
@@ -15,22 +19,19 @@ export default function FormTugas({ onComplete }) {
     course_id: '', 
     deadline: '',
     submission_link: '',
-    materi: '' // Tambahan: state materi
+    materi: '' 
   });
 
   const getSubmissionType = (value) => {
     if (!value) return '';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
-    
     if (emailRegex.test(value)) return { label: 'EMAIL', color: 'bg-yellow-400' };
     if (urlRegex.test(value)) return { label: 'URL LINK', color: 'bg-blue-400' };
     return { label: 'TEKS PERINTAH', color: 'bg-gray-300' };
   };
 
   const detectedType = getSubmissionType(formData.submission_link);
-  // Cek apakah materi berisi link
-  const isMateriLink = /^(http|https):\/\/[^ "]+$/.test(formData.materi);
 
   useEffect(() => {
     async function fetchData() {
@@ -63,7 +64,6 @@ export default function FormTugas({ onComplete }) {
 
     const selectedCourse = activeCourses.find(c => c.id === selectedCourseId);
     const namaMatkul = selectedCourse?.mata_kuliah?.nama_matkul || 'XX';
-    
     const twoLettersMatkul = namaMatkul.substring(0, 2).toUpperCase();
     const date = new Date();
     const ddmmyy = String(date.getDate()).padStart(2, '0') + 
@@ -76,11 +76,24 @@ export default function FormTugas({ onComplete }) {
     setFormData({ ...formData, course_id: selectedCourseId, kode_tugas: generatedKode });
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setMateriFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (selectedStudents.length === 0) {
       return toast.error("PILIH MINIMAL 1 MAHASISWA!", {
+        position:"top-center",
+        className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
+    }
+
+    if (materiType === 'file' && !materiFile) {
+      return toast.error("FILE MATERI BELUM DIPILIH!", {
         position:"top-center",
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
@@ -95,14 +108,41 @@ export default function FormTugas({ onComplete }) {
     }
     
     try {
-      // 1. Simpan ke Master Tasks (Menambahkan kolom materi)
+      let finalMateriValue = formData.materi;
+
+      // PROSES UPLOAD FILE JIKA TIPE MATERI = FILE
+      if (materiType === 'file' && materiFile) {
+        toast.loading("Mengunggah file materi...", { id: "upload-toast" });
+        
+        // Buat nama file unik
+        const fileExt = materiFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // Upload ke bucket Supabase bernama 'materi_tugas'
+        const { error: uploadError } = await supabase.storage
+          .from('materi_tugas')
+          .upload(filePath, materiFile);
+
+        if (uploadError) throw new Error(`Gagal upload file: ${uploadError.message}`);
+
+        // Ambil URL public dari file yang diupload
+        const { data: { publicUrl } } = supabase.storage
+          .from('materi_tugas')
+          .getPublicUrl(filePath);
+
+        finalMateriValue = publicUrl;
+        toast.dismiss("upload-toast");
+      }
+
+      // 1. Simpan ke Master Tasks
       const { data: newTask, error: taskError } = await supabase
         .from('tasks')
         .insert([{
           kode_tugas: formData.kode_tugas,
           judul: formData.judul,
           deskripsi: formData.deskripsi,
-          materi: formData.materi, // Tambahan: Input materi
+          materi: finalMateriValue, 
           course_id: formData.course_id
         }])
         .select().single();
@@ -128,6 +168,7 @@ export default function FormTugas({ onComplete }) {
       
       onComplete();
     } catch (err) {
+      toast.dismiss("upload-toast");
       toast.error(err.message, {
         position:"top-center",
         className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
@@ -171,22 +212,59 @@ export default function FormTugas({ onComplete }) {
         </div>
       </div>
 
-      {/* FIELD BARU: MATERI PEMBELAJARAN */}
-      <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
-          <span>// MATERI_PEMBELAJARAN</span>
-          {formData.materi && isMateriLink && (
-            <span className="bg-blue-400 border-2 border-black px-2 py-0.5 text-[10px] text-black font-black uppercase">LINK MATERI TERDETEKSI</span>
-          )}
-        </label>
-        <textarea 
-          rows="2"
-          disabled={isDeploying}
-          placeholder="Masukkan link atau teks materi"
-          className={`w-full border-4 border-black p-3 font-bold outline-none resize-none transition-colors ${isMateriLink ? 'focus:bg-blue-50' : 'focus:bg-purple-100'}`}
-          value={formData.materi}
-          onChange={(e) => setFormData({...formData, materi: e.target.value})} 
-        />
+      {/* FIELD BARU: MATERI PEMBELAJARAN (MULTI TIPE) */}
+      <div className="border-4 border-black p-3 bg-white">
+        <label className="block font-black uppercase text-xs mb-3 text-gray-500">// MATERI PEMBELAJARAN</label>
+        
+        {/* Toggle Tipe Materi */}
+        <div className="flex gap-2 mb-3">
+          {['teks', 'link', 'file'].map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => {
+                setMateriType(type);
+                setFormData({...formData, materi: ''}); // Reset input jika ganti tipe
+                setMateriFile(null);
+              }}
+              className={`flex-1 py-1 px-2 border-2 border-black font-black text-[10px] sm:text-xs uppercase transition-all ${materiType === type ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        {/* Input Render Berdasarkan Tipe */}
+        {materiType === 'teks' && (
+          <textarea 
+            rows="2"
+            disabled={isDeploying}
+            placeholder="Ketik instruksi atau materi di sini..."
+            className="w-full border-4 border-black p-3 font-bold outline-none resize-none focus:bg-purple-100 transition-colors"
+            value={formData.materi}
+            onChange={(e) => setFormData({...formData, materi: e.target.value})} 
+          />
+        )}
+
+        {materiType === 'link' && (
+          <input 
+            type="url"
+            disabled={isDeploying}
+            placeholder="https://gdrive.com/... atau youtube.com/..."
+            className="w-full border-4 border-black p-3 font-bold outline-none focus:bg-blue-100 transition-colors"
+            value={formData.materi}
+            onChange={(e) => setFormData({...formData, materi: e.target.value})} 
+          />
+        )}
+
+        {materiType === 'file' && (
+          <input 
+            type="file"
+            disabled={isDeploying}
+            className="w-full border-4 border-black p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:text-black hover:file:bg-green-300 cursor-pointer"
+            onChange={handleFileChange} 
+          />
+        )}
       </div>
 
       <div>
