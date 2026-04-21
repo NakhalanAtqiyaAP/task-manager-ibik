@@ -1,8 +1,6 @@
   import { useState, useEffect } from 'react';
   import { Toaster } from 'react-hot-toast';
 
-  import { supabase } from './lib/supabase';
-
   import Login from './pages/LoginPage';
   import MemberPage from './pages/MemberPage';
   import LeaderboardPage from './pages/LeaderboardPage';
@@ -20,6 +18,9 @@
   import DaftarTugasList from './components/DaftarTugasList';
   import MataKuliahList from './components/MataKuliahList';
   import Profile from './components/Profile';
+import OAuthBootOverlay from './components/OAuthBootOverlay';
+import { useAuth } from './hooks/useAuth';
+import { useStudentTasks } from './hooks/useStudentTasks';
 
 
   
@@ -27,21 +28,15 @@
   export default function App() {
     const [activeView, setActiveView] = useState('Dashboard');
 
-    const [session, setSession] = useState(null);
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-    const [showOAuthBooting, setShowOAuthBooting] = useState(false);
-    const [oauthBootUserName, setOAuthBootUserName] = useState('');
-    
-    // State baru untuk User Saat Ini dan Toggle Profil
-    const [currentUser, setCurrentUser] = useState(null);
+    const { isAuthorized, isCheckingAuth, currentUser, showOAuthBooting, oauthBootUserName, logout } = useAuth();
+    const { tasks, loading, fetchStudentTasks } = useStudentTasks(currentUser, isAuthorized);
+
+    // State baru untuk Toggle Profil
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const [modalConfig, setModalConfig] = useState({ 
       isOpen: false, category: '', mode: '' 
     });
-    const [tasks, setTasks] = useState([]);
-    const [loading, setLoading] = useState(true);
 // [BARU] EVENT LISTENER SCROLL UNTUK ANIMASI
   useEffect(() => {
     const handleScroll = () => {
@@ -72,155 +67,10 @@
       window.removeEventListener('scroll', handleScroll);
     };
   }, [activeView, loading]); // Pantau activeView dan loading
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // 1. Cek dulu apakah ada user manual di localStorage
-        const manualUser = localStorage.getItem('manual_auth_user');
-        
-        if (manualUser) {
-          const parsed = JSON.parse(manualUser);
-          // Validasi sederhana: pastikan data tidak kosong
-          if (parsed && parsed.email) {
-            setCurrentUser(parsed);
-            setSession({ user: { email: parsed.email }, app_metadata: { provider: 'manual' } });
-            setIsAuthorized(true);
-            setIsCheckingAuth(false);
-            return; // Jika ada login manual, stop di sini.
-          }
-        }
-
-        // 2. Jika tidak ada manual, baru cek session Supabase (untuk Google Login)
-        const oauthBootRequest = !!localStorage.getItem('oauth_booting');
-        if (oauthBootRequest) {
-          localStorage.removeItem('oauth_booting');
-        }
-        const { data, error } = await supabase.auth.getSession();
-        if (data?.session) {
-          await handleSession(data.session, oauthBootRequest);
-        } else {
-          setIsAuthorized(false);
-          setIsCheckingAuth(false);
-        }
-      } catch (error) {
-        console.error('Auth initialization failed:', error);
-        setIsCheckingAuth(false);
-      }
-    };
-
-    initAuth();
-
-    // Listener untuk perubahan auth (seperti login Google)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        handleSession(session, !!localStorage.getItem('oauth_booting'));
-      }
-    });
-
-    return () => subscription?.unsubscribe();
-  }, []);
-
-    useEffect(() => {
-      let logoutTimer;
-      const resetTimer = () => {
-        if (logoutTimer) clearTimeout(logoutTimer);
-        logoutTimer = setTimeout(() => {
-          alert("Sesi berakhir karena tidak ada aktivitas selama 2 jam.");
-          supabase.auth.signOut();
-        }, 7200000);
-      };
-
-      if (isAuthorized) {
-        window.addEventListener('mousemove', resetTimer);
-        window.addEventListener('keydown', resetTimer);
-        window.addEventListener('scroll', resetTimer);
-        window.addEventListener('click', resetTimer);
-        resetTimer();
-      }
-      return () => {
-        window.removeEventListener('mousemove', resetTimer);
-        window.removeEventListener('keydown', resetTimer);
-        window.removeEventListener('scroll', resetTimer);
-        window.removeEventListener('click', resetTimer);
-        if (logoutTimer) clearTimeout(logoutTimer);
-      };
-    }, [isAuthorized]);
-
-    const handleSession = async (currentSession, shouldBoot = false) => {
-      if (!currentSession) {
-        setSession(null);
-        setIsAuthorized(false);
-        setCurrentUser(null);
-        setIsCheckingAuth(false);
-        return;
-      }
-
-      const oauthBootRequest = shouldBoot || !!localStorage.getItem('oauth_booting');
-      if (oauthBootRequest) {
-        localStorage.removeItem('oauth_booting');
-      }
-
-      try {
-        const userEmail = currentSession.user.email;
-        const { data: student, error } = await supabase
-          .from('students')
-          .select('*')
-          .eq('email', userEmail)
-          .single();
-
-        if (error) {
-          console.error('Student lookup failed:', error);
-          throw error;
-        }
-
-        if (student) {
-          setSession(currentSession);
-          setIsAuthorized(true);
-          setCurrentUser(student);
-
-          if (oauthBootRequest) {
-            setOAuthBootUserName(student.nama || userEmail || 'Pengguna');
-            setShowOAuthBooting(true);
-
-            setTimeout(() => {
-              setShowOAuthBooting(false);
-              setIsCheckingAuth(false);
-            }, 5000);
-          }
-
-          const lastLogin = localStorage.getItem('last_log_at');
-          const now = new Date().getTime();
-          if (!lastLogin || now - lastLogin > 60000) {
-            await supabase.from('login_history').insert([
-              { student_id: student.id, email: userEmail, login_method: currentSession.user.app_metadata?.provider || 'password' }
-            ]);
-            localStorage.setItem('last_log_at', now);
-          }
-        } else {
-          await supabase.auth.signOut();
-          alert("Email tidak terdaftar!");
-          setSession(null);
-          setIsAuthorized(false);
-          setCurrentUser(null);
-        }
-      } catch (error) {
-        console.error('handleSession error:', error);
-        setSession(null);
-        setIsAuthorized(false);
-        setCurrentUser(null);
-      } finally {
-        if (!oauthBootRequest) {
-          setIsCheckingAuth(false);
-        }
-      }
-    };
 
     const handleMenuAction = (category, mode) => {
     if (category === 'Logout') {
-      localStorage.removeItem('manual_auth_user');
-      supabase.auth.signOut();
-      setIsAuthorized(false);
-      setCurrentUser(null);
+      logout();
     } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard' || category === 'Gallery') {
       setActiveView(category);
       setModalConfig({ ...modalConfig, isOpen: false });
@@ -230,49 +80,6 @@
     }
   };
     const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
-
-    // ... (fungsi fetchInitialData TETAP SAMA) ...
-    // Di dalam App.jsx
-async function fetchInitialData() {
-  // Pastikan user sudah ada sebelum melakukan fetch
-  if (!currentUser?.id) return; 
-
-  setLoading(true);
-  try {
-    const { data: monitorData, error } = await supabase
-      .from('student_tasks')
-      .select(`
-        id, 
-        deadline, 
-        is_completed, 
-        students ( id, nama ), 
-        tasks ( 
-          id, 
-          judul, 
-          courses ( 
-            semester, 
-            mata_kuliah:matkul_id ( nama_matkul ) 
-          ) 
-        )
-      `)
-      // FILTER KUNCINYA DI SINI:
-      .eq('student_id', currentUser.id) 
-      .order('deadline', { ascending: true });
-
-    if (error) throw error;
-    setTasks(monitorData || []);
-  } catch (error) { 
-    console.error('Error:', error.message); 
-  } finally { 
-    setLoading(false); 
-  }
-}
-
-  useEffect(() => { 
-  if (isAuthorized && currentUser) {
-    fetchInitialData(); 
-  }
-}, [isAuthorized, currentUser]);
 
     const activeTasksCount = tasks.filter(task => !task.is_completed).length;
 
@@ -440,11 +247,7 @@ async function fetchInitialData() {
           userEmail={currentUser?.email} 
           onProfileUpdate={(updatedUser) => setCurrentUser({...currentUser, ...updatedUser})} 
           onLogout={() => { 
-            localStorage.removeItem('manual_auth_user'); // Hapus storage
-            supabase.auth.signOut(); // Sign out dari supabase
-            setIsAuthorized(false); // <--- INI KUNCINYA: Paksa state jadi false
-            setCurrentUser(null);
-            setSession(null);
+            logout();
             setIsProfileOpen(false); // Tutup drawer
           }}
           />
