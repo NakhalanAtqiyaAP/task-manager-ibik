@@ -160,7 +160,7 @@ const renderMateriAction = (materi) => {
           download={isSupabaseFile} // Memicu download paksa jika itu file
           className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
         >
-           {isSupabaseFile ? 'UNDUH MATERI (FILE/ZIP)' : 'BUKA MATERI (LINK)'}
+           {isSupabaseFile ? 'UNDUH MATERI' : 'BUKA MATERI (LINK)'}
         </a>
       ) : (
         <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
