@@ -257,7 +257,7 @@ export default function FormTugas({ onComplete }) {
                 setFormData({...formData, materi: ''});
                 setMateriFiles([]);
               }}
-              className={`flex-1 py-1 px-2 border-2 border-black font-black text-[10px] sm:text-xs uppercase transition-all ${materiType === type ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(168,85,247,1)]' : 'bg-white text-black hover:bg-gray-100'}`}
+              className={`flex-1 py-1 px-2 border-2 border-black font-black text-[10px] sm:text-xs uppercase transition-all ${materiType === type ? 'bg-purple-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black hover:bg-gray-100'}`}
             >
               {type}
             </button>
