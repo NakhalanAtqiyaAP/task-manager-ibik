@@ -184,7 +184,7 @@ import { useStudentTasks } from './hooks/useStudentTasks';
           {activeView === 'Dashboard' ? (
             <>
               <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
-              <TaskTable studentId={currentUser?.id} onRefresh={fetchInitialData} />
+              <TaskTable studentId={currentUser?.id} onRefresh={fetchStudentTasks} />
             </>
           ) : activeView === 'Member' ? (
             <MemberPage />
