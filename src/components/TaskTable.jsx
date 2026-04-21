@@ -140,14 +140,12 @@ export default function TaskTable({ studentId, onRefresh }) {
     }
   };
 
-  // Temukan fungsi ini di TaskTable.jsx dan ubah menjadi:
 const renderMateriAction = (materi) => {
   if (!materi) return null;
 
   const urlRegex = /^(http|https):\/\/[^ "]+$/;
   const isLink = urlRegex.test(materi);
 
-  // Deteksi apakah link berasal dari bucket supabase kamu
   const isSupabaseFile = isLink && materi.includes('materi_tugas'); 
 
   return (
@@ -168,7 +166,6 @@ const renderMateriAction = (materi) => {
         </div>
       )}
 
-      {/* Pop up catatan materi */}
       <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
         <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
           <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
