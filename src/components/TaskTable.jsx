@@ -368,7 +368,7 @@ const renderMateriAction = (materi) => {
                       </span>
                       {isDone && (
                         <span className="bg-green-400 border border-black text-black text-[10px] px-2 py-0.5 mt-1 font-black uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          Selesai Dieksekusi
+                          Selesai
                         </span>
                       )}
                     </div>
