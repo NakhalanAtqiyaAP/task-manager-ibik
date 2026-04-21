@@ -293,7 +293,7 @@ export default function FormTugas({ onComplete }) {
               type="file"
               multiple 
               disabled={isDeploying}
-              className="w-full border-4 border-black p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:text-black hover:file:bg-green-300 cursor-pointer"
+              className="w-full border-4 border-black  p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]  file:text-black  hover:file:bg-green-300 cursor-pointer "
               onChange={handleFileChange} 
             />
             {materiFiles.length > 0 && (
