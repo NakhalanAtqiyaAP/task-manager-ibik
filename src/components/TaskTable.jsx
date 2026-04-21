@@ -67,7 +67,7 @@ export default function TaskTable({ studentId, onRefresh }) {
       .select(`
         id, deadline, is_completed, task_id, submission_link, 
         tasks ( 
-          id, judul, materi, 
+          id, judul, deskripsi, materi, 
           courses ( mata_kuliah (nama_matkul), semester )
         )
       `)
@@ -355,13 +355,20 @@ const renderMateriAction = (materi) => {
                         {item.tasks?.courses?.mata_kuliah?.nama_matkul} (Sem {item.tasks?.courses?.semester})
                       </p>
                       
-                      <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                         {!isDone && renderMateriAction(item.tasks?.materi)}
                         {!isDone && renderSubmissionAction()}
                       </div>
+
+                      {item.tasks?.deskripsi && (
+                        <div className="mt-3 p-2 bg-gray-50 border-l-4 border-purple-400 rounded">
+                          <p className="text-[11px] font-semibold text-purple-600 uppercase mb-1">Deskripsi:</p>
+                          <p className="text-xs text-gray-700 leading-relaxed">{item.tasks.deskripsi}</p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="text-right flex flex-col items-end flex-shrink-0">
+                    <div className="text-right flex flex-col items-end shrink-0">
                       <span className="text-[10px] font-black uppercase text-gray-400">Deadline</span>
                       <span className={`font-black text-sm ${isDone ? 'text-gray-400' : 'text-purple-600'}`}>
                         {fmtDate(item.deadline)}
