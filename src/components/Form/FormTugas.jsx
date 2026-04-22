@@ -12,6 +12,8 @@ export default function FormTugas({ onComplete }) {
   const [materiType, setMateriType] = useState('teks'); 
   // UBAH STATE INI JADI ARRAY UNTUK MULTIPLE FILES
   const [materiFiles, setMateriFiles] = useState([]); 
+  // STATE BARU UNTUK MULTIPLE LINKS
+  const [materiLinks, setMateriLinks] = useState(['']); 
 
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
@@ -101,6 +103,13 @@ export default function FormTugas({ onComplete }) {
       });
     }
 
+    if (materiType === 'link' && materiLinks.filter(link => link.trim() !== '').length === 0) {
+      return toast.error("LINK MATERI BELUM DIISI!", {
+        position:"top-center",
+        className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
+    }
+
     setIsDeploying(true);
     
     let deadline = formData.deadline;
@@ -111,6 +120,11 @@ export default function FormTugas({ onComplete }) {
     
     try {
       let finalMateriValue = formData.materi;
+
+      // JIKA TIPE LINK, GABUNGKAN MULTIPLE LINKS
+      if (materiType === 'link') {
+        finalMateriValue = materiLinks.filter(link => link.trim() !== '').join('\n');
+      }
 
       // PROSES UPLOAD FILE JIKA TIPE MATERI = FILE
       if (materiType === 'file' && materiFiles.length > 0) {
@@ -256,6 +270,7 @@ export default function FormTugas({ onComplete }) {
                 setMateriType(type);
                 setFormData({...formData, materi: ''});
                 setMateriFiles([]);
+                setMateriLinks(['']); // RESET LINKS KE DEFAULT
               }}
               className={`flex-1 py-1 px-2 border-2 border-black font-black text-[10px] sm:text-xs uppercase transition-all ${materiType === type ? 'bg-purple-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black hover:bg-gray-100'}`}
             >
@@ -276,14 +291,45 @@ export default function FormTugas({ onComplete }) {
         )}
 
         {materiType === 'link' && (
-          <input 
-            type="url"
-            disabled={isDeploying}
-            placeholder="https://gdrive.com/... atau youtube.com/..."
-            className="w-full border-4 border-black p-3 font-bold outline-none focus:bg-blue-100 transition-colors"
-            value={formData.materi}
-            onChange={(e) => setFormData({...formData, materi: e.target.value})} 
-          />
+          <div className="space-y-2">
+            {materiLinks.map((link, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <input 
+                  type="url"
+                  disabled={isDeploying}
+                  placeholder="https://gdrive.com/... atau youtube.com/..."
+                  className="flex-1 border-4 border-black p-3 font-bold outline-none focus:bg-blue-100 transition-colors"
+                  value={link}
+                  onChange={(e) => {
+                    const newLinks = [...materiLinks];
+                    newLinks[index] = e.target.value;
+                    setMateriLinks(newLinks);
+                  }} 
+                />
+                {materiLinks.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newLinks = materiLinks.filter((_, i) => i !== index);
+                      setMateriLinks(newLinks);
+                    }}
+                    className="border-2 border-black bg-red-400 text-black font-black px-2 py-1 text-xs uppercase hover:bg-red-300"
+                    disabled={isDeploying}
+                  >
+                    HAPUS
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setMateriLinks([...materiLinks, ''])}
+              className="border-2 border-black bg-green-400 text-black font-black px-4 py-2 text-xs uppercase hover:bg-green-300"
+              disabled={isDeploying}
+            >
+              + TAMBAH LINK
+            </button>
+          </div>
         )}
 
         {/* INPUT FILE DIBUAT MULTIPLE */}
