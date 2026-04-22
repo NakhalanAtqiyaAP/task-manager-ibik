@@ -140,25 +140,49 @@ export default function TaskTable({ studentId, onRefresh }) {
     }
   };
 
-const renderMateriAction = (materi) => {
+const MateriAction = ({ materi }) => {
   if (!materi) return null;
 
-  const urlRegex = /^(http|https):\/\/[^ "]+$/;
-  const isLink = urlRegex.test(materi);
+  const lines = materi
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 
-  const isSupabaseFile = isLink && materi.includes('materi_tugas'); 
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedMateri = lines[selectedIndex] || '';
+
+  const urlRegex = /^(http|https):\/\/[^ "]+$/;
+  const isLink = urlRegex.test(selectedMateri);
+  const isSupabaseFile = isLink && selectedMateri.includes('materi_tugas');
 
   return (
     <div className="relative group/materi inline-block mr-2">
+      {lines.length > 1 && (
+        <div className="mb-2">
+          <label className="block text-[10px] uppercase font-black text-gray-700 mb-1">Pilih Link Materi</label>
+          <select
+            value={selectedIndex}
+            onChange={(e) => setSelectedIndex(Number(e.target.value))}
+            className="w-full border-2 border-black bg-white text-[10px] font-black uppercase p-2"
+          >
+            {lines.map((line, index) => (
+              <option key={index} value={index}>
+                Link {index + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {isLink ? (
-        <a 
-          href={materi} 
-          target="_blank" 
+        <a
+          href={selectedMateri}
+          target="_blank"
           rel="noopener noreferrer"
-          download={isSupabaseFile} // Memicu download paksa jika itu file
+          download={isSupabaseFile}
           className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
         >
-           {isSupabaseFile ? 'UNDUH MATERI' : 'BUKA MATERI (LINK)'}
+          {isSupabaseFile ? 'UNDUH MATERI' : 'BUKA MATERI'}
         </a>
       ) : (
         <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
@@ -169,7 +193,7 @@ const renderMateriAction = (materi) => {
       <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
         <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
           <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
-          {isSupabaseFile ? 'Materi siap diunduh.' : materi}
+          {isSupabaseFile ? 'Materi siap diunduh.' : selectedMateri}
         </div>
       </div>
     </div>
@@ -356,8 +380,7 @@ const renderMateriAction = (materi) => {
                       </p>
                       
                   <div className="flex flex-wrap items-center gap-2">
-                        {!isDone && renderMateriAction(item.tasks?.materi)}
-                        {!isDone && renderSubmissionAction()}
+                        {!isDone && <MateriAction materi={item.tasks?.materi} />}
                       </div>
 
                       {item.tasks?.deskripsi && (
