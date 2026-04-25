@@ -381,6 +381,7 @@ const MateriAction = ({ materi }) => {
                       
                   <div className="flex flex-wrap items-center gap-2">
                         {!isDone && <MateriAction materi={item.tasks?.materi} />}
+                        {!isDone && renderSubmissionAction()}
                       </div>
 
                       {item.tasks?.deskripsi && (
