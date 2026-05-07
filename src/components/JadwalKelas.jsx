@@ -54,76 +54,78 @@ export default function JadwalKelas({ userRole }) {
       </div>
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit} className="bg-[#fef08a] border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 mb-10">
-        <h3 className="text-xl font-bold mb-4 uppercase border-b-4 border-black inline-block pb-1">Input Data</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <select 
-            className={inputBrutalism}
-            value={formData.hari}
-            onChange={(e) => setFormData({...formData, hari: e.target.value})}
-            required
-          >
-            {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(h => <option key={h} value={h}>{h}</option>)}
-          </select>
+      {userRole === 'admin' && (
+        <form onSubmit={handleSubmit} className="bg-[#fef08a] border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 mb-10">
+          <h3 className="text-xl font-bold mb-4 uppercase border-b-4 border-black inline-block pb-1">Input Data</h3>
           
-          <input 
-            placeholder="MATA KULIAH" 
-            className={inputBrutalism}
-            value={formData.mata_kuliah}
-            onChange={(e) => setFormData({...formData, mata_kuliah: e.target.value})}
-            required
-          />
-          
-          <input 
-            placeholder="RUANGAN" 
-            className={inputBrutalism}
-            value={formData.ruangan}
-            onChange={(e) => setFormData({...formData, ruangan: e.target.value})}
-          />
-          
-          <input 
-            placeholder="DOSEN PENGAMPU" 
-            className={inputBrutalism}
-            value={formData.dosen}
-            onChange={(e) => setFormData({...formData, dosen: e.target.value})}
-          />
-          
-          <input 
-            type="time"
-            className={inputBrutalism}
-            value={formData.jam_mulai}
-            onChange={(e) => setFormData({...formData, jam_mulai: e.target.value})}
-            required
-          />
-          
-          <input 
-            type="time"
-            className={inputBrutalism}
-            value={formData.jam_selesai}
-            onChange={(e) => setFormData({...formData, jam_selesai: e.target.value})}
-            required
-          />
-          
-          <select 
-            className={`${inputBrutalism} md:col-span-1`}
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-          >
-            <option value="Normal">NORMAL</option>
-            <option value="Pindah Jam">PINDAH JAM</option>
-            <option value="Dibatalkan">DIBATALKAN</option>
-          </select>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <select 
+              className={inputBrutalism}
+              value={formData.hari}
+              onChange={(e) => setFormData({...formData, hari: e.target.value})}
+              required
+            >
+              {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+            
+            <input 
+              placeholder="MATA KULIAH" 
+              className={inputBrutalism}
+              value={formData.mata_kuliah}
+              onChange={(e) => setFormData({...formData, mata_kuliah: e.target.value})}
+              required
+            />
+            
+            <input 
+              placeholder="RUANGAN" 
+              className={inputBrutalism}
+              value={formData.ruangan}
+              onChange={(e) => setFormData({...formData, ruangan: e.target.value})}
+            />
+            
+            <input 
+              placeholder="DOSEN PENGAMPU" 
+              className={inputBrutalism}
+              value={formData.dosen}
+              onChange={(e) => setFormData({...formData, dosen: e.target.value})}
+            />
+            
+            <input 
+              type="time"
+              className={inputBrutalism}
+              value={formData.jam_mulai}
+              onChange={(e) => setFormData({...formData, jam_mulai: e.target.value})}
+              required
+            />
+            
+            <input 
+              type="time"
+              className={inputBrutalism}
+              value={formData.jam_selesai}
+              onChange={(e) => setFormData({...formData, jam_selesai: e.target.value})}
+              required
+            />
+            
+            <select 
+              className={`${inputBrutalism} md:col-span-1`}
+              value={formData.status}
+              onChange={(e) => setFormData({...formData, status: e.target.value})}
+            >
+              <option value="Normal">NORMAL</option>
+              <option value="Pindah Jam">PINDAH JAM</option>
+              <option value="Dibatalkan">DIBATALKAN</option>
+            </select>
 
-          <button 
-            type="submit" 
-            className="md:col-span-2 bg-[#f472b6] hover:bg-[#ec4899] border-4 border-black p-3 font-black text-lg uppercase tracking-wider flex items-center justify-center gap-2 shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1 transition-all"
-          >
-            {isEditing ? <Edit2 size={24} strokeWidth={3} /> : <Plus size={24} strokeWidth={3} />} 
-            {isEditing ? 'Update Jadwal' : 'Tambah Jadwal'}
-          </button>
-        </div>
-      </form>
+            <button 
+              type="submit" 
+              className="md:col-span-2 bg-[#f472b6] hover:bg-[#ec4899] border-4 border-black p-3 font-black text-lg uppercase tracking-wider flex items-center justify-center gap-2 shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1 transition-all"
+            >
+              {isEditing ? <Edit2 size={24} strokeWidth={3} /> : <Plus size={24} strokeWidth={3} />} 
+              {isEditing ? 'Update Jadwal' : 'Tambah Jadwal'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Table Card */}
       <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden">
@@ -136,7 +138,7 @@ export default function JadwalKelas({ userRole }) {
                 <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Ruang & Dosen</th>
                 <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Waktu</th>
                 <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Status</th>
-                <th className="p-4 font-black uppercase text-lg text-center">Aksi</th>
+                {userRole === 'admin' && <th className="p-4 font-black uppercase text-lg text-center">Aksi</th>}
               </tr>
             </thead>
             <tbody>
