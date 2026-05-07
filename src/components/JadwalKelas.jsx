@@ -66,7 +66,7 @@ export default function JadwalKelas({ userRole }) {
 
         {/* FORM INPUT - HANYA UNTUK ADMIN */}
         {userRole === 'admin' && (
-          <div className="bg-gray-900 border-b-4 border-black p-5">
+          <div className="bg-black border-b-4 border-black p-5">
             <h3 className="text-white text-sm font-black uppercase mb-4 border-b-2 border-gray-700 pb-2">
               {isEditing ? '✏️ EDIT JADWAL' : '➕ TAMBAH JADWAL BARU'}
             </h3>
