@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // Sesuaikan dengan path client kamu
+import { supabase } from '../lib/supabase';
 import { Edit2, Plus, Trash2, Calendar } from 'lucide-react';
 
 export default function ScheduleManager() {
