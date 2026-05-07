@@ -4,6 +4,7 @@ import { Edit2, Plus, Trash2, Calendar } from 'lucide-react';
 
 export default function JadwalKelas({ userRole }) {
   const [schedules, setSchedules] = useState([]);
+  const [mataKuliahList, setMataKuliahList] = useState([]); // ← BARU
   const [formData, setFormData] = useState({
     hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', 
     jam_mulai: '', jam_selesai: '', status: 'Normal'
@@ -12,7 +13,18 @@ export default function JadwalKelas({ userRole }) {
 
   useEffect(() => {
     fetchSchedules();
+    fetchMataKuliah(); // ← BARU
   }, []);
+
+  // ← BARU: Fetch semua mata kuliah dari tabel mata_kuliah
+  async function fetchMataKuliah() {
+    const { data, error } = await supabase
+      .from('mata_kuliah')
+      .select('id, kode_matkul, nama_matkul')
+      .order('nama_matkul', { ascending: true });
+    if (error) console.error("Error fetching mata kuliah:", error);
+    setMataKuliahList(data || []);
+  }
 
   async function fetchSchedules() {
     const { data, error } = await supabase.from('jadwal_kuliah').select('*').order('hari');
@@ -39,6 +51,11 @@ export default function JadwalKelas({ userRole }) {
     setIsEditing(false);
   };
 
+  const handleEdit = (s) => {
+    setFormData(s);
+    setIsEditing(true);
+  };
+
   const inputStyles = "w-full bg-white border-2 border-gray-600 text-black px-3 py-2 text-sm font-bold uppercase";
 
   return (
@@ -58,7 +75,6 @@ export default function JadwalKelas({ userRole }) {
               REFRESH
             </button>
           </div>
-
           <div className="text-[10px] text-gray-400 tracking-widest leading-relaxed">
             JADWAL PERKULIAHAN UNTUK SEMESTER INI. {userRole === 'admin' && 'ANDA DAPAT MENAMBAH, MENGUBAH, ATAU MENGHAPUS JADWAL.'}
           </div>
@@ -79,16 +95,25 @@ export default function JadwalKelas({ userRole }) {
                   onChange={(e) => setFormData({...formData, hari: e.target.value})}
                   required
                 >
-                  {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(h => <option key={h} value={h}>{h}</option>)}
+                  {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map(h => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
                 </select>
-                
-                <input 
-                  placeholder="Mata Kuliah" 
+
+                {/* ← DIUBAH: Dari <input> menjadi <select> mata kuliah */}
+                <select
                   className={inputStyles}
                   value={formData.mata_kuliah}
                   onChange={(e) => setFormData({...formData, mata_kuliah: e.target.value})}
                   required
-                />
+                >
+                  <option value="">-- PILIH MATA KULIAH --</option>
+                  {mataKuliahList.map(mk => (
+                    <option key={mk.id} value={mk.nama_matkul}>
+                      {mk.nama_matkul} ({mk.kode_matkul})
+                    </option>
+                  ))}
+                </select>
                 
                 <input 
                   placeholder="Ruangan" 
@@ -153,7 +178,7 @@ export default function JadwalKelas({ userRole }) {
           </div>
         )}
 
-        {/* LIST JADWAL */}
+        {/* LIST JADWAL — tidak berubah */}
         <div className="divide-y-4 divide-black">
           {schedules.length > 0 ? (
             schedules.map((s) => (
@@ -161,50 +186,34 @@ export default function JadwalKelas({ userRole }) {
                 key={s.id}
                 className={`group flex items-center transition-all duration-300 ease-out ${s.status === 'Dibatalkan' ? 'bg-red-50/50 hover:bg-red-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(239,68,68,1)]' : 'bg-white hover:bg-blue-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(147,51,234,1)]'}`}
               >
-                {/* HARI BADGE */}
                 <div className="p-4 border-r-4 border-black shrink-0 relative z-10 min-w-20">
                   <div className="bg-blue-400 border-3 border-black p-2 text-center font-black text-sm text-white">
                     {s.hari.substring(0, 3).toUpperCase()}
                   </div>
                 </div>
-
-                {/* CONTENT */}
                 <div className="p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-transform duration-300 group-hover:translate-x-1">
                   <div className="flex-1">
-                    <h4 className="font-black uppercase text-base sm:text-lg text-black">
-                      {s.mata_kuliah}
-                    </h4>
-                    <p className="text-sm font-bold text-gray-700">
-                      {s.dosen ? `Dosen: ${s.dosen}` : '—'}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {s.ruangan ? `Ruangan: ${s.ruangan}` : '—'}
-                    </p>
+                    <h4 className="font-black uppercase text-base sm:text-lg text-black">{s.mata_kuliah}</h4>
+                    <p className="text-sm font-bold text-gray-700">{s.dosen ? `Dosen: ${s.dosen}` : '—'}</p>
+                    <p className="text-xs text-gray-600 mt-1">{s.ruangan ? `Ruangan: ${s.ruangan}` : '—'}</p>
                   </div>
-
                   <div className="flex items-center gap-4 shrink-0">
-                    {/* WAKTU */}
                     <div className="text-center">
                       <span className="text-[10px] font-black uppercase text-gray-400 block">Waktu</span>
                       <div className="bg-yellow-300 border-2 border-black p-2 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] mt-1">
                         {s.jam_mulai} - {s.jam_selesai}
                       </div>
                     </div>
-
-                    {/* STATUS */}
                     <div className="text-center">
                       <span className={`px-3 py-1 border-2 border-black font-black text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] block ${s.status === 'Normal' ? 'bg-green-400' : s.status === 'Pindah Jam' ? 'bg-yellow-400' : 'bg-red-400'}`}>
                         {s.status.toUpperCase()}
                       </span>
                     </div>
-
-                    {/* AKSI - HANYA UNTUK ADMIN */}
                     {userRole === 'admin' && (
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleEdit(s)} 
                           className="bg-blue-500 hover:bg-blue-600 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5 active:translate-x-0.5 transition-all"
-                          title="Edit"
                         >
                           <Edit2 size={16} className="text-white" strokeWidth={3} />
                         </button>
@@ -216,7 +225,6 @@ export default function JadwalKelas({ userRole }) {
                             }
                           }} 
                           className="bg-red-500 hover:bg-red-600 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5 active:translate-x-0.5 transition-all"
-                          title="Hapus"
                         >
                           <Trash2 size={16} className="text-white" strokeWidth={3} />
                         </button>
@@ -233,7 +241,6 @@ export default function JadwalKelas({ userRole }) {
           )}
         </div>
 
-        {/* FOOTER */}
         <div className="bg-gray-100 p-3 border-t-4 border-black flex justify-between items-center gap-4">
           <span className="text-xs font-black uppercase">Total: {schedules.length} Jadwal</span>
         </div>
