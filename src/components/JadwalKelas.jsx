@@ -128,68 +128,98 @@ export default function JadwalKelas({ userRole }) {
       )}
 
       {/* Table Card */}
-      <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-[#93c5fd] border-b-4 border-black">
-              <tr>
-                <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Hari</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Mata Kuliah</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Ruang & Dosen</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Waktu</th>
-                <th className="p-4 border-r-4 border-black font-black uppercase text-lg">Status</th>
-                {userRole === 'admin' && <th className="p-4 font-black uppercase text-lg text-center">Aksi</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {schedules.map((s, index) => (
-                <tr key={s.id} className={`border-b-4 border-black font-bold ${index % 2 === 0 ? 'bg-white' : 'bg-[#f8fafc]'}`}>
-                  <td className="p-4 border-r-4 border-black">{s.hari}</td>
-                  <td className="p-4 border-r-4 border-black text-xl">{s.mata_kuliah}</td>
-                  <td className="p-4 border-r-4 border-black">
-                    <div>{s.ruangan}</div>
-                    <div className="text-sm font-medium text-gray-600 mt-1">{s.dosen}</div>
-                  </td>
-                  <td className="p-4 border-r-4 border-black bg-[#fef08a] text-center">
-                    {s.jam_mulai} - {s.jam_selesai}
-                  </td>
-                  <td className="p-4 border-r-4 border-black text-center">
-                    <span className={`px-3 py-1 border-2 border-black font-black text-xs shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${s.status === 'Normal' ? 'bg-[#bbf7d0]' : 'bg-[#fca5a5]'}`}>
-                      {s.status.toUpperCase()}
-                    </span>
-                  </td>
-                  {userRole === 'admin' && (
-                    <td className="p-4 flex justify-center gap-3">
-                      <button 
-                        onClick={() => handleEdit(s)} 
-                        className="bg-[#60a5fa] hover:bg-[#3b82f6] p-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
-                        title="Edit"
-                      >
-                        <Edit2 size={20} className="text-white" strokeWidth={3} />
-                      </button>
-                      <button 
-                        onClick={async () => {
-                          const { error } = await supabase.from('jadwal_kuliah').delete().eq('id', s.id);
-                          if (!error) fetchSchedules();
-                        }} 
-                        className="bg-[#f87171] hover:bg-[#ef4444] p-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
-                        title="Hapus"
-                      >
-                        <Trash2 size={20} className="text-white" strokeWidth={3} />
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {schedules.length === 0 && (
-                <tr>
-                  <td colSpan={userRole === 'admin' ? "6" : "5"} className="p-8 text-center text-xl font-bold bg-[#f1f5f9]">
-                    BELUM ADA JADWAL KELAS 
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <div className="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10">
+        {/* HEADER */}
+        <div className="bg-black text-white p-5 font-black uppercase">
+          <span className="text-xl tracking-tight">Jadwal Perkuliahan</span>
+        </div>
+
+        {/* LIST JADWAL */}
+        <div className="divide-y-4 divide-black">
+          {schedules.length > 0 ? (
+            schedules.map((s) => (
+              <div 
+                key={s.id}
+                className={`group flex items-center transition-all duration-300 ease-out
+                  ${s.status === 'Dibatalkan' 
+                    ? 'bg-red-50/50 hover:bg-red-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(239,68,68,1)]' 
+                    : 'bg-white hover:bg-blue-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(93,51,166,1)]'
+                  }`}
+              >
+                {/* HARI BADGE */}
+                <div className="p-4 border-r-4 border-black shrink-0 relative z-10 min-w-20">
+                  <div className="bg-[#bbf7d0] border-3 border-black p-2 text-center font-black text-sm">
+                    {s.hari.substring(0, 3).toUpperCase()}
+                  </div>
+                </div>
+
+                {/* CONTENT */}
+                <div className="p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-transform duration-300 group-hover:translate-x-1">
+                  <div>
+                    <h4 className="font-black uppercase text-base sm:text-lg text-black">
+                      {s.mata_kuliah}
+                    </h4>
+                    <p className="text-sm font-bold text-gray-700">
+                      {s.dosen ? `Dosen: ${s.dosen}` : ''}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {s.ruangan ? `Ruangan: ${s.ruangan}` : '-'}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {/* WAKTU */}
+                    <div className="text-center shrink-0">
+                      <span className="text-[10px] font-black uppercase text-gray-400">Waktu</span>
+                      <div className="bg-[#fef08a] border-2 border-black p-2 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        {s.jam_mulai} - {s.jam_selesai}
+                      </div>
+                    </div>
+
+                    {/* STATUS */}
+                    <div className="shrink-0">
+                      <span className={`px-3 py-1 border-2 border-black font-black text-xs shadow-[2px_2px_0_0_rgba(0,0,0,1)] block
+                        ${s.status === 'Normal' ? 'bg-[#bbf7d0]' : s.status === 'Pindah Jam' ? 'bg-yellow-300' : 'bg-[#fca5a5]'}`}>
+                        {s.status.toUpperCase()}
+                      </span>
+                    </div>
+
+                    {/* AKSI - HANYA UNTUK ADMIN */}
+                    {userRole === 'admin' && (
+                      <div className="flex gap-2 shrink-0">
+                        <button 
+                          onClick={() => handleEdit(s)} 
+                          className="bg-[#60a5fa] hover:bg-[#3b82f6] p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1 transition-all"
+                          title="Edit"
+                        >
+                          <Edit2 size={18} className="text-white" strokeWidth={3} />
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            const { error } = await supabase.from('jadwal_kuliah').delete().eq('id', s.id);
+                            if (!error) fetchSchedules();
+                          }} 
+                          className="bg-[#f87171] hover:bg-[#ef4444] p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1 transition-all"
+                          title="Hapus"
+                        >
+                          <Trash2 size={18} className="text-white" strokeWidth={3} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-12 text-center font-black text-gray-400 uppercase italic">
+              BELUM ADA JADWAL KELAS
+            </div>
+          )}
+        </div>
+
+        {/* FOOTER */}
+        <div className="bg-gray-100 p-3 border-t-4 border-black flex justify-between items-center gap-4">
+          <span className="text-xs font-black uppercase">Total: {schedules.length} Jadwal</span>
         </div>
       </div>
 
