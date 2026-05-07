@@ -19,6 +19,7 @@
   import MataKuliahList from './components/MataKuliahList';
   import Profile from './components/Profile';
 import OAuthBootOverlay from './components/OAuthBootOverlay';
+import JadwalKelas from './components/JadwalKelas';
 import { useAuth } from './hooks/useAuth';
 import { useStudentTasks } from './hooks/useStudentTasks';
 
@@ -185,6 +186,7 @@ import { useStudentTasks } from './hooks/useStudentTasks';
             <>
               <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
               <TaskTable studentId={currentUser?.id} onRefresh={fetchStudentTasks} />
+              <JadwalKelas userRole={currentUser?.role} />
             </>
           ) : activeView === 'Member' ? (
             <MemberPage />

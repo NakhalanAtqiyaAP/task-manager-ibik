@@ -12,7 +12,8 @@ import {
   X,
   Trophy,
   Image,
-  Menu 
+  Menu,
+  Calendar 
 } from 'lucide-react'; // Import ikon yang dibutuhkan
 
 export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
