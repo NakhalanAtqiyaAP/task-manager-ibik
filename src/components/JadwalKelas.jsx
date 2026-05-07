@@ -158,30 +158,32 @@ export default function JadwalKelas({ userRole }) {
                       {s.status.toUpperCase()}
                     </span>
                   </td>
-                  <td className="p-4 flex justify-center gap-3">
-                    <button 
-                      onClick={() => handleEdit(s)} 
-                      className="bg-[#60a5fa] hover:bg-[#3b82f6] p-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
-                      title="Edit"
-                    >
-                      <Edit2 size={20} className="text-white" strokeWidth={3} />
-                    </button>
-                    <button 
-                      onClick={async () => {
-                        const { error } = await supabase.from('jadwal_kuliah').delete().eq('id', s.id);
-                        if (!error) fetchSchedules();
-                      }} 
-                      className="bg-[#f87171] hover:bg-[#ef4444] p-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
-                      title="Hapus"
-                    >
-                      <Trash2 size={20} className="text-white" strokeWidth={3} />
-                    </button>
-                  </td>
+                  {userRole === 'admin' && (
+                    <td className="p-4 flex justify-center gap-3">
+                      <button 
+                        onClick={() => handleEdit(s)} 
+                        className="bg-[#60a5fa] hover:bg-[#3b82f6] p-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+                        title="Edit"
+                      >
+                        <Edit2 size={20} className="text-white" strokeWidth={3} />
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          const { error } = await supabase.from('jadwal_kuliah').delete().eq('id', s.id);
+                          if (!error) fetchSchedules();
+                        }} 
+                        className="bg-[#f87171] hover:bg-[#ef4444] p-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+                        title="Hapus"
+                      >
+                        <Trash2 size={20} className="text-white" strokeWidth={3} />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
               {schedules.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-xl font-bold bg-[#f1f5f9]">
+                  <td colSpan={userRole === 'admin' ? "6" : "5"} className="p-8 text-center text-xl font-bold bg-[#f1f5f9]">
                     BELUM ADA JADWAL KELAS 
                   </td>
                 </tr>
