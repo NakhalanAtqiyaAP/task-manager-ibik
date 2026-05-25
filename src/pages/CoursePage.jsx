@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
 import { supabase } from '../lib/supabase';
 
-export default function CourseLMS() {
+export default function CoursePage({ currentUser }) {
   const [activeSemester, setActiveSemester] = useState(2);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -17,7 +15,7 @@ export default function CourseLMS() {
   const [commentText, setCommentText] = useState('');
   const [commentMediaUrl, setCommentMediaUrl] = useState('');
   const [commentMediaType, setCommentMediaType] = useState('image');
-  const [userName, setUserName] = useState('Mahasiswa'); 
+  const [userName, setUserName] = useState(currentUser?.nama || 'Mahasiswa');
 
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [crudSemester, setCrudSemester] = useState(2);
@@ -151,9 +149,11 @@ export default function CourseLMS() {
           <h1 className="text-4xl font-black tracking-tighter">SISTEM KELAS DIGITAL</h1>
           <p className="font-mono mt-1 text-sm font-bold">LMS NEO-BRUTALISM EDITION</p>
         </div>
-        <button onClick={() => setShowAdminModal(true)} className={`${neoBtnPurple} mt-4 md:mt-0 text-sm`}>
-          ⚡ PANEL INPUT MATERI
-        </button>
+        {currentUser?.role === 'admin' && (
+          <button onClick={() => setShowAdminModal(true)} className={`${neoBtnPurple} mt-4 md:mt-0 text-sm`}>
+            ⚡ PANEL INPUT MATERI
+          </button>
+        )}
       </header>
 
       <div className="flex gap-4 mb-8 overflow-x-auto pb-4">

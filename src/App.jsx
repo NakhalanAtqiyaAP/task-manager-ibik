@@ -5,6 +5,7 @@
   import MemberPage from './pages/MemberPage';
   import LeaderboardPage from './pages/LeaderboardPage';
   import GalleryPage from './pages/GalleryPage';
+  import CoursePage from './pages/CoursePage';
 
   import Navbar from './components/Navbar';
   import Hero from './components/Hero';
@@ -72,7 +73,7 @@ import { useStudentTasks } from './hooks/useStudentTasks';
     const handleMenuAction = (category, mode) => {
     if (category === 'Logout') {
       logout();
-    } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard' || category === 'Gallery') {
+    } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard' || category === 'Gallery' || category === 'Kursus') {
       setActiveView(category);
       setModalConfig({ ...modalConfig, isOpen: false });
     } else {
@@ -194,6 +195,8 @@ import { useStudentTasks } from './hooks/useStudentTasks';
             <LeaderboardPage studentId={currentUser?.id}/>
           ) : activeView === 'Gallery' ? (
             <GalleryPage user={currentUser}/>
+          ) : activeView === 'Kursus' ? (
+            <CoursePage currentUser={currentUser} />
           ) : null}
         </main>
 
