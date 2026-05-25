@@ -146,12 +146,12 @@ export default function CoursePage({ currentUser }) {
       
       <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center border-4 border-black bg-[#22c55e] p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter">SISTEM KELAS DIGITAL</h1>
-          <p className="font-mono mt-1 text-sm font-bold">LMS NEO-BRUTALISM EDITION</p>
+          <h1 className="text-4xl font-black tracking-tighter">KELAS</h1>
+          {/* <p className="font-mono mt-1 text-sm font-bold">LMS NEO-BRUTALISM EDITION</p> */}
         </div>
         {currentUser?.role === 'admin' && (
           <button onClick={() => setShowAdminModal(true)} className={`${neoBtnPurple} mt-4 md:mt-0 text-sm`}>
-            ⚡ PANEL INPUT MATERI
+            PANEL INPUT MATERI
           </button>
         )}
       </header>
@@ -174,7 +174,7 @@ export default function CoursePage({ currentUser }) {
         
         <div className="lg:col-span-4 space-y-6">
           <div className={neoCard}>
-            <h2 className="text-xl font-black bg-black text-white p-2 mb-4 inline-block">📚 MATA KULIAH</h2>
+            <h2 className="text-xl font-black bg-black text-white p-2 mb-4 inline-block">MATA KULIAH</h2>
             <div className="space-y-3">
               {courses.length === 0 ? <p className="font-mono text-gray-500">Tidak ada data.</p> : 
                 courses.map((c) => (
@@ -195,7 +195,7 @@ export default function CoursePage({ currentUser }) {
 
           {selectedCourse && (
             <div className={`${neoCard} border-[#a855f7]`}>
-              <h2 className="text-xl font-black bg-[#a855f7] text-white p-2 mb-4 inline-block">📌 DAFTAR PERTEMUAN</h2>
+              <h2 className="text-xl font-black bg-[#a855f7] text-white p-2 mb-4 inline-block">DAFTAR PERTEMUAN</h2>
               <div className="space-y-3">
                 {sessions.length === 0 ? <p className="font-mono text-gray-500">Belum ada sesi.</p> :
                   sessions.map((s) => (
@@ -256,7 +256,7 @@ export default function CoursePage({ currentUser }) {
                               rel="noreferrer" 
                               className="inline-flex items-center gap-2 border-4 border-black bg-yellow-400 font-black px-6 py-3 hover:bg-yellow-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-lg"
                             >
-                              📂 DOWNLOAD MODUL (PDF/ZIP) 📥
+                              DOWNLOAD MODUL (PDF/ZIP) 📥
                             </a>
                           </div>
                         )}
@@ -267,7 +267,7 @@ export default function CoursePage({ currentUser }) {
               </div>
 
               <div className={neoCard}>
-                <h3 className="text-3xl font-black mb-6 bg-black text-white p-3 inline-block">💬 DISKUSI KELAS</h3>
+                <h3 className="text-3xl font-black mb-6 bg-black text-white p-3 inline-block">DISKUSI KELAS</h3>
                 
                 <form onSubmit={handleSendComment} className="border-4 border-black p-6 bg-purple-100 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex flex-col mb-4">
@@ -307,7 +307,7 @@ export default function CoursePage({ currentUser }) {
 
                   <div className="flex justify-between items-center mt-6">
                     <span className="text-sm font-mono font-bold bg-black text-white px-2 py-1">👤 {userName}</span>
-                    <button type="submit" className={`${neoBtnGreen} text-lg`}>KIRIM DISKUSI 🚀</button>
+                    <button type="submit" className={`${neoBtnGreen} text-lg`}>KIRIM DISKUSI</button>
                   </div>
                 </form>
 
@@ -340,7 +340,7 @@ export default function CoursePage({ currentUser }) {
             </>
           ) : (
             <div className="border-4 border-black bg-white p-16 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <div className="text-8xl mb-6">🎯</div>
+              <div className="text-8xl mb-6"></div>
               <h3 className="text-4xl font-black uppercase">Pilih Sesi Pembelajaran</h3>
               <p className="font-mono text-gray-700 mt-4 text-lg font-bold">Akses navigasi di sebelah kiri untuk memuat silabus materi secara berurutan.</p>
             </div>
@@ -352,7 +352,7 @@ export default function CoursePage({ currentUser }) {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-50">
           <div className="bg-white border-4 border-black p-8 w-full max-w-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-6">
-              <h3 className="text-3xl font-black text-[#a855f7] uppercase">⚡ Input Materi Baru</h3>
+              <h3 className="text-3xl font-black text-[#a855f7] uppercase">Input Materi Baru</h3>
               <button onClick={() => setShowAdminModal(false)} className="bg-red-500 text-white font-black border-4 border-black px-4 py-2 hover:bg-red-600 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 TUTUP [X]
               </button>
@@ -451,7 +451,7 @@ export default function CoursePage({ currentUser }) {
 
               <div className="flex justify-end pt-6 border-t-4 border-black">
                 <button type="button" onClick={handleSaveContent} className={`${neoBtnGreen} text-xl w-full md:w-auto px-10 py-4`}>
-                  SIMPAN MATERI 💾
+                  SIMPAN MATERI 
                 </button>
               </div>
             </div>
