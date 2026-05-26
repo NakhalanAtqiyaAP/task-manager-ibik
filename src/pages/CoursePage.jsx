@@ -3,7 +3,8 @@ import { supabase } from '../lib/supabase';
 import { 
   BookOpen, ChevronRight, ChevronDown, Video, FileText, 
   Download, Send, Settings, X, Save, MessageSquare, 
-  MonitorPlay, Image as ImageIcon, Link as LinkIcon 
+  MonitorPlay, Image as ImageIcon, Link as LinkIcon,
+  Upload, 
 } from 'lucide-react';
 
 export default function CoursePage({ currentUser }) {
@@ -28,6 +29,12 @@ export default function CoursePage({ currentUser }) {
   const [selectedCrudCourse, setSelectedCrudCourse] = useState('');
   const [crudSessions, setCrudSessions] = useState([]);
   const [selectedCrudSession, setSelectedCrudSession] = useState('');
+  // NEW: text input for session name
+  const [sessionNameInput, setSessionNameInput] = useState('');
+  
+  // NEW: tab state for video and file inputs
+  const [videoInputMode, setVideoInputMode] = useState('link'); // 'link' | 'upload'
+  const [fileInputMode, setFileInputMode] = useState('upload'); // 'upload' only (files don't have links)
   
   const [isUploading, setIsUploading] = useState(false);
   const [newContent, setNewContent] = useState({
@@ -144,22 +151,53 @@ export default function CoursePage({ currentUser }) {
     return data.publicUrl;
   };
 
+  // Resolve session id from text input or existing session list
+  const resolveSessionId = async () => {
+    if (!selectedCrudCourse) throw new Error('Pilih mata kuliah terlebih dahulu!');
+    const trimmed = sessionNameInput.trim();
+    if (!trimmed) throw new Error('Nama sesi pertemuan wajib diisi!');
+
+    // Check if a session with that name already exists
+    const match = crudSessions.find(
+      (s) => s.judul_pertemuan.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (match) return match.id;
+
+    // Create new session
+    const { data, error } = await supabase
+      .from('course_sessions')
+      .insert([{
+        course_id: selectedCrudCourse,
+        judul_pertemuan: trimmed,
+        urutan: crudSessions.length + 1,
+      }])
+      .select('id')
+      .single();
+
+    if (error) throw new Error('Gagal membuat sesi baru: ' + error.message);
+    // Refresh session list
+    handleCrudCourseChange(selectedCrudCourse);
+    return data.id;
+  };
+
   const handleSaveContent = async () => {
-    if (!selectedCrudSession || !newContent.judul_materi) {
-      alert('Sesi pertemuan dan judul materi wajib diisi!');
+    if (!newContent.judul_materi) {
+      alert('Judul materi wajib diisi!');
       return;
     }
     
     setIsUploading(true);
     try {
-      let finalVideoUrl = newContent.link_url;
+      const sessionId = await resolveSessionId();
+
+      let finalVideoUrl = videoInputMode === 'link' ? newContent.link_url : null;
       let finalFileUrl = null;
 
-      if (videoFile) finalVideoUrl = await uploadToStorage(videoFile, 'videos');
+      if (videoInputMode === 'upload' && videoFile) finalVideoUrl = await uploadToStorage(videoFile, 'videos');
       if (pdfFile) finalFileUrl = await uploadToStorage(pdfFile, 'documents');
 
       const { error } = await supabase.from('course_contents').insert([{
-        session_id: selectedCrudSession,
+        session_id: sessionId,
         tipe: 'kombinasi',
         judul_materi: newContent.judul_materi,
         video_url: finalVideoUrl,
@@ -174,7 +212,9 @@ export default function CoursePage({ currentUser }) {
       setNewContent({ judul_materi: '', teks_konten: '', link_url: '' });
       setVideoFile(null);
       setPdfFile(null);
-      if (selectedSession && selectedSession.id === selectedCrudSession) {
+      setSessionNameInput('');
+      setVideoInputMode('link');
+      if (selectedSession && selectedSession.id === sessionId) {
         handleSelectSession(selectedSession);
       }
     } catch (err) {
@@ -183,6 +223,21 @@ export default function CoursePage({ currentUser }) {
       setIsUploading(false);
     }
   };
+
+  // ── TAB BUTTON helper ──────────────────────────────────────────
+  const TabBtn = ({ active, onClick, icon, label, color }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 font-black text-sm uppercase border-4 border-black transition-all
+        ${active
+          ? `${color} shadow-none translate-x-[2px] translate-y-[2px]`
+          : 'bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5'
+        }`}
+    >
+      {icon} {label}
+    </button>
+  );
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#fafafa] font-sans text-black selection:bg-[#22c55e]">
@@ -281,20 +336,28 @@ export default function CoursePage({ currentUser }) {
                           <BookOpen size={24} /> {content.judul_materi}
                         </h3>
                         
-                        {content.video_url && (
-                          <div className="border-4 border-black aspect-video bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
-                            {content.video_url.includes('youtube') || content.video_url.includes('youtu.be') ? (
-                              <iframe 
-                                className="w-full h-full" 
-                                src={content.video_url.replace("watch?v=", "embed/")} 
-                                title={content.judul_materi}
-                                allowFullScreen
-                              ></iframe>
-                            ) : (
-                              <video src={content.video_url} controls className="w-full h-full object-contain" />
-                            )}
-                          </div>
-                        )}
+                       {content.video_url && (
+  <div className="border-4 border-black aspect-video bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
+    {(() => {
+      const url = content.video_url;
+      
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        let embedUrl = url;
+        if (url.includes('watch?v=')) embedUrl = url.replace("watch?v=", "embed/");
+        else if (url.includes('youtu.be/')) embedUrl = url.replace("youtu.be/", "youtube.com/embed/");
+        return <iframe className="w-full h-full border-none" src={embedUrl} title={content.judul_materi} allowFullScreen></iframe>;
+      }
+      
+      if (url.includes('drive.google.com')) {
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        const embedUrl = match ? `https://drive.google.com/file/d/${match[1]}/preview` : url.replace('/view', '/preview');
+        return <iframe className="w-full h-full border-none" src={embedUrl} title={content.judul_materi} allow="autoplay" allowFullScreen></iframe>;
+      }
+      
+      return <video src={url} controls className="w-full h-full object-contain" />;
+    })()}
+  </div>
+)}
 
                         {content.teks_konten && (
                           <div className="prose max-w-none font-serif text-lg bg-[#f3e8ff] p-6 border-4 border-black whitespace-pre-wrap leading-relaxed shadow-inner">
@@ -422,6 +485,8 @@ export default function CoursePage({ currentUser }) {
             </div>
 
             <div className="space-y-6">
+
+              {/* ── STEP 1: Filter matkul ── */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 border-4 border-black">
                 <div className="flex flex-col">
                   <label className="font-black text-sm mb-2 uppercase">Filter Semester</label>
@@ -438,15 +503,47 @@ export default function CoursePage({ currentUser }) {
                 </div>
               </div>
 
+              {/* ── STEP 2: Sesi (text input) ── */}
               <div className="flex flex-col bg-purple-100 p-4 border-4 border-black">
-                <label className="font-black text-sm mb-2 uppercase">Pilih Sesi Pertemuan Target</label>
-                <select value={selectedCrudSession} onChange={(e) => setSelectedCrudSession(e.target.value)} className={neoInput}>
-                  <option value="">-- Pilih Sesi --</option>
-                  {crudSessions.map(s => <option key={s.id} value={s.id}>{s.judul_pertemuan}</option>)}
-                </select>
+                <label className="font-black text-sm mb-1 uppercase">Nama Sesi Pertemuan</label>
+                <p className="text-xs font-mono text-gray-600 mb-2">
+                  Ketik nama sesi. Jika sudah ada → materi ditambahkan ke sesi tersebut. Jika belum ada → sesi baru otomatis dibuat.
+                </p>
+                <input
+                  type="text"
+                  value={sessionNameInput}
+                  onChange={(e) => setSessionNameInput(e.target.value)}
+                  placeholder="Contoh: Pengantar Pemrograman / Pertemuan 3..."
+                  className={neoInput}
+                  list="session-suggestions"
+                />
+                {/* Datalist for autocomplete from existing sessions */}
+                <datalist id="session-suggestions">
+                  {crudSessions.map(s => (
+                    <option key={s.id} value={s.judul_pertemuan} />
+                  ))}
+                </datalist>
+                {crudSessions.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="text-xs font-black uppercase text-gray-500">Sesi ada:</span>
+                    {crudSessions.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setSessionNameInput(s.judul_pertemuan)}
+                        className="text-xs font-mono border-2 border-black px-2 py-0.5 bg-white hover:bg-[#a855f7] hover:text-white transition-colors"
+                      >
+                        {s.judul_pertemuan}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
+              {/* ── STEP 3: Konten ── */}
               <div className="border-4 border-black p-4 md:p-6 space-y-6">
+
+                {/* Judul */}
                 <div className="flex flex-col">
                   <label className="font-black text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1">1. Judul Materi</label>
                   <input 
@@ -458,6 +555,7 @@ export default function CoursePage({ currentUser }) {
                   />
                 </div>
 
+                {/* Teks */}
                 <div className="flex flex-col">
                   <label className="font-black text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1 flex items-center gap-2"><FileText size={16}/> 2. Konten Teks</label>
                   <textarea 
@@ -469,35 +567,89 @@ export default function CoursePage({ currentUser }) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex flex-col p-4 border-4 border-black bg-blue-50">
-                    <label className="font-black text-xs mb-2 uppercase flex items-center gap-2"><Video size={16}/> Upload Video Materi</label>
-                    <input 
-                      type="file" 
-                      accept="video/*"
-                      onChange={(e) => setVideoFile(e.target.files[0])}
-                      className="font-mono text-sm"
+                {/* ── VIDEO INPUT with tabs ── */}
+                <div className="border-4 border-black overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-black text-white px-4 py-2 font-black text-sm uppercase flex items-center gap-2">
+                    <Video size={16} /> 3. Video Materi
+                  </div>
+                  {/* Tab switcher */}
+                  <div className="flex border-b-4 border-black">
+                    <TabBtn
+                      active={videoInputMode === 'link'}
+                      onClick={() => { setVideoInputMode('link'); setVideoFile(null); }}
+                      icon={<LinkIcon size={15} strokeWidth={3} />}
+                      label="Tempel Link"
+                      color="bg-blue-200"
                     />
-                    <span className="text-xs font-bold mt-2 font-mono">Atau gunakan URL/Link Video:</span>
-                    <input 
-                      type="text" 
-                      value={newContent.link_url}
-                      onChange={(e) => setNewContent({...newContent, link_url: e.target.value})}
-                      placeholder="https://youtube.com/..." 
-                      className={`${neoInput} mt-1 !p-2 !text-sm`} 
+                    <div className="w-1 border-x-4 border-black" />
+                    <TabBtn
+                      active={videoInputMode === 'upload'}
+                      onClick={() => { setVideoInputMode('upload'); setNewContent({...newContent, link_url: ''}); }}
+                      icon={<Upload size={15} strokeWidth={3} />}
+                      label="Upload File"
+                      color="bg-orange-200"
                     />
                   </div>
+                  {/* Panel */}
+                  {videoInputMode === 'link' ? (
+                    <div className="p-4 bg-blue-50 flex flex-col gap-2">
+                      <p className="text-xs font-mono text-gray-600 font-bold">Tempel URL YouTube atau link video langsung.</p>
+                      <div className="flex items-center gap-2">
+                        {/* <Youtube size={20} className="text-red-500 shrink-0" strokeWidth={2.5} /> */}
+                        <input 
+                          type="text" 
+                          value={newContent.link_url}
+                          onChange={(e) => setNewContent({...newContent, link_url: e.target.value})}
+                          placeholder="https://youtube.com/watch?v=... atau https://..." 
+                          className={`${neoInput} !shadow-none`}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-orange-50 flex flex-col gap-2">
+                      <p className="text-xs font-mono text-gray-600 font-bold">Upload file video dari perangkat (MP4, MKV, dll).</p>
+                      <label className="border-4 border-dashed border-black bg-white hover:bg-orange-100 transition-colors cursor-pointer flex flex-col items-center justify-center py-6 gap-2">
+                        <Upload size={28} strokeWidth={2} className="text-orange-500" />
+                        <span className="font-black text-sm uppercase">
+                          {videoFile ? videoFile.name : 'Klik untuk pilih file video'}
+                        </span>
+                        {videoFile && (
+                          <span className="text-xs font-mono text-gray-500">{(videoFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                        )}
+                        <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files[0])} />
+                      </label>
+                      {videoFile && (
+                        <button type="button" onClick={() => setVideoFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-                  <div className="flex flex-col p-4 border-4 border-black bg-yellow-50">
-                    <label className="font-black text-xs mb-2 uppercase flex items-center gap-2"><FileText size={16}/> Upload File PDF/Modul</label>
-                    <input 
-                      type="file"
-                      accept=".pdf,.doc,.docx,.zip,.rar" 
-                      onChange={(e) => setPdfFile(e.target.files[0])}
-                      className="font-mono text-sm"
-                    />
+                {/* ── FILE / MODUL INPUT ── */}
+                <div className="border-4 border-black overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-black text-white px-4 py-2 font-black text-sm uppercase flex items-center gap-2">
+                    <FileText size={16} /> 4. File / Modul (PDF, DOCX, ZIP)
+                  </div>
+                  <div className="p-4 bg-yellow-50 flex flex-col gap-2">
+                    <p className="text-xs font-mono text-gray-600 font-bold">Upload file modul atau lampiran dari perangkat.</p>
+                    <label className="border-4 border-dashed border-black bg-white hover:bg-yellow-100 transition-colors cursor-pointer flex flex-col items-center justify-center py-6 gap-2">
+                      <Upload size={28} strokeWidth={2} className="text-yellow-600" />
+                      <span className="font-black text-sm uppercase">
+                        {pdfFile ? pdfFile.name : 'Klik untuk pilih file modul'}
+                      </span>
+                      {pdfFile && (
+                        <span className="text-xs font-mono text-gray-500">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                      )}
+                      <input type="file" accept=".pdf,.doc,.docx,.zip,.rar" className="hidden" onChange={(e) => setPdfFile(e.target.files[0])} />
+                    </label>
+                    {pdfFile && (
+                      <button type="button" onClick={() => setPdfFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>
+                    )}
                   </div>
                 </div>
+
               </div>
 
               <div className="flex justify-end pt-4">
