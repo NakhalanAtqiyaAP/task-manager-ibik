@@ -56,9 +56,9 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
             }}
             className="flex items-center gap-2 shrink-0"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-800 border-4 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            {/* <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-800 border-4 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <span className="text-white font-black text-sm">TI</span>
-            </div>
+            </div> */}
             <span className="text-xl text-white sm:text-2xl md:text-3xl font-black tracking-tighter uppercase">
               TI-25-KA
             </span>
