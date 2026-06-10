@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Trophy, Medal, Award, Frown, Download, Star, Rocket, Flame } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { motion } from 'framer-motion'; // <-- Tambahkan import Framer Motion
+import { motion } from 'framer-motion'; 
 
 export default function LeaderboardPage({ studentId }) {
   const [leaders, setLeaders] = useState([]);
@@ -129,18 +129,15 @@ export default function LeaderboardPage({ studentId }) {
                  studentId && 
                  leaders[0].student_id.toString() === studentId.toString();
 
-  // Konfigurasi Variasi Animasi Framer Motion untuk List Container
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15 // Efek muncul bergantian (delay per item)
+        staggerChildren: 0.15 
       }
     }
   };
-
-  // Konfigurasi Variasi Animasi untuk tiap Item (Siswa)
   const itemVariants = {
     hidden: { opacity: 0, x: -50, y: 20 },
     show: { 
@@ -203,7 +200,7 @@ export default function LeaderboardPage({ studentId }) {
         </div>
       )}
 
-      {/* LEADERBOARD LIST - ANIMATED CONTAINER */}
+      {/* LEADERBOARD LIST */}
       <motion.div 
         className="flex flex-col gap-4 sm:gap-6 max-w-4xl"
         variants={containerVariants}
@@ -218,13 +215,13 @@ export default function LeaderboardPage({ studentId }) {
               variants={itemVariants}
               whileHover={{ 
                 scale: 1.02, 
-                x: 10, // Bergeser sedikit ke kanan saat di-hover
+                x: 10, 
                 transition: { type: "spring", stiffness: 300 }
               }}
               whileTap={{ scale: 0.98 }}
               className={`flex items-center justify-between p-3 sm:p-6 cursor-pointer ${style.bg} ${style.border} ${style.shadow} transition-colors duration-200 gap-2 sm:gap-4`}
             >
-              {/* Kiri: Icon + Avatar + Nama */}
+              {/* Icon + Avatar + Nama */}
               <div className="flex items-center gap-2 sm:gap-6 flex-1 min-w-0">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex-shrink-0">
                   {style.icon}
@@ -248,7 +245,7 @@ export default function LeaderboardPage({ studentId }) {
                 </div>
               </div>
 
-              {/* Kanan: Score */}
+              {/* Score */}
               <div className="bg-green-400 border-2 sm:border-4 border-black px-2 py-1 sm:px-4 sm:py-2 text-center min-w-[50px] sm:min-w-[80px] flex-shrink-0">
                 <span className="text-xl sm:text-3xl font-black">{student.completed_count}</span>
                 <span className="text-[6px] sm:text-[8px] font-black uppercase block mt-0.5">DONE</span>
@@ -271,7 +268,7 @@ export default function LeaderboardPage({ studentId }) {
         )}
       </motion.div>
 
-      {/* FOOTER INFORMASI */}
+      {/* FOOTER */}
       {!isAwardDay && (
         <div className="mt-8 sm:mt-12 bg-white border-2 sm:border-4 border-black p-2 sm:p-4 inline-block font-black uppercase text-[10px] sm:text-xs italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-full break-words">
           * Hari Penghargaan selanjutnya: Tanggal 28 {new Date(today.getFullYear(), today.getMonth() + (today.getDate() > 28 ? 1 : 0), 28).toLocaleDateString('id-ID', { month: 'long' })}

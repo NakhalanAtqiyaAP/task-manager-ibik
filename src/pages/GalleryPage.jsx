@@ -12,11 +12,9 @@ export default function GalleryPage({ user }) {
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  // State untuk mode edit
   const [editingPostId, setEditingPostId] = useState(null);
   const [editContent, setEditContent] = useState('');
-  
-  // State untuk modal confirm hapus
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
 
@@ -51,7 +49,7 @@ export default function GalleryPage({ user }) {
     fetchPosts();
   };
 
-  // FUNGSI HAPUS POSTINGAN
+  // FUNGSI HAPUS 
   const handleConfirmDelete = async () => {
     try {
       const { error } = await supabase.from('posts').delete().eq('id', postToDelete);
@@ -67,13 +65,12 @@ export default function GalleryPage({ user }) {
     }
   };
 
-  // FUNGSI MULAI EDIT
+  // FUNGSI EDIT
   const startEdit = (post) => {
     setEditingPostId(post.id);
     setEditContent(post.content_text || '');
   };
 
-  // FUNGSI SIMPAN EDIT
   const saveEdit = async (postId) => {
     try {
       const { error } = await supabase
@@ -117,7 +114,6 @@ export default function GalleryPage({ user }) {
             
             return (
               <div key={post.id} className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden group">
-                {/* Header Post */}
                 <div className="p-4 border-b-4 border-black flex items-center justify-between bg-purple-100">
                   <div className="flex items-center gap-3">
                     <img 
@@ -142,12 +138,12 @@ export default function GalleryPage({ user }) {
                 </div>
 
                 {post.media_urls && post.media_urls.length > 0 && (
-  <div className="w-full aspect-video border-b-4 border-black overflow-hidden">
-    <MediaSlider urls={post.media_urls} types={post.media_types} />
-  </div>
-)}
+            <div className="w-full aspect-video border-b-4 border-black overflow-hidden">
+              <MediaSlider urls={post.media_urls} types={post.media_types} />
+            </div>
+            )}
 
-                {/* Text Content / Edit Form */}
+                {/* Edit Form */}
                 <div className="p-6">
                   {isEditing ? (
                     <div className="flex flex-col gap-3">

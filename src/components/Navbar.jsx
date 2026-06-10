@@ -48,7 +48,6 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
     <>
       <nav className="border-b-4 border-black bg-black sticky top-0 z-40">
         <div className="mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          {/* LOGO */}
           <button
             onClick={() => {
               handleAction('Dashboard', 'view');
@@ -65,7 +64,6 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           </button>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* AVATAR */}
             <button
               id="profile"
               onClick={onToggleProfile}
@@ -78,7 +76,6 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
               />
             </button>
 
-            {/* HAMBURGER MENU */}
             <button 
               id="menu"
               type="button"
@@ -90,16 +87,11 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           </div>
         </div>
       </nav>
-
-      {/* OVERLAY */}
       {menuOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={closeSidebar}></div>
       )}
-
-      {/* SIDEBAR */}
       <div className={`fixed top-0 right-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${menuOpen ? 'translate-x-0 border-l-8 border-black shadow-[-16px_0_0_0_rgba(0,0,0,1)]' : 'translate-x-full border-l-0'}`}>
-        
-        {/* Header Sidebar */}
+
         <div className="bg-purple-900 text-white p-4 border-b-4 border-black flex justify-between items-center">
           <h2 className="text-xl font-black uppercase italic">// Menu</h2>
           <button onClick={closeSidebar} className="w-8 h-8 bg-white text-black border-4 border-black font-black flex items-center justify-center hover:bg-red-400">
@@ -107,7 +99,6 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
           </button>
         </div>
 
-        {/* Menu Items Loop */}
         <div className="flex-1 overflow-y-auto">
           {filteredItems.map((item, idx) => (
             <div key={item.name} className={idx < filteredItems.length - 1 ? 'border-b-4 border-black' : ''}>
@@ -135,7 +126,6 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
                 )}
               </button>
 
-              {/* Sub Items */}
               {activeSub === item.name && item.name !== 'Member' && item.name !== 'Dashboard' && item.name !== 'Leaderboard' && item.name !== 'Gallery' &&(
                 <div className="bg-gray-50 border-t-2 border-black">
                   <button

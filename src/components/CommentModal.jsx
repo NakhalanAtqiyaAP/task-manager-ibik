@@ -58,21 +58,15 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
     fetchComments();
   };
 
-  // Filter komentar utama dan balasan
   const rootComments = comments.filter(c => !c.parent_id);
   const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose}></div>
-      
-      {/* Container Modal Besar */}
       <div className="relative w-full max-w-6xl h-full md:h-[85vh] bg-white border-4 border-black shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row overflow-hidden">
-        
-        {/* KOLOM KIRI: Media & MediaSlider */}
         <div className="hidden md:flex flex-[1.5] bg-black items-center justify-center border-r-4 border-black relative h-full">
         {post.media_urls && post.media_urls.length > 0 ? (
-            /* MediaSlider sekarang akan mengisi penuh kolom kiri ini */
             <MediaSlider urls={post.media_urls} types={post.media_types} />
         ) : (
             <div className="text-white font-black text-2xl uppercase italic p-10 text-center w-full break-words">
@@ -80,10 +74,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
             </div>
         )}
         </div>
-
-        {/* KOLOM KANAN: Komentar */}
         <div className="flex flex-1 flex-col h-full bg-gray-50">
-          {/* Header */}
           <div className="p-4 border-b-4 border-black bg-green-400 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
               <h3 className="font-black uppercase italic text-lg">Postingan</h3>
@@ -135,7 +126,7 @@ export default function CommentModal({ post, user, onClose, onCommentAdded }) {
                     </div>
                   </div>
 
-                  {/* Rendering Balasan (Nested) */}
+                  {/* Rendering Balasan */}
                   {replies.map(reply => {
                     const replyHasLiked = reply.comment_likes?.some(l => l.student_id === user.id);
                     return (

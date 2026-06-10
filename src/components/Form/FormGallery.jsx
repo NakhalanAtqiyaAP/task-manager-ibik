@@ -5,13 +5,12 @@ import toast from 'react-hot-toast';
 
 export default function CreatePost({ user, onPostCreated }) {
   const [content, setContent] = useState('');
-  const [files, setFiles] = useState([]); // Sekarang pakai Array
+  const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    
-    // Validasi tipe & tambahkan preview local
+
     const newFiles = selectedFiles.map(file => ({
       file,
       preview: URL.createObjectURL(file),
@@ -23,7 +22,7 @@ export default function CreatePost({ user, onPostCreated }) {
 
   const removeFile = (index) => {
     const newFiles = [...files];
-    URL.revokeObjectURL(newFiles[index].preview); // Bersihkan memori
+    URL.revokeObjectURL(newFiles[index].preview); 
     newFiles.splice(index, 1);
     setFiles(newFiles);
   };
@@ -37,7 +36,6 @@ export default function CreatePost({ user, onPostCreated }) {
     let uploadedTypes = [];
 
     try {
-      // 1. Upload semua file secara paralel
       if (files.length > 0) {
         const uploadPromises = files.map(async (item) => {
           const fileExt = item.file.name.split('.').pop();
@@ -61,13 +59,11 @@ export default function CreatePost({ user, onPostCreated }) {
         uploadedUrls = results.map(r => r.url);
         uploadedTypes = results.map(r => r.type);
       }
-
-      // 2. Simpan Data (Pastikan kolom di DB adalah Array/TEXT[])
       const { error: postError } = await supabase.from('posts').insert([{
         student_id: user.id,
         content_text: content,
-        media_urls: uploadedUrls, // Array URL
-        media_types: uploadedTypes // Array Tipe
+        media_urls: uploadedUrls, 
+        media_types: uploadedTypes 
       }]);
 
       if (postError) throw postError;
@@ -94,7 +90,6 @@ export default function CreatePost({ user, onPostCreated }) {
           onChange={(e) => setContent(e.target.value)}
         />
 
-        {/* Preview Grid */}
         {files.length > 0 && (
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             {files.map((item, index) => (

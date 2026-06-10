@@ -5,10 +5,7 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-      {/* Overlay dengan blur tipis */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel}></div>
-      
-      {/* Box Modal */}
       <div className="relative bg-white border-4 border-black p-6 max-w-sm w-full shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
         <div className="flex items-center gap-3 mb-4">
           <div className="bg-red-500 p-2 border-2 border-black">

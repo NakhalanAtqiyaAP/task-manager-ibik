@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import Cropper from 'react-easy-crop'; // IMPORT LIBRARY CROP
+import Cropper from 'react-easy-crop'; 
 import { jsPDF } from 'jspdf';
 
 import { 
@@ -11,9 +11,6 @@ import {
 } from 'lucide-react';
 
 
-// ==========================================
-// UTILITY FUNCTION UNTUK MEMOTONG GAMBAR (CANVAS)
-// ==========================================
 const createImage = (url) =>
   new Promise((resolve, reject) => {
     const image = new Image();
@@ -44,13 +41,11 @@ async function getCroppedImg(imageSrc, pixelCrop) {
   );
 
   return new Promise((resolve) => {
-    // Convert canvas ke File Blob (JPEG format)
     canvas.toBlob((file) => {
       resolve(file);
     }, 'image/jpeg');
   });
 }
-// ==========================================
 
 export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
   const [profile, setProfile] = useState(null);
@@ -62,7 +57,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
   const [socialPlatform, setSocialPlatform] = useState("Instagram");
   const [socialUrl, setSocialUrl] = useState("");
 
-  // === STATE UNTUK CROP GAMBAR ===
   const [imageSrc, setImageSrc] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -85,7 +79,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
     getProfile();
   }, [userEmail]);
 
-  // HOBBY LOGIC
   const addTag = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       e.preventDefault();
@@ -101,7 +94,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
     setFormData({ ...formData, hobby: formData.hobby.filter(tag => tag !== tagToRemove) });
   };
 
-  // SOCIAL MEDIA LOGIC
   const getSocialIcon = (platform, size = 16) => {
     const p = platform.toLowerCase();
     const style = { width: size, height: size, fill: 'currentColor' };
@@ -128,14 +120,13 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
     setFormData({ ...formData, media_sosial: formData.media_sosial.filter((_, index) => index !== indexToRemove) });
   };
 
-  // === IMAGE CROP & UPLOAD LOGIC ===
   const onFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         setImageSrc(reader.result);
-        setIsCropModalOpen(true); // Buka Modal Crop
+        setIsCropModalOpen(true); 
       });
       reader.readAsDataURL(file);
     }
@@ -148,18 +139,14 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
   const handleCropConfirm = async () => {
     try {
       setUploading(true);
-      setIsCropModalOpen(false); // Tutup Modal
-      
-      // Ambil hasil crop dari Canvas
+      setIsCropModalOpen(false); 
+    
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-      
-      // Siapkan nama file
       const fileName = `${profile.nim}-${Math.random()}.jpg`;
-      
-      // Upload ke Supabase Storage
+    
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, croppedBlob, { contentType: 'image/jpeg' }); // Pastikan format diset ke JPEG
+        .upload(fileName, croppedBlob, { contentType: 'image/jpeg' });
 
       if (uploadError) throw uploadError;
 
@@ -174,11 +161,9 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
       toast.error(error.message);
     } finally {
       setUploading(false);
-      setImageSrc(null); // Bersihkan state gambar
+      setImageSrc(null); 
     }
   };
-
-  // UPDATE DB LOGIC
   const handleUpdate = async () => {
     const { error } = await supabase
       .from('students')
@@ -303,9 +288,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-8 flex flex-col h-full overflow-y-auto px-2"
-      >
-        {/* HEADER: AVATAR & BASIC INFO */}
+        className="space-y-8 flex flex-col h-full overflow-y-auto px-2">
         <div className="flex flex-col items-center text-center space-y-4">
           <div className="relative">
             <motion.div 
@@ -320,7 +303,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
               {isEditing && (
                 <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
                   <Camera className="text-white" size={32} />
-                  {/* UBAH EVENT ONCHANGE DI SINI */}
                   <input type="file" accept="image/*" className="hidden" onChange={onFileChange} disabled={uploading} />
                 </label>
               )}
@@ -343,10 +325,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           </div>
         </div>
 
-        {/* BODY */}
         <div className="border-t-8 border-black border-dashed pt-8 space-y-6 flex-1">
-          
-          {/* HOBBY SECTION */}
           <section>
             <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
               <Hash size={12} /> HOBBY_STACK
@@ -395,8 +374,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
           <Trophy size={28} className="mb-2 text-black" strokeWidth={2.5} />
           <span className="text-[9px] font-black uppercase text-center leading-tight mb-1">{cert.title}</span>
           <span className="text-[8px] font-bold bg-white border-2 border-black px-2 py-0.5 uppercase">{cert.month}</span>
-          
-          {/* Tombol Download Overlay */}
           <button 
             onClick={() => downloadCertificate(cert)}
             className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-200"
@@ -414,8 +391,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
     )}
   </div>
 </section>
-
-          {/* SOCIAL MEDIA SECTION */}
           <section>
             <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
               <LinkIcon size={12} /> SOCIAL_NETWORK
@@ -462,8 +437,6 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
               </motion.div>
             )}
           </section>
-
-          {/* QUOTES SECTION */}
           <section>
             <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
               <Quote size={12} /> QUOTE LIFE
@@ -473,15 +446,12 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
               className="w-full border-4 border-black p-4 font-bold text-sm italic focus:bg-blue-50 disabled:bg-gray-100 resize-none h-24 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] outline-none"
             />
           </section>
-
-          {/* PASSWORD SECTION */}
           <section>
           <label className="flex items-center gap-2 font-black text-[10px] uppercase mb-2 text-gray-500">
             <Lock size={12} /> PASSWORD
           </label>
           <div className="relative group">
             <input 
-              // Logika tipe input: jika showPassword true, tampilkan teks. 
               type={showPassword ? "text" : "password"} 
               disabled={!isEditing} 
               value={formData.password || ''} 
@@ -489,7 +459,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
               className="w-full border-4 border-black p-4 font-black tracking-widest focus:bg-red-50 disabled:bg-gray-100 text-red-600 outline-none transition-colors"
             />
             
-            {/* Tombol Show/Hide Password */}
+            {/*Hide Password */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -548,7 +518,7 @@ export default function Profile({ userEmail, onProfileUpdate, onLogout }) {
                   image={imageSrc}
                   crop={crop}
                   zoom={zoom}
-                  aspect={1} // Mengunci rasio potong menjadi persegi (1:1)
+                  aspect={1} 
                   onCropChange={setCrop}
                   onCropComplete={onCropComplete}
                   onZoomChange={setZoom}

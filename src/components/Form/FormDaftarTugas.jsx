@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import toast from 'react-hot-toast'; // 1. Import toast
+import toast from 'react-hot-toast'; 
 
 export default function FormDaftarTugas({ onComplete }) {
   const [formData, setFormData] = useState({ nama: '', nim: '', no_wa: '' });
@@ -13,12 +13,10 @@ export default function FormDaftarTugas({ onComplete }) {
     const { error } = await supabase.from('students').insert([formData]);
     
     if (error) {
-      // Toast untuk Error
       toast.error(`GAGAL: ${error.message}`, {
         className: 'border-4 border-black rounded-none font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-red-400 text-white',
       });
     } else {
-      // 2. Toast untuk Sukses dengan style Neo-Brutalist
       toast.success('DATA_MAHASISWA: BERHASIL DISIMPAN!', {
         duration: 3000,
         className: 'border-4 border-black rounded-none font-black uppercase shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-green-400 text-black',
@@ -35,7 +33,7 @@ export default function FormDaftarTugas({ onComplete }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NAMA_LENGKAP</label>
+        <label className="block font-black uppercase mb-1 text-sm text-gray-500">NAMA LENGKAP</label>
         <input 
           required
           disabled={isSubmitting}
@@ -45,7 +43,7 @@ export default function FormDaftarTugas({ onComplete }) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NIM</label>
+          <label className="block font-black uppercase mb-1 text-sm text-gray-500">NIM</label>
           <input 
             required
             disabled={isSubmitting}
@@ -54,7 +52,7 @@ export default function FormDaftarTugas({ onComplete }) {
           />
         </div>
         <div>
-          <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NO_WHATSAPP</label>
+          <label className="block font-black uppercase mb-1 text-sm text-gray-500">NO WHATSAPP</label>
           <input 
             required
             disabled={isSubmitting}

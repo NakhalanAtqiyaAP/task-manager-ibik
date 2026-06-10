@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import toast from 'react-hot-toast'; // Import toast
+import toast from 'react-hot-toast'; 
 
 export default function FormMahasiswa({ onComplete }) {
   const [formData, setFormData] = useState({ nama: '', nim: '', phone_num: '', email: '', password: '' });
@@ -31,7 +31,7 @@ export default function FormMahasiswa({ onComplete }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NAMA_LENGKAP</label>
+        <label className="block font-black uppercase mb-1 text-sm text-gray-500">NAMA LENGKAP</label>
         <input 
           required
           disabled={isSubmitting}
@@ -41,7 +41,7 @@ export default function FormMahasiswa({ onComplete }) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NIM</label>
+          <label className="block font-black uppercase mb-1 text-sm text-gray-500">NIM</label>
           <input 
             required
             disabled={isSubmitting}
@@ -59,7 +59,7 @@ export default function FormMahasiswa({ onComplete }) {
           />
         </div>
         <div>
-          <label className="block font-black uppercase mb-1 text-sm text-gray-500">// NO_WHATSAPP</label>
+          <label className="block font-black uppercase mb-1 text-sm text-gray-500">NO WHATSAPP</label>
           <input 
             required
             disabled={isSubmitting}
@@ -71,7 +71,7 @@ export default function FormMahasiswa({ onComplete }) {
         </div>
       </div>
       <div>
-        <label className="block font-black uppercase mb-1 text-sm text-gray-500">// EMAIL_ADDRESS</label>
+        <label className="block font-black uppercase mb-1 text-sm text-gray-500">EMAIL ADDRESS</label>
         <input 
           type="email"
           className="w-full border-4 border-black p-3 font-bold bg-gray-200 outline-none cursor-not-allowed text-gray-500"
@@ -80,7 +80,7 @@ export default function FormMahasiswa({ onComplete }) {
         />
       </div>
       <div>
-        <label className="block font-black uppercase mb-1 text-sm text-gray-500">// PASSWORD (DEFAULT=NIM)</label>
+        <label className="block font-black uppercase mb-1 text-sm text-gray-500">PASSWORD (DEFAULT=NIM)</label>
         <input 
           type="text"
           className="w-full border-4 border-black p-3 font-bold bg-gray-200 outline-none cursor-not-allowed text-gray-500"

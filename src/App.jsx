@@ -33,42 +33,34 @@ import { useStudentTasks } from './hooks/useStudentTasks';
     const { isAuthorized, isCheckingAuth, currentUser, showOAuthBooting, oauthBootUserName, logout } = useAuth();
     const { tasks, loading, fetchStudentTasks } = useStudentTasks(currentUser, isAuthorized);
 
-    // State baru untuk Toggle Profil
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const [modalConfig, setModalConfig] = useState({ 
       isOpen: false, category: '', mode: '' 
     });
-// [BARU] EVENT LISTENER SCROLL UNTUK ANIMASI
   useEffect(() => {
     const handleScroll = () => {
-      // Cari semua elemen yang mau dianimasikan
+
       const reveals = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left');
       
       const windowHeight = window.innerHeight;
-      const elementVisible = 100; // Seberapa jauh jarak dari bawah layar agar animasi mulai (dalam pixel)
+      const elementVisible = 100; 
 
       reveals.forEach((reveal) => {
         const elementTop = reveal.getBoundingClientRect().top;
-
-        // Jika elemen sudah masuk ke dalam layar
         if (elementTop < windowHeight - elementVisible) {
           reveal.classList.add('is-visible');
         }
       });
     };
-
-    // Jalankan satu kali saat pertama render (agar elemen yang sudah ada di layar paling atas langsung muncul)
     handleScroll();
 
-    // Pasang listener ke layar
     window.addEventListener('scroll', handleScroll);
 
-    // Cleanup saat komponen unmount atau update
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [activeView, loading]); // Pantau activeView dan loading
+  }, [activeView, loading]); 
 
     const handleMenuAction = (category, mode) => {
     if (category === 'Logout') {
@@ -77,7 +69,6 @@ import { useStudentTasks } from './hooks/useStudentTasks';
       setActiveView(category);
       setModalConfig({ ...modalConfig, isOpen: false });
     } else {
-      // BUKA MODAL UNTUK CRUD (Tugas, Mahasiswa, MK)
       setModalConfig({ isOpen: true, category, mode });
     }
   };
@@ -133,12 +124,10 @@ import { useStudentTasks } from './hooks/useStudentTasks';
   const renderContent = () => {
   const userRole = currentUser?.role || 'student';
 
-  // PROTEKSI ROUTING DI SINI
   if ((currentCategory === 'Mahasiswa' || currentCategory === 'Mata Kuliah') && userRole !== 'admin') {
     return <AccessDenied />;
   }
 
-  // Jika aman, render sesuai kategori
   switch (currentCategory) {
     case 'Dashboard':
       return <Dashboard />;
@@ -158,7 +147,6 @@ import { useStudentTasks } from './hooks/useStudentTasks';
       position="top-center" 
       reverseOrder={false} 
       toastOptions={{
-        // Opsional: Bisa set styling default neo-brutalist di sini juga
         style: {
           border: '4px solid black',
           borderRadius: '0px',
@@ -202,7 +190,6 @@ import { useStudentTasks } from './hooks/useStudentTasks';
 
         <Footer user={currentUser} />
 
-        {/* MODAL BIASA UNTUK CRUD */}
         <Modal 
       isOpen={modalConfig.isOpen} 
       onClose={closeModal} 
@@ -210,7 +197,6 @@ import { useStudentTasks } from './hooks/useStudentTasks';
     >
       {modalConfig.category === 'Mahasiswa' && (modalConfig.mode === 'create' ? <FormMahasiswa onComplete={closeModal} /> : <StudentList />)}
       
-      {/* UPDATE BAGIAN INI: Kirimkan studentId */}
       {modalConfig.category === 'Daftar Tugas' && (
         modalConfig.mode === 'create' 
           ? <FormTugas onComplete={closeModal} /> 
@@ -228,8 +214,6 @@ import { useStudentTasks } from './hooks/useStudentTasks';
             onClick={() => setIsProfileOpen(false)}
           ></div>
         )}
-
-        {/* Laci Kanan */}
         <div 
   className={`fixed top-0 right-0 h-full w-full sm:w-100 bg-white z-100 transform transition-transform duration-300 ease-in-out flex flex-col 
     ${isProfileOpen 
@@ -253,7 +237,7 @@ import { useStudentTasks } from './hooks/useStudentTasks';
           onProfileUpdate={(updatedUser) => setCurrentUser({...currentUser, ...updatedUser})} 
           onLogout={() => { 
             logout();
-            setIsProfileOpen(false); // Tutup drawer
+            setIsProfileOpen(false); 
           }}
           />
           </div>

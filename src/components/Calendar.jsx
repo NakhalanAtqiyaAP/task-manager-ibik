@@ -20,13 +20,9 @@ export default function Calendar({ value, onChange, placeholder }) {
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-
-    // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
@@ -75,7 +71,6 @@ export default function Calendar({ value, onChange, placeholder }) {
       {/* Calendar Dropdown */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-3 border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] z-50 min-w-[320px]">
-          {/* Header */}
           <div className="bg-black text-white p-4 flex justify-between items-center border-b-4 border-white">
             <button
               onClick={handlePrevMonth}
@@ -93,8 +88,6 @@ export default function Calendar({ value, onChange, placeholder }) {
               ›
             </button>
           </div>
-
-          {/* Days Header */}
           <div className="grid grid-cols-7 gap-2 p-4 bg-purple-600 text-white border-b-4 border-black">
             {days.map(day => (
               <div key={day} className="text-center font-black text-sm uppercase py-2 border-2 border-white">
@@ -103,7 +96,6 @@ export default function Calendar({ value, onChange, placeholder }) {
             ))}
           </div>
 
-          {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2 p-4">
             {daysInMonth.map((date, index) => (
               <button
@@ -139,8 +131,6 @@ export default function Calendar({ value, onChange, placeholder }) {
           </div>
         </div>
       )}
-
-      {/* Overlay to close calendar */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40"

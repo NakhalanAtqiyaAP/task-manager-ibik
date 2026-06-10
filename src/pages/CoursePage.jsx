@@ -23,7 +23,6 @@ export default function CoursePage({ currentUser }) {
   const [commentMediaType, setCommentMediaType] = useState('image');
   const [userName, setUserName] = useState(currentUser?.nama || 'Mahasiswa');
 
-  // Mobile sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -81,7 +80,6 @@ export default function CoursePage({ currentUser }) {
 
   const handleSelectSession = async (session) => {
     setSelectedSession(session);
-    // Close sidebar on mobile when a session is selected
     setSidebarOpen(false);
     
     const { data: contentData } = await supabase
@@ -522,7 +520,7 @@ export default function CoursePage({ currentUser }) {
 
             <div className="space-y-4 sm:space-y-6">
 
-              {/* Step 1: Filter */}
+              {/* Filter */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 bg-gray-50 p-3 sm:p-4 border-4 border-black">
                 <div className="flex flex-col">
                   <label className="font-black text-xs sm:text-sm mb-2 uppercase">Filter Semester</label>
@@ -539,7 +537,7 @@ export default function CoursePage({ currentUser }) {
                 </div>
               </div>
 
-              {/* Step 2: Session name */}
+              {/* Session name */}
               <div className="flex flex-col bg-purple-100 p-3 sm:p-4 border-4 border-black">
                 <label className="font-black text-xs sm:text-sm mb-1 uppercase">Nama Sesi Pertemuan</label>
                 <p className="text-xs font-mono text-gray-600 mb-2">
@@ -575,7 +573,7 @@ export default function CoursePage({ currentUser }) {
                 )}
               </div>
 
-              {/* Step 3: Content fields */}
+              {/* Content fields */}
               <div className="border-4 border-black p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
 
                 <div className="flex flex-col">
@@ -600,7 +598,7 @@ export default function CoursePage({ currentUser }) {
                   />
                 </div>
 
-                {/* Video input with tabs */}
+                {/* Video input */}
                 <div className="border-4 border-black overflow-hidden">
                   <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2">
                     <Video size={14} /> 3. Video Materi
@@ -653,7 +651,7 @@ export default function CoursePage({ currentUser }) {
                   )}
                 </div>
 
-                {/* File/module input */}
+                {/* module input */}
                 <div className="border-4 border-black overflow-hidden">
                   <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2">
                     <FileText size={14} /> 4. File / Modul (PDF, DOCX, ZIP)

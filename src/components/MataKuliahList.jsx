@@ -29,10 +29,7 @@ export default function MataKuliahList() {
   const handleDelete = async (course) => {
     const confirmDelete = window.confirm(`Hapus ${course.mata_kuliah?.nama_matkul} dari daftar?`);
     if (!confirmDelete) return;
-
-    // Hapus dari tabel courses (relasi semester)
     const { error } = await supabase.from('courses').delete().eq('id', course.id);
-    
     if (!error) {
       toast.success("REMOVED: MATA KULIAH DIHAPUS", {
         position: 'top-center',
@@ -59,8 +56,7 @@ export default function MataKuliahList() {
   // FUNGSI SAVE EDIT
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
-    // 1. Update di tabel Master (mata_kuliah)
+  
     const { error: masterError } = await supabase
       .from('mata_kuliah')
       .update({
@@ -71,8 +67,6 @@ export default function MataKuliahList() {
       .eq('id', selectedCourse.matkul_id);
 
     if (masterError) return toast.error(masterError.message);
-
-    // 2. Update di tabel Relasi (courses)
     const { error: relError } = await supabase
       .from('courses')
       .update({ semester: parseInt(editFormData.semester) })

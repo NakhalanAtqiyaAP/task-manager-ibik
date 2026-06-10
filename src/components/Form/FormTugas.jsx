@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
-import JSZip from 'jszip'; // IMPORT JSZIP
+import JSZip from 'jszip'; 
 
 export default function FormTugas({ onComplete }) {
   const [activeCourses, setActiveCourses] = useState([]);
@@ -10,9 +10,7 @@ export default function FormTugas({ onComplete }) {
   const [isDeploying, setIsDeploying] = useState(false);
   
   const [materiType, setMateriType] = useState('teks'); 
-  // UBAH STATE INI JADI ARRAY UNTUK MULTIPLE FILES
   const [materiFiles, setMateriFiles] = useState([]); 
-  // STATE BARU UNTUK MULTIPLE LINKS
   const [materiLinks, setMateriLinks] = useState(['']); 
 
   const [formData, setFormData] = useState({ 
@@ -79,7 +77,6 @@ export default function FormTugas({ onComplete }) {
     setFormData({ ...formData, course_id: selectedCourseId, kode_tugas: generatedKode });
   };
 
-  // UBAH HANDLER FILE UNTUK MULTIPLE
   const handleFileChange = (e) => {
     if (e.target.files) {
       setMateriFiles(Array.from(e.target.files));
@@ -121,27 +118,22 @@ export default function FormTugas({ onComplete }) {
     try {
       let finalMateriValue = formData.materi;
 
-      // JIKA TIPE LINK, GABUNGKAN MULTIPLE LINKS
       if (materiType === 'link') {
         finalMateriValue = materiLinks.filter(link => link.trim() !== '').join('\n');
       }
 
-      // PROSES UPLOAD FILE JIKA TIPE MATERI = FILE
       if (materiType === 'file' && materiFiles.length > 0) {
         toast.loading(materiFiles.length > 1 ? "Mengekstrak ke ZIP & Mengunggah..." : "Mengunggah file materi...", { id: "upload-toast" });
         
         let fileToUpload;
         let filePath;
         let contentType;
-
-        // JIKA HANYA 1 FILE: UPLOAD BIASA
         if (materiFiles.length === 1) {
           fileToUpload = materiFiles[0];
           const fileExt = fileToUpload.name.split('.').pop();
           filePath = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
           contentType = fileToUpload.type;
         } 
-        // JIKA LEBIH DARI 1 FILE: JADIKAN ZIP
         else {
           const zip = new JSZip();
           materiFiles.forEach(file => {
@@ -149,29 +141,21 @@ export default function FormTugas({ onComplete }) {
           });
           
           fileToUpload = await zip.generateAsync({ type: 'blob' });
-          
-          // GENERATE NAMA FILE ZIP SESUAI REQUEST
           const course = activeCourses.find(c => c.id === formData.course_id);
           const namaMatkul = course?.mata_kuliah?.nama_matkul.replace(/\s+/g, '_') || 'Matkul';
           const judulTugas = formData.judul.replace(/\s+/g, '_') || 'Tugas';
           
           const date = new Date();
           const tglTerbit = `${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getFullYear()).slice(-2)}`;
-          
-          // Format: nama tugas_namamatkul_tanggalterbit.zip
           const zipName = `${judulTugas}_${namaMatkul}_${tglTerbit}.zip`;
-          filePath = `${Date.now()}-${zipName}`; // Tambah timestamp agar tidak menimpa file bernama sama di storage
+          filePath = `${Date.now()}-${zipName}`; 
           contentType = 'application/zip';
         }
-
-        // Upload ke bucket Supabase bernama 'materi_tugas'
         const { error: uploadError } = await supabase.storage
           .from('materi_tugas')
           .upload(filePath, fileToUpload, { contentType });
 
         if (uploadError) throw new Error(`Gagal upload file: ${uploadError.message}`);
-
-        // Ambil URL public dari file/zip yang diupload
         const { data: { publicUrl } } = supabase.storage
           .from('materi_tugas')
           .getPublicUrl(filePath);
@@ -180,7 +164,6 @@ export default function FormTugas({ onComplete }) {
         toast.dismiss("upload-toast");
       }
 
-      // 1. Simpan ke Master Tasks
       const { data: newTask, error: taskError } = await supabase
         .from('tasks')
         .insert([{
@@ -194,7 +177,6 @@ export default function FormTugas({ onComplete }) {
 
       if (taskError) throw new Error(`Master Task: ${taskError.message}`);
 
-      // 2. Distribusi ke student_tasks
       const dist = selectedStudents.map(studentId => ({
         task_id: newTask.id,
         student_id: studentId,
@@ -225,10 +207,9 @@ export default function FormTugas({ onComplete }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* ... [BAGIAN ATAS TETAP SAMA] ... */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// PILIH MATKUL</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">PILIH MATKUL</label>
           <select required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             value={formData.course_id} onChange={handleCourseChange} disabled={isDeploying}>
             <option value="">-- PILIH MATKUL --</option>
@@ -238,20 +219,20 @@ export default function FormTugas({ onComplete }) {
           </select>
         </div>
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE TUGAS</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">KODE TUGAS</label>
           <input readOnly value={formData.kode_tugas} className="w-full border-4 border-black p-3 font-black bg-gray-200 focus:outline-none" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="col-span-1">
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// JUDUL TUGAS</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">JUDUL TUGAS</label>
           <input required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             disabled={isDeploying}
             onChange={(e) => setFormData({...formData, judul: e.target.value})} />
         </div>
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DEADLINE</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">DEADLINE</label>
           <input required type="datetime-local" className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             disabled={isDeploying}
             onChange={(e) => setFormData({...formData, deadline: e.target.value})} />
@@ -259,7 +240,7 @@ export default function FormTugas({ onComplete }) {
       </div>
 
       <div className="border-4 border-black p-3 bg-white">
-        <label className="block font-black uppercase text-xs mb-3 text-gray-500">// MATERI PEMBELAJARAN</label>
+        <label className="block font-black uppercase text-xs mb-3 text-gray-500">MATERI PEMBELAJARAN</label>
         
         <div className="flex gap-2 mb-3">
           {['teks', 'link', 'file'].map((type) => (
@@ -270,7 +251,7 @@ export default function FormTugas({ onComplete }) {
                 setMateriType(type);
                 setFormData({...formData, materi: ''});
                 setMateriFiles([]);
-                setMateriLinks(['']); // RESET LINKS KE DEFAULT
+                setMateriLinks(['']); 
               }}
               className={`flex-1 py-1 px-2 border-2 border-black font-black text-[10px] sm:text-xs uppercase transition-all ${materiType === type ? 'bg-purple-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black hover:bg-gray-100'}`}
             >
@@ -350,11 +331,9 @@ export default function FormTugas({ onComplete }) {
           </div>
         )}
       </div>
-
-      {/* ... [BAGIAN BAWAH TETAP SAMA SEPERTI SEBELUMNYA] ... */}
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
-          <span>// METODE PENGUMPULAN</span>
+          <span>METODE PENGUMPULAN</span>
           {formData.submission_link && (
             <span className={`${detectedType.color} border-2 border-black px-2 py-0.5 text-[10px] text-black font-black uppercase`}>
               {detectedType.label}
@@ -372,7 +351,7 @@ export default function FormTugas({ onComplete }) {
       </div>
 
       <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// DESKRIPSI TUGAS</label>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">DESKRIPSI TUGAS</label>
         <textarea 
           required 
           rows="3"
@@ -383,7 +362,7 @@ export default function FormTugas({ onComplete }) {
       </div>
 
       <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// TARGET MAHASISWA ({selectedStudents.length})</label>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">TARGET MAHASISWA ({selectedStudents.length})</label>
         <div className="border-4 border-black h-48 overflow-y-auto bg-gray-50 p-2 space-y-2">
           {allStudents.map(s => (
             <label key={s.id} className="flex items-center gap-3 p-2 border-2 border-black bg-white cursor-pointer hover:bg-green-100 transition-colors">

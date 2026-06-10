@@ -1,8 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react'; // Menggunakan ikon Lucide agar lebih konsisten
+import { X } from 'lucide-react';
 
 export default function Modal({ isOpen, onClose, title, children }) {
-  // Konfigurasi Variabel Animasi
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
@@ -13,7 +12,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
       opacity: 0, 
       scale: 0.9, 
       y: 20,
-      rotate: -1 // Sedikit miring saat muncul untuk kesan brutalist
+      rotate: -1
     },
     visible: { 
       opacity: 1, 
@@ -38,7 +37,6 @@ export default function Modal({ isOpen, onClose, title, children }) {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Overlay / Backdrop */}
           <motion.div
             variants={backdropVariants}
             initial="hidden"
@@ -47,8 +45,6 @@ export default function Modal({ isOpen, onClose, title, children }) {
             onClick={onClose}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
-          
-          {/* Modal Content */}
           <motion.div
             variants={modalVariants}
             initial="hidden"
@@ -56,7 +52,6 @@ export default function Modal({ isOpen, onClose, title, children }) {
             exit="exit"
             className="relative w-full max-w-5xl border-8 border-black bg-white shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col"
           >
-            {/* Header */}
             <div className="bg-purple-600 text-white p-6 border-b-8 border-black flex justify-between items-center gap-4 shrink-0">
               <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">
                 // {title}
@@ -68,8 +63,6 @@ export default function Modal({ isOpen, onClose, title, children }) {
                 <X size={28} strokeWidth={4} />
               </button>
             </div>
-
-            {/* Content Area */}
             <div className="p-6 md:p-8 overflow-y-auto max-h-[80vh] bg-[#fdfdfd]">
               {children}
             </div>

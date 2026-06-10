@@ -13,7 +13,6 @@ export default function TaskTable({ studentId, onRefresh }) {
   
   const syncLock = useRef(false);
 
-  // State untuk filter
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [dateRange, setDateRange] = useState({ start: null, end: null });
@@ -240,7 +239,6 @@ const MateriAction = ({ materi }) => {
     <div className="px-4 sm:px-6 pb-24 mt-8">
       <HistoryDashboard studentId={studentId} />  
       <div id="task" className=" scroll-reveal border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10" >
-        {/* HEADER */}
         <div className="bg-black text-white p-5 font-black uppercase">
           <div className="flex justify-between items-center border-b-2 border-gray-700 pb-4 mb-4">
             <span className="text-xl tracking-tight">Daftar Tugas</span>
@@ -345,7 +343,6 @@ const MateriAction = ({ materi }) => {
               };
 
               return (
-                // PERUBAHAN 1: Efek Hover Container dengan shadow inset (garis ungu di kiri)
                 <div 
                   key={item.id} 
                   className={`group flex items-center transition-all duration-300 ease-out
@@ -355,7 +352,6 @@ const MateriAction = ({ materi }) => {
                     }`}
                 >
                   <div className="p-4 border-r-4 border-black flex-shrink-0 relative z-10">
-                    {/* PERUBAHAN 2: Efek Hover Tombol (Melompat & Berubah Kuning) */}
                     <button
                       onClick={() => handleToggleTask(item.id, isDone)}
                       className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 
@@ -364,12 +360,9 @@ const MateriAction = ({ materi }) => {
                           : 'bg-white group-hover:bg-yellow-400 group-hover:-translate-y-1 group-hover:-translate-x-1 group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
                         }`}
                     >
-                      {/* Ikon ikut sedikit membesar saat baris di-hover */}
                       <CheckCircle2 className={`w-6 h-6 text-black stroke-[3px] transition-transform duration-300 ${!isDone && 'group-hover:scale-110'}`} />
                     </button>
                   </div>
-
-                  {/* PERUBAHAN 3: Teks Utama Bergeser Sedikit ke Kanan Saat Hover */}
                   <div className={`p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-transform duration-300 ${!isDone && 'group-hover:translate-x-1'}`}>
                     <div>
                       <h4 className={`font-black uppercase text-sm sm:text-base ${isDone ? 'line-through text-gray-500' : ''}`}>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import toast from 'react-hot-toast'; // 1. Import toast
+import toast from 'react-hot-toast'; 
 
 export default function FormMataKuliah({ onComplete }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,7 +16,6 @@ export default function FormMataKuliah({ onComplete }) {
     setIsSubmitting(true);
 
     try {
-      // 1. Simpan ke master mata_kuliah
       const { data: matkul, error: subError } = await supabase
         .from('mata_kuliah')
         .insert([{ 
@@ -28,8 +27,6 @@ export default function FormMataKuliah({ onComplete }) {
         .single();
 
       if (subError) throw new Error(`Master: ${subError.message}`);
-
-      // 2. Daftarkan ke tabel courses
       const { error: courseError } = await supabase
         .from('courses')
         .insert([{
@@ -40,9 +37,8 @@ export default function FormMataKuliah({ onComplete }) {
 
       if (courseError) throw new Error(`Semester: ${courseError.message}`);
 
-      // SUCCESS TOAST - POSISI ATAS TENGAH
       toast.success("MATA_KULIAH: REGISTERED SUCCESSFULLY!", {
-        position: "top-center", // Sesuai permintaanmu
+        position: "top-center", 
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] uppercase text-sm',
         duration: 3000,
       });
@@ -62,7 +58,7 @@ export default function FormMataKuliah({ onComplete }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// KODE_MATKUL</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">KODE MATKUL</label>
           <input 
             required 
             disabled={isSubmitting}
@@ -72,7 +68,7 @@ export default function FormMataKuliah({ onComplete }) {
           />
         </div>
         <div>
-          <label className="block font-black uppercase text-xs mb-1 text-gray-500">// JUMLAH_SKS</label>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">JUMLAH SKS</label>
           <input 
             required 
             type="number" 
@@ -85,7 +81,7 @@ export default function FormMataKuliah({ onComplete }) {
       </div>
 
       <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// NAMA_MATA_KULIAH</label>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">NAMA MATAKULIAH</label>
         <input 
           required 
           disabled={isSubmitting}
@@ -96,7 +92,7 @@ export default function FormMataKuliah({ onComplete }) {
       </div>
 
       <div>
-        <label className="block font-black uppercase text-xs mb-1 text-gray-500">// SEMESTER_AKTIF</label>
+        <label className="block font-black uppercase text-xs mb-1 text-gray-500">SEMESTE AKTIF</label>
         <select 
           required 
           disabled={isSubmitting}

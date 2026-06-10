@@ -85,7 +85,6 @@ export default function MemberPage() {
 
   return (
     <div className="p-3 sm:p-6 md:p-8 relative overflow-hidden">
-      {/* HEADER SECTION */}
       <div className="mb-12 sm:mb-16 border-b-4 sm:border-b-8 border-black pb-4 inline-block w-full sm:w-auto">
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tighter text-white animate-brutal-header break-words">
           TI-25-KA MEMBERS
@@ -97,7 +96,6 @@ export default function MemberPage() {
         </div>
       </div>
 
-      {/* GRID KARTU ANGGOTA */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-16 sm:gap-y-20 mt-12 sm:mt-16">
         {members.map((member, index) => {
           const hobbies = member.hobby ? member.hobby.split(',').map(h => h.trim()) : [];
@@ -105,16 +103,10 @@ export default function MemberPage() {
           const displayQuote = (member.quotes && member.quotes.trim() !== "") 
             ? member.quotes 
             : "Belum ada quotes";
-
-          // Cek apakah sertifikat berupa array, objek tunggal, atau kosong
           let certs = [];
           if (member.sertifikat) {
              certs = Array.isArray(member.sertifikat) ? member.sertifikat : [member.sertifikat];
           }
-
-          // LOGIKA MAHKOTA: Berdasarkan coding (kecocokan ID dengan top 1 leaderboard)
-          // Jika di tabel members kamu pakai 'id' sebagai penanda unik, gunakan member.id
-          // Jika pakai 'student_id', ganti jadi member.student_id  
           const isCurrentKing = topStudentId && member.id === topStudentId;
 
           return (
@@ -123,14 +115,13 @@ export default function MemberPage() {
               className={`group relative bg-white border-2 sm:border-4 ${isCurrentKing ? 'border-yellow-400' : 'border-black'} shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 sm:hover:translate-x-2 sm:hover:translate-y-2 hover:shadow-none transition-all duration-300 p-4 sm:p-6 flex flex-col items-center animate-squad-entrance`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              {/* ICON MAHKOTA (Jika Peringkat 1 Saat Ini) */}
               {isCurrentKing && (
                 <div className="absolute -top-6 -right-4 sm:-top-8 sm:-right-6 bg-yellow-400 border-2 sm:border-4 border-black w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-20 animate-bounce-slow" title="Reigning King of the Month">
                   <Crown size={24} className="text-black fill-yellow-400" strokeWidth={2.5} />
                 </div>
               )}
 
-              {/* ROUNDED AVATAR */}
+              {/* AVATAR */}
               <div className={`absolute -top-10 sm:-top-12 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 sm:border-4 ${isCurrentKing ? 'border-yellow-400' : 'border-black'} bg-purple-200 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform duration-300 z-10 flex-shrink-0`}>
                 <img 
                   src={member.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${member.nama}`} 
@@ -149,7 +140,7 @@ export default function MemberPage() {
                 </div>
               </div>
 
-              {/* LENCANA PENGHARGAAN (Sekarang hanya <div> visual, bukan <button>) */}
+              {/* LENCANA PENGHARGAAN */}
               {certs.length > 0 && (
                 <div className="w-full mt-4 flex flex-col gap-2">
                   <div className="flex flex-wrap justify-center gap-2">

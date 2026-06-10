@@ -9,13 +9,11 @@ export default function GameGuide({ onClose, userName }) {
   const typingIntervalRef = useRef(null);
   const startTimeoutRef = useRef(null);
 
-  // Data langkah panduan dengan karakter pixel (contoh URL pixel art)
   const guideSteps = [
     {
       title: "SYSTEM_STARTUP",
       character: "Udin",
       message: `Halo, ${userName || 'User'}! Selamat datang di website TI-25-KA. Aku akan memandu instalasi pemahamanmu di sini...`,
-      // Ganti dengan URL gambar pixel art kamu
       image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade",
       target: null
     },
@@ -106,9 +104,6 @@ export default function GameGuide({ onClose, userName }) {
     };
   }, [currentStep]);
 
-  // (Fungsi updateSpotlight dan useEffect resize tetap sama...)
- // Di dalam GameGuide.jsx
-
 const updateSpotlight = () => {
   const targetSelector = guideSteps[currentStep].target;
   if (!targetSelector) {
@@ -118,10 +113,7 @@ const updateSpotlight = () => {
 
   const el = document.querySelector(targetSelector);
   if (el) {
-    // 1. Scroll dulu ke target
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    // 2. Beri jeda sangat singkat agar posisi sudah stabil setelah scroll dimulai
     setTimeout(() => {
       const rect = el.getBoundingClientRect();
       const padding = 10;
@@ -133,14 +125,13 @@ const updateSpotlight = () => {
         opacity: 1,
         boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)", 
       });
-    }, 300); // 300ms biasanya cukup untuk nunggu animasi scroll
+    }, 300);
   }
 };
 
-// Pastikan spotlight update saat window di-scroll atau di-resize
 useEffect(() => {
   window.addEventListener('resize', updateSpotlight);
-  window.addEventListener('scroll', updateSpotlight); // Tambahkan listener scroll!
+  window.addEventListener('scroll', updateSpotlight); 
   
   return () => {
     window.removeEventListener('resize', updateSpotlight);
@@ -165,7 +156,6 @@ useEffect(() => {
 
   return (
     <div className="fixed inset-0 z-[100] font-mono overflow-hidden">
-      {/* SPOTLIGHT LAYER */}
       <div 
         className="fixed z-[101] border-2 border-green-400 rounded-lg transition-all duration-500 pointer-events-none"
         style={spotlightStyle}
@@ -192,12 +182,11 @@ useEffect(() => {
 
           <div className="bg-white border-8 border-black p-6 shadow-[12px_12px_0px_0px_rgba(168,85,247,1)] relative">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              {/* IMAGE KARAKTER PIXEL DENGAN LOGIKA SHAKE */}
               <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-black border-4 border-purple-500 flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shrink-0 overflow-hidden ${isTyping ? 'animate-character-shake' : ''}`}>
                 <img 
                   src={guideSteps[currentStep].image} 
                   alt="character" 
-                  className="w-full h-full object-cover pixelated" // Tambahkan pixelated untuk menjaga ketajaman pixel art
+                  className="w-full h-full object-cover pixelated" 
                   style={{ imageRendering: 'pixelated' }}
                 />
               </div>

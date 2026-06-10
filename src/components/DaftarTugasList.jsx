@@ -106,16 +106,14 @@ export default function DaftarTugasList({ studentId }) {
     <div className="space-y-8">
       <section>
         <div className="border-4 border-black bg-white overflow-visible shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-          {/* Header & Filter UI */}
           <div className="bg-black text-white p-5 font-black uppercase text-lg flex flex-col gap-5 relative z-20">
             <div className="flex justify-between items-center">
               <span>Riwayat Tugas Saya</span>
               <span className="text-xs bg-green-400 text-black px-2 py-1">Personal Access</span>
             </div>
 
-            {/* BARIS FILTER */}
+            {/* FILTER */}
             <div className="flex flex-wrap gap-4 items-center">
-              {/* 1. Filter Matkul */}
               <div className="flex items-center gap-2">
                 <label className="text-xs font-bold uppercase text-gray-300">Matkul:</label>
                 <select
@@ -130,7 +128,6 @@ export default function DaftarTugasList({ studentId }) {
                 </select>
               </div>
 
-              {/* 2. Date Range Picker (Filter Tanggal) */}
               <div className="flex items-center gap-2">
                 <label className="text-xs font-bold uppercase text-gray-300">Periode:</label>
                 <div className="bg-white text-black border-2 border-white">
@@ -147,7 +144,6 @@ export default function DaftarTugasList({ studentId }) {
                 </div>
               </div>
 
-              {/* 3. Tombol Sortir */}
               {/* <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase text-gray-300">Sort:</span>
                 <button

@@ -10,15 +10,11 @@ export default function MediaSlider({ urls, types }) {
   const prevSlide = () => setCurrentIndex((prev) => (prev === 0 ? urls.length - 1 : prev - 1));
 
   return (
-    /* h-full w-full agar mengikuti ukuran kolom di Modal atau Gallery */
     <div className="relative bg-neutral-900 w-full h-full flex justify-center items-center overflow-hidden group">
-      
-      {/* Media Content */}
       <div className="w-full h-full flex items-center justify-center bg-black">
         {types[currentIndex] === 'image' ? (
           <img 
             src={urls[currentIndex]} 
-            /* object-contain memastikan gambar tidak terpotong (zoom) */
             className="max-w-full max-h-full object-contain" 
             alt={`Slide ${currentIndex + 1}`} 
           />
@@ -30,8 +26,6 @@ export default function MediaSlider({ urls, types }) {
           />
         )}
       </div>
-
-      {/* Tombol Navigasi */}
       {urls.length > 1 && (
         <>
           <button 
@@ -49,8 +43,6 @@ export default function MediaSlider({ urls, types }) {
           >
             <ChevronRight size={20} strokeWidth={4} />
           </button>
-
-          {/* Indikator Dots */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-white/90 border-2 border-black px-2 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             {urls.map((_, idx) => (
               <div 

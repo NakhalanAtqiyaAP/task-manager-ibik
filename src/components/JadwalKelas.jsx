@@ -11,9 +11,7 @@ export default function JadwalKelas({ userRole }) {
   });
   const [isEditing, setIsEditing] = useState(false);
   
-  // STATE BARU: Untuk menyimpan filter hari yang sedang aktif
   const [activeFilter, setActiveFilter] = useState('Semua');
-  // STATE BARU: Filter per semester (Semua / 1..8)
   const [activeSemester, setActiveSemester] = useState('Semua');
 
   useEffect(() => {
@@ -21,7 +19,6 @@ export default function JadwalKelas({ userRole }) {
     fetchMataKuliah();
   }, []);
 
-  // Refetch when semester changes
   useEffect(() => {
     fetchSchedules();
   }, [activeSemester]);
@@ -36,12 +33,10 @@ export default function JadwalKelas({ userRole }) {
   }
 
   async function fetchSchedules() {
-    // Ambil semua jadwal terlebih dahulu
     const { data: jadwalData, error: jadwalError } = await supabase.from('jadwal_kuliah').select('*').order('hari');
     if (jadwalError) console.error("Error fetching data:", jadwalError);
     let allSchedules = jadwalData || [];
 
-    // Jika filter semester aktif (bukan 'Semua'), ambil daftar mata kuliah untuk semester itu
     if (activeSemester !== 'Semua') {
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
@@ -49,7 +44,6 @@ export default function JadwalKelas({ userRole }) {
         .eq('semester', Number(activeSemester));
       if (courseError) console.error('Error fetching courses for semester filter:', courseError);
       const names = new Set((courseData || []).map(c => (c.mata_kuliah?.nama_matkul || '').trim()));
-      // Filter jadwal yang mata_kuliahnya ada di daftar nama mata kuliah semester terpilih
       allSchedules = allSchedules.filter(s => names.has((s.mata_kuliah || '').trim()));
     }
 
@@ -79,8 +73,6 @@ export default function JadwalKelas({ userRole }) {
     setFormData(s);
     setIsEditing(true);
   };
-
-  // LOGIKA BARU: Filter jadwal berdasarkan tombol hari yang diklik
   const filteredSchedules = activeFilter === 'Semua' 
     ? schedules 
     : schedules.filter(s => s.hari === activeFilter);
@@ -91,8 +83,6 @@ export default function JadwalKelas({ userRole }) {
   return (
     <div className="px-4 sm:px-6 pb-24 mt-8">
       <div id="jadwal" className="scroll-reveal border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10">
-        
-        {/* HEADER */}
         <div className="bg-black text-white p-4 md:p-5 font-black uppercase">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-gray-700 pb-4 mb-4 gap-3 sm:gap-0">
             <span className="text-lg md:text-xl tracking-tight flex items-center gap-2">
@@ -185,8 +175,6 @@ export default function JadwalKelas({ userRole }) {
                   <option value="Dibatalkan">DIBATALKAN</option>
                 </select>
               </div>
-
-              {/* Tombol Form Responsif */}
               <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4">
                 <button 
                   type="submit" 
@@ -208,8 +196,6 @@ export default function JadwalKelas({ userRole }) {
             </form>
           </div>
         )}
-
-        {/* FITUR BARU: FILTER BUTTONS */}
         <div className="bg-gray-100 border-b-4 border-black p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
@@ -233,8 +219,6 @@ export default function JadwalKelas({ userRole }) {
                 ))}
               </div>
             </div>
-
-            {/* Semester picker (mirip CoursePage) */}
             <div className="flex items-center gap-3">
               <label className="font-black text-xs uppercase">Semester</label>
               <select
@@ -250,8 +234,6 @@ export default function JadwalKelas({ userRole }) {
             </div>
           </div>
         </div>
-
-        {/* LIST JADWAL - Gunakan filteredSchedules bukan schedules */}
         <div className="divide-y-4 divide-black">
           {filteredSchedules.length > 0 ? (
             filteredSchedules.map((s) => (
@@ -259,7 +241,6 @@ export default function JadwalKelas({ userRole }) {
                 key={s.id}
                 className={`group flex flex-col md:flex-row items-stretch transition-all duration-300 ease-out ${s.status === 'Dibatalkan' ? 'bg-red-50/50 hover:bg-red-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(239,68,68,1)]' : 'bg-white hover:bg-blue-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(147,51,234,1)]'}`}
               >
-                {/* Kotak Hari (Kiri di Desktop, Atas di HP) */}
                 <div className="p-3 md:p-4 border-b-4 md:border-b-0 md:border-r-4 border-black shrink-0 flex items-center justify-center bg-gray-50 md:bg-transparent">
                   <div className="bg-blue-400 border-2 border-black px-4 py-1 md:p-2 text-center font-black text-sm text-white w-auto md:w-16">
                     {s.hari.substring(0, 3).toUpperCase()}
@@ -329,7 +310,7 @@ export default function JadwalKelas({ userRole }) {
           )}
         </div>
 
-        {/* FOOTER TOTAL */}
+        {/* FOOTER*/}
         <div className="bg-gray-100 p-4 border-t-4 border-black flex justify-between items-center gap-4">
           <span className="text-xs font-black uppercase">Total: {filteredSchedules.length} Jadwal</span>
         </div>

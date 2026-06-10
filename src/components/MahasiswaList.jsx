@@ -120,7 +120,7 @@ export default function StudentList() {
         </table>
       </div>
 
-      {/* MODAL EDIT MAHASISWA */}
+      {/* MODAL EDIT*/}
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
@@ -195,8 +195,6 @@ export default function StudentList() {
     </div>
   );
 }
-
-// Tambahan ikon kecil agar lebih manis
 const Hash = ({ size, className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter" className={className}>
     <line x1="4" y1="9" x2="20" y2="9"></line>

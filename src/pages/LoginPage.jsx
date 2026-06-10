@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Eye, EyeOff, Lock, User, LogIn } from 'lucide-react'; // Gunakan Lucide untuk ikon
+import { Eye, EyeOff, Lock, User, LogIn } from 'lucide-react'; 
 import toast from 'react-hot-toast';
 
 export default function Login() {
   const [nim, setNim] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State toggle password
+  const [showPassword, setShowPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [isBooting, setIsBooting] = useState(false);
   const [studentName, setStudentName] = useState('');
@@ -23,9 +23,8 @@ export default function Login() {
       .single();
 
     if (error || !student) {
-      // Ganti alert ke toast error
       toast.error('Kombinasi NIM dan Password salah!', {
-        id: 'login-error', // ID mencegah toast menumpuk jika diklik berkali-kali
+        id: 'login-error', 
       });
       setLoading(false);
       return;
@@ -38,7 +37,6 @@ export default function Login() {
 
     setStudentName(student.nama);
     
-    // Toast sukses
     toast.success(`Selamat datang, ${student.nama}!`);
     
     setIsBooting(true);
@@ -82,12 +80,11 @@ export default function Login() {
               </label>
               <div className="relative">
                 <input 
-                  type={showPassword ? "text" : "password"} // Logika hide/show
+                  type={showPassword ? "text" : "password"} 
                   required 
                   className="w-full border-4 border-black p-3 font-bold outline-none focus:bg-purple-100 pr-12"
                   value={password} onChange={(e) => setPassword(e.target.value)}
                 />
-                {/* Tombol Toggle Eye */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
