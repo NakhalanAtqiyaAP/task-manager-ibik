@@ -22,11 +22,9 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
   const [showGuide, setShowGuide] = useState(false);
   const [currentQuote, setCurrentQuote] = useState("");
   const [displayText, setDisplayText] = useState("");
-  const [isBlocked, setIsBlocked] = useState(false); // State baru untuk efek blok
+  const [isBlocked, setIsBlocked] = useState(false); 
   
   const fullTitle = "Website TI-25-KA";
-
-  // Efek Mengetik dengan urutan: Ngetik -> Diam -> Block -> Hapus
   useEffect(() => {
     if (!typewriterMode) {
       setDisplayText(fullTitle);
@@ -37,40 +35,30 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
     let isMounted = true;
     let timeoutId;
 
-    // Fungsi helper untuk jeda waktu (sleep)
     const sleep = (ms) => new Promise(resolve => { timeoutId = setTimeout(resolve, ms); });
 
     const runSequence = async () => {
       while (isMounted) {
-        // 1. Reset State
         setDisplayText("");
         setIsBlocked(false);
-        await sleep(500); // Jeda sebelum mulai ngetik
+        await sleep(500); 
         if (!isMounted) break;
-
-        // 2. Proses Ngetik Huruf per Huruf
         for (let i = 1; i <= fullTitle.length; i++) {
           setDisplayText(fullTitle.slice(0, i));
-          // Sedikit variasi kecepatan ngetik agar lebih natural
           const typingSpeed = Math.random() * 50 + 100; 
           await sleep(typingSpeed);
           if (!isMounted) break;
         }
         if (!isMounted) break;
-
-        // 3. Diam Sejenak setelah selesai ngetik (2 detik)
         await sleep(2000);
         if (!isMounted) break;
-
-        // 4. Block Teks (Highlight)
         setIsBlocked(true);
-        await sleep(400); // Block ditahan selama 0.4 detik
+        await sleep(400); 
         if (!isMounted) break;
 
-        // 5. Hapus Teks
         setDisplayText("");
         setIsBlocked(false);
-        await sleep(300); // Jeda sebentar sebelum loop mengulang
+        await sleep(300); 
       }
     };
 
@@ -83,7 +71,6 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
   }, [typewriterMode]);
 
   const renderTitle = () => {
-    // Kelas CSS saat teks di-block (latar hijau, teks hitam)
     const blockStyle = isBlocked ? "bg-green-400 text-black px-1" : "";
 
     if (displayText.startsWith("Website")) {
@@ -92,7 +79,6 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
       return (
         <span className={blockStyle}>
           {parts[1]}
-          {/* Break on small screens, keep inline space on sm+ */}
           <br className="block sm:hidden" />
           <span className="hidden sm:inline"> </span>
           {second}
@@ -117,8 +103,6 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
   return (
     <>
       <section className="py-6 sm:py-10 px-4 sm:px-6 md:px-0 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center">
-        
-        {/* Main Info Block */}
         <div className="border-4 border-black bg-purple-700 p-6 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative flex flex-col items-center md:items-start text-center md:text-left min-h-[320px] justify-center">
           
           <div className="mb-4">
@@ -129,7 +113,6 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white uppercase mb-2 leading-none tracking-tight min-h-[2.5em] sm:min-h-0">
             {renderTitle()}
-            {/* Sembunyikan kursor saat teks sedang di-block */}
             {typewriterMode && !isBlocked && (
               <span className="inline-block w-2 h-8 sm:h-12 bg-green-400 ml-2 animate-cursor-blink align-middle"></span>
             )}
