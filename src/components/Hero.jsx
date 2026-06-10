@@ -87,12 +87,15 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
     const blockStyle = isBlocked ? "bg-green-400 text-black px-1" : "";
 
     if (displayText.startsWith("Website")) {
-      const parts = displayText.split(/(Website)/); 
+      const parts = displayText.split(/(Website)/);
+      const second = parts[2] ? parts[2].trim() : '';
       return (
         <span className={blockStyle}>
           {parts[1]}
-          {parts[2] && <br className="hidden sm:block" />} 
-          {parts[2] ? parts[2].trim() : ""}
+          {/* Break on small screens, keep inline space on sm+ */}
+          <br className="block sm:hidden" />
+          <span className="hidden sm:inline"> </span>
+          {second}
         </span>
       );
     }
