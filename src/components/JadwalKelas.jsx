@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Edit2, Plus, Trash2, Calendar } from 'lucide-react';
+import { Edit2, Plus, Trash2, Calendar, Filter } from 'lucide-react';
 
 export default function JadwalKelas({ userRole }) {
   const [schedules, setSchedules] = useState([]);
@@ -10,6 +10,9 @@ export default function JadwalKelas({ userRole }) {
     jam_mulai: '', jam_selesai: '', status: 'Normal'
   });
   const [isEditing, setIsEditing] = useState(false);
+  
+  // STATE BARU: Untuk menyimpan filter hari yang sedang aktif
+  const [activeFilter, setActiveFilter] = useState('Semua');
 
   useEffect(() => {
     fetchSchedules();
@@ -55,7 +58,13 @@ export default function JadwalKelas({ userRole }) {
     setIsEditing(true);
   };
 
+  // LOGIKA BARU: Filter jadwal berdasarkan tombol hari yang diklik
+  const filteredSchedules = activeFilter === 'Semua' 
+    ? schedules 
+    : schedules.filter(s => s.hari === activeFilter);
+
   const inputStyles = "w-full bg-white border-2 border-gray-600 text-black px-3 py-2 text-sm font-bold uppercase focus:outline-none focus:border-black focus:ring-0";
+  const days = ['Semua', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
   return (
     <div className="px-4 sm:px-6 pb-24 mt-8">
@@ -150,7 +159,7 @@ export default function JadwalKelas({ userRole }) {
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                 >
                   <option value="Normal">NORMAL</option>
-                  <option value="Pindah Jam">PINDAH JAM</option>
+                  <option value="Pindah Jam">PINDAH Jam</option>
                   <option value="Dibatalkan">DIBATALKAN</option>
                 </select>
               </div>
@@ -178,10 +187,33 @@ export default function JadwalKelas({ userRole }) {
           </div>
         )}
 
-        {/* LIST JADWAL */}
+        {/* FITUR BARU: FILTER BUTTONS */}
+        <div className="bg-gray-100 border-b-4 border-black p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter size={16} strokeWidth={3} />
+            <span className="text-sm font-black uppercase">Filter Hari:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {days.map((day) => (
+              <button
+                key={day}
+                onClick={() => setActiveFilter(day)}
+                className={`px-4 py-2 font-black uppercase text-xs sm:text-sm border-2 border-black transition-all ${
+                  activeFilter === day
+                    ? 'bg-yellow-400 translate-y-0.5 translate-x-0.5 shadow-none' // Style saat aktif (tertekan)
+                    : 'bg-white hover:bg-gray-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' // Style saat tidak aktif
+                }`}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* LIST JADWAL - Gunakan filteredSchedules bukan schedules */}
         <div className="divide-y-4 divide-black">
-          {schedules.length > 0 ? (
-            schedules.map((s) => (
+          {filteredSchedules.length > 0 ? (
+            filteredSchedules.map((s) => (
               <div 
                 key={s.id}
                 className={`group flex flex-col md:flex-row items-stretch transition-all duration-300 ease-out ${s.status === 'Dibatalkan' ? 'bg-red-50/50 hover:bg-red-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(239,68,68,1)]' : 'bg-white hover:bg-blue-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(147,51,234,1)]'}`}
@@ -251,14 +283,14 @@ export default function JadwalKelas({ userRole }) {
             ))
           ) : (
             <div className="p-12 text-center font-black text-gray-400 uppercase italic">
-              BELUM ADA JADWAL KELAS
+              TIDAK ADA JADWAL UNTUK {activeFilter === 'Semua' ? 'SAAT INI' : `HARI ${activeFilter.toUpperCase()}`}
             </div>
           )}
         </div>
 
         {/* FOOTER TOTAL */}
         <div className="bg-gray-100 p-4 border-t-4 border-black flex justify-between items-center gap-4">
-          <span className="text-xs font-black uppercase">Total: {schedules.length} Jadwal</span>
+          <span className="text-xs font-black uppercase">Total: {filteredSchedules.length} Jadwal</span>
         </div>
       </div>
     </div>
