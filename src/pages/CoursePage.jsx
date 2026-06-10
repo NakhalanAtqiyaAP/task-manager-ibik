@@ -334,11 +334,11 @@ export default function CoursePage({ currentUser }) {
           </button>
 
           <h2 className="text-base sm:text-lg md:text-xl font-black uppercase truncate flex-1 min-w-0">
-            {selectedSession
+            {/* {selectedSession
               ? selectedSession.judul_pertemuan
               : selectedCourse
                 ? selectedCourse.mata_kuliah?.nama_matkul
-                : 'Pilih Mata Kuliah'}
+                : 'Pilih Mata Kuliah'} */}
           </h2>
 
           {currentUser?.role === 'admin' && (
