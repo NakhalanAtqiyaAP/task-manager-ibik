@@ -184,10 +184,10 @@ export default function JadwalKelas({ userRole }) {
             schedules.map((s) => (
               <div 
                 key={s.id}
-                className={`group flex items-center transition-all duration-300 ease-out ${s.status === 'Dibatalkan' ? 'bg-red-50/50 hover:bg-red-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(239,68,68,1)]' : 'bg-white hover:bg-blue-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(147,51,234,1)]'}`}
+                className={`group flex flex-col sm:flex-row items-stretch transition-all duration-300 ease-out ${s.status === 'Dibatalkan' ? 'bg-red-50/50 hover:bg-red-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(239,68,68,1)]' : 'bg-white hover:bg-blue-50 hover:shadow-[inset_8px_0px_0px_0px_rgba(147,51,234,1)]'}`}
               >
-                <div className="p-4 border-r-4 border-black shrink-0 relative z-10 min-w-20">
-                  <div className="bg-blue-400 border-3 border-black p-2 text-center font-black text-sm text-white">
+                <div className="p-4 border-b-4 sm:border-b-0 sm:border-r-4 border-black shrink-0 relative z-10 w-full sm:w-auto flex justify-center">
+                  <div className="bg-blue-400 border-3 border-black p-2 text-center font-black text-sm text-white w-16">
                     {s.hari.substring(0, 3).toUpperCase()}
                   </div>
                 </div>
@@ -197,7 +197,7 @@ export default function JadwalKelas({ userRole }) {
                     <p className="text-sm font-bold text-gray-700">{s.dosen ? `Dosen: ${s.dosen}` : '—'}</p>
                     <p className="text-xs text-gray-600 mt-1">{s.ruangan ? `Ruangan: ${s.ruangan}` : '—'}</p>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full sm:w-auto">
                     <div className="text-center">
                       <span className="text-[10px] font-black uppercase text-gray-400 block">Waktu</span>
                       <div className="bg-yellow-300 border-2 border-black p-2 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] mt-1">
