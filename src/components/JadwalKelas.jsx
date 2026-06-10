@@ -13,11 +13,18 @@ export default function JadwalKelas({ userRole }) {
   
   // STATE BARU: Untuk menyimpan filter hari yang sedang aktif
   const [activeFilter, setActiveFilter] = useState('Semua');
+  // STATE BARU: Filter per semester (Semua / 1..8)
+  const [activeSemester, setActiveSemester] = useState('Semua');
 
   useEffect(() => {
     fetchSchedules();
     fetchMataKuliah();
   }, []);
+
+  // Refetch when semester changes
+  useEffect(() => {
+    fetchSchedules();
+  }, [activeSemester]);
 
   async function fetchMataKuliah() {
     const { data, error } = await supabase
@@ -29,9 +36,24 @@ export default function JadwalKelas({ userRole }) {
   }
 
   async function fetchSchedules() {
-    const { data, error } = await supabase.from('jadwal_kuliah').select('*').order('hari');
-    if (error) console.error("Error fetching data:", error);
-    setSchedules(data || []);
+    // Ambil semua jadwal terlebih dahulu
+    const { data: jadwalData, error: jadwalError } = await supabase.from('jadwal_kuliah').select('*').order('hari');
+    if (jadwalError) console.error("Error fetching data:", jadwalError);
+    let allSchedules = jadwalData || [];
+
+    // Jika filter semester aktif (bukan 'Semua'), ambil daftar mata kuliah untuk semester itu
+    if (activeSemester !== 'Semua') {
+      const { data: courseData, error: courseError } = await supabase
+        .from('courses')
+        .select('id, semester, mata_kuliah:matkul_id (nama_matkul)')
+        .eq('semester', Number(activeSemester));
+      if (courseError) console.error('Error fetching courses for semester filter:', courseError);
+      const names = new Set((courseData || []).map(c => (c.mata_kuliah?.nama_matkul || '').trim()));
+      // Filter jadwal yang mata_kuliahnya ada di daftar nama mata kuliah semester terpilih
+      allSchedules = allSchedules.filter(s => names.has((s.mata_kuliah || '').trim()));
+    }
+
+    setSchedules(allSchedules);
   }
 
   async function handleSubmit(e) {
@@ -189,24 +211,43 @@ export default function JadwalKelas({ userRole }) {
 
         {/* FITUR BARU: FILTER BUTTONS */}
         <div className="bg-gray-100 border-b-4 border-black p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter size={16} strokeWidth={3} />
-            <span className="text-sm font-black uppercase">Filter Hari:</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {days.map((day) => (
-              <button
-                key={day}
-                onClick={() => setActiveFilter(day)}
-                className={`px-4 py-2 font-black uppercase text-xs sm:text-sm border-2 border-black transition-all ${
-                  activeFilter === day
-                    ? 'bg-yellow-400 translate-y-0.5 translate-x-0.5 shadow-none' // Style saat aktif (tertekan)
-                    : 'bg-white hover:bg-gray-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' // Style saat tidak aktif
-                }`}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Filter size={16} strokeWidth={3} />
+                <span className="text-sm font-black uppercase">Filter Hari:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {days.map((day) => (
+                  <button
+                    key={day}
+                    onClick={() => setActiveFilter(day)}
+                    className={`px-4 py-2 font-black uppercase text-xs sm:text-sm border-2 border-black transition-all ${
+                      activeFilter === day
+                        ? 'bg-yellow-400 translate-y-0.5 translate-x-0.5 shadow-none'
+                        : 'bg-white hover:bg-gray-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Semester picker (mirip CoursePage) */}
+            <div className="flex items-center gap-3">
+              <label className="font-black text-xs uppercase">Semester</label>
+              <select
+                value={activeSemester}
+                onChange={(e) => setActiveSemester(e.target.value)}
+                className="border-2 border-black p-2 font-black text-sm bg-white"
               >
-                {day}
-              </button>
-            ))}
+                <option value="Semua">SEMUA</option>
+                {[1,2,3,4,5,6,7,8].map((sem) => (
+                  <option key={sem} value={sem}>SEMESTER {sem}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -283,7 +324,7 @@ export default function JadwalKelas({ userRole }) {
             ))
           ) : (
             <div className="p-12 text-center font-black text-gray-400 uppercase italic">
-              TIDAK ADA JADWAL UNTUK {activeFilter === 'Semua' ? 'SAAT INI' : `HARI ${activeFilter.toUpperCase()}`}
+              {activeFilter === 'Semua' ? 'TIDAK ADA JADWAL' : `TIDAK ADA JADWAL UNTUK HARI ${activeFilter.toUpperCase()}`}
             </div>
           )}
         </div>
