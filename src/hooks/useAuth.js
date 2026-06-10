@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
 export function useAuth() {
   const [session, setSession] = useState(null);
@@ -61,11 +62,14 @@ export function useAuth() {
             localStorage.setItem('last_log_at', now);
           }
         } else {
-          await supabase.auth.signOut();
-          alert('Email tidak terdaftar!');
-          setSession(null);
-          setIsAuthorized(false);
-          setCurrentUser(null);
+            await supabase.auth.signOut();
+            toast.error('Email tidak terdaftar!', {
+              position: 'top-center',
+              className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+            });
+            setSession(null);
+            setIsAuthorized(false);
+            setCurrentUser(null);
         }
       } catch (error) {
         console.error('handleSession error:', error);
@@ -129,7 +133,10 @@ export function useAuth() {
       if (logoutTimer) clearTimeout(logoutTimer);
 
       logoutTimer = setTimeout(() => {
-        alert('Sesi berakhir karena tidak ada aktivitas selama 2 jam.');
+        toast.error('Sesi berakhir karena tidak ada aktivitas selama 2 jam.', {
+          position: 'top-center',
+          className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+        });
         supabase.auth.signOut();
       }, 7200000);
     };

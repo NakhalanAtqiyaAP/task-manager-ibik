@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { 
   BookOpen, ChevronRight, ChevronDown, Video, FileText, 
@@ -174,7 +175,10 @@ export default function CoursePage({ currentUser }) {
 
   const handleSaveContent = async () => {
     if (!newContent.judul_materi) {
-      alert('Judul materi wajib diisi!');
+      toast.error('Judul materi wajib diisi!', {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
       return;
     }
     setIsUploading(true);
@@ -193,7 +197,11 @@ export default function CoursePage({ currentUser }) {
         file_url: finalFileUrl
       }]);
       if (error) throw error;
-      alert('Materi berhasil ditambahkan!');
+      toast.success('Materi berhasil ditambahkan!', {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]',
+        duration: 4000,
+      });
       setShowAdminModal(false);
       setNewContent({ judul_materi: '', teks_konten: '', link_url: '' });
       setVideoFile(null);
@@ -204,7 +212,10 @@ export default function CoursePage({ currentUser }) {
         handleSelectSession(selectedSession);
       }
     } catch (err) {
-      alert('Gagal menyimpan: ' + err.message);
+      toast.error('Gagal menyimpan: ' + (err?.message || String(err)), {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
     } finally {
       setIsUploading(false);
     }

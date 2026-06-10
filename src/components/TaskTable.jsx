@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'; 
+import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -134,7 +135,10 @@ export default function TaskTable({ studentId, onRefresh }) {
       await fetchStudentTasks();
       if (onRefresh) onRefresh();
     } catch (error) {
-      alert("Gagal mengupdate tugas!");
+      toast.error("Gagal mengupdate tugas!", {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+      });
       console.error(error);
     }
   };
