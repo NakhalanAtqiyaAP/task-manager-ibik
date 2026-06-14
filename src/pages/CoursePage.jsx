@@ -20,23 +20,22 @@ export default function CoursePage({ currentUser }) {
   const [comments, setComments] = useState([]);
 
   const [commentText, setCommentText] = useState('');
-  const [commentMediaUrl, setCommentMediaUrl] = useState('');
+  const [commentMediaFile, setCommentMediaFile] = useState(null);
   const [commentMediaType, setCommentMediaType] = useState('image');
+  const [isUploadingComment, setIsUploadingComment] = useState(false);
   const [userName, setUserName] = useState(currentUser?.nama || 'Mahasiswa');
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // ── Admin: Create modal ──
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [crudSemester, setCrudSemester] = useState(2);
   const [crudCourses, setCrudCourses] = useState([]);
   const [selectedCrudCourse, setSelectedCrudCourse] = useState('');
   const [crudSessions, setCrudSessions] = useState([]);
-  const [selectedCrudSession, setSelectedCrudSession] = useState('');
   const [sessionNameInput, setSessionNameInput] = useState('');
   
   const [videoInputMode, setVideoInputMode] = useState('link');
-  const [fileInputMode, setFileInputMode] = useState('upload');
-  
   const [isUploading, setIsUploading] = useState(false);
   const [newContent, setNewContent] = useState({
     judul_materi: '',
@@ -46,11 +45,36 @@ export default function CoursePage({ currentUser }) {
   const [videoFile, setVideoFile] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
 
+  // ── Admin: Edit Content Modal ──
+  const [showEditContentModal, setShowEditContentModal] = useState(false);
+  const [editingContent, setEditingContent] = useState(null);
+  const [editContentForm, setEditContentForm] = useState({
+    judul_materi: '',
+    teks_konten: '',
+    link_url: '',
+  });
+  const [editVideoInputMode, setEditVideoInputMode] = useState('link');
+  const [editVideoFile, setEditVideoFile] = useState(null);
+  const [editPdfFile, setEditPdfFile] = useState(null);
+  const [isEditUploading, setIsEditUploading] = useState(false);
+
+  // ── Admin: Edit Session Modal ──
+  const [showEditSessionModal, setShowEditSessionModal] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
+  const [editSessionName, setEditSessionName] = useState('');
+  const [editSessionDesc, setEditSessionDesc] = useState('');
+
+  // ── Admin: Delete Confirm Modal ──
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'content'|'session', id, label }
+
   const neoCard = "border-4 border-black bg-white p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all";
   const neoBtnPurple = "border-4 border-black bg-[#a855f7] px-3 py-2 sm:px-4 font-bold text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-[#c084fc] hover:-translate-y-1 transition-transform flex items-center justify-center gap-2";
   const neoBtnGreen = "border-4 border-black bg-[#22c55e] px-3 py-2 sm:px-4 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-[#4ade80] hover:-translate-y-1 transition-transform flex items-center justify-center gap-2";
+  const neoBtnRed = "border-4 border-black bg-red-500 px-3 py-2 sm:px-4 font-bold text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-red-400 hover:-translate-y-1 transition-transform flex items-center justify-center gap-2";
   const neoInput = "border-4 border-black p-2.5 sm:p-3 font-mono shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:bg-[#f3e8ff] w-full bg-white text-sm sm:text-base";
 
+  // ── Fetch courses ──
   useEffect(() => {
     async function fetchCourses() {
       const { data, error } = await supabase
@@ -97,26 +121,68 @@ export default function CoursePage({ currentUser }) {
     if (commentData) setComments(commentData);
   };
 
+  // ── Comment with file upload ──
   const handleSendComment = async (e) => {
     e.preventDefault();
-    if (!commentText && !commentMediaUrl) return;
+    if (!commentText && !commentMediaFile) return;
 
-    const payload = {
-      session_id: selectedSession.id,
-      nama_user: userName,
-      komentar_teks: commentText || null,
-      media_url: commentMediaUrl || null,
-      media_type: commentMediaUrl ? commentMediaType : null
-    };
+    setIsUploadingComment(true);
+    try {
+      let mediaUrl = null;
+      let mediaType = null;
 
-    const { error } = await supabase.from('course_comments').insert([payload]);
-    if (!error) {
-      setCommentText('');
-      setCommentMediaUrl('');
-      handleSelectSession(selectedSession);
+      if (commentMediaFile) {
+        const fileExt = commentMediaFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const isImage = commentMediaFile.type.startsWith('image/');
+        const folder = isImage ? 'comment-images' : 'comment-videos';
+        const filePath = `${folder}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('course_materials')
+          .upload(filePath, commentMediaFile);
+
+        if (uploadError) throw new Error(uploadError.message);
+
+        const { data } = supabase.storage
+          .from('course_materials')
+          .getPublicUrl(filePath);
+
+        mediaUrl = data.publicUrl;
+        mediaType = isImage ? 'image' : 'video';
+      }
+
+      const payload = {
+        session_id: selectedSession.id,
+        nama_user: userName,
+        komentar_teks: commentText || null,
+        media_url: mediaUrl,
+        media_type: mediaType,
+      };
+
+      const { error } = await supabase.from('course_comments').insert([payload]);
+      if (!error) {
+        setCommentText('');
+        setCommentMediaFile(null);
+        handleSelectSession(selectedSession);
+        toast.success('Komentar berhasil dikirim!', {
+          position: 'top-center',
+          className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
+        });
+      } else {
+        throw error;
+      }
+    } catch (err) {
+      toast.error('Gagal mengirim komentar: ' + (err?.message || String(err)), {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
+      });
+    } finally {
+      setIsUploadingComment(false);
     }
   };
 
+  // ── Admin: Load crud data ──
   useEffect(() => {
     if (showAdminModal) {
       async function fetchCrudData() {
@@ -221,56 +287,119 @@ export default function CoursePage({ currentUser }) {
     }
   };
 
-  // Admin actions: edit/delete content and sessions
-  const handleDeleteContent = async (contentId) => {
-    if (!window.confirm('Yakin ingin menghapus materi ini?')) return;
-    const { error } = await supabase.from('course_contents').delete().eq('id', contentId);
-    if (error) {
-      toast.error('Gagal menghapus materi: ' + error.message, { position: 'top-center' });
-      return;
-    }
-    toast.success('Materi berhasil dihapus', { position: 'top-center' });
-    if (selectedSession) handleSelectSession(selectedSession);
+  // ── Edit Content ──
+  const openEditContent = (content) => {
+    setEditingContent(content);
+    setEditContentForm({
+      judul_materi: content.judul_materi || '',
+      teks_konten: content.teks_konten || '',
+      link_url: content.video_url || '',
+    });
+    setEditVideoInputMode(content.video_url ? 'link' : 'link');
+    setEditVideoFile(null);
+    setEditPdfFile(null);
+    setShowEditContentModal(true);
   };
 
-  const handleEditContent = async (content) => {
-    const newTitle = window.prompt('Edit judul materi', content.judul_materi || '');
-    if (newTitle === null) return; // cancelled
-    const newText = window.prompt('Edit teks konten (kosong = tidak ada)', content.teks_konten || '');
-    const payload = { judul_materi: newTitle };
-    // allow clearing text
-    if (newText !== null) payload.teks_konten = newText;
-    const { error } = await supabase.from('course_contents').update(payload).eq('id', content.id);
-    if (error) {
-      toast.error('Gagal mengedit materi: ' + error.message, { position: 'top-center' });
+  const handleSaveEditContent = async () => {
+    if (!editContentForm.judul_materi) {
+      toast.error('Judul materi wajib diisi!', { position: 'top-center', className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' });
       return;
     }
-    toast.success('Materi berhasil diperbarui', { position: 'top-center' });
-    if (selectedSession) handleSelectSession(selectedSession);
+    setIsEditUploading(true);
+    try {
+      let finalVideoUrl = editVideoInputMode === 'link' ? editContentForm.link_url : editingContent.video_url;
+      let finalFileUrl = editingContent.file_url;
+      if (editVideoInputMode === 'upload' && editVideoFile) finalVideoUrl = await uploadToStorage(editVideoFile, 'videos');
+      if (editPdfFile) finalFileUrl = await uploadToStorage(editPdfFile, 'documents');
+
+      const payload = {
+        judul_materi: editContentForm.judul_materi,
+        teks_konten: editContentForm.teks_konten,
+        video_url: finalVideoUrl || null,
+        file_url: finalFileUrl || null,
+      };
+
+      const { error } = await supabase.from('course_contents').update(payload).eq('id', editingContent.id);
+      if (error) throw error;
+
+      toast.success('Materi berhasil diperbarui!', {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
+      });
+      setShowEditContentModal(false);
+      setEditingContent(null);
+      if (selectedSession) handleSelectSession(selectedSession);
+    } catch (err) {
+      toast.error('Gagal memperbarui: ' + (err?.message || String(err)), {
+        position: 'top-center',
+        className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
+      });
+    } finally {
+      setIsEditUploading(false);
+    }
   };
 
-  const handleDeleteSession = async (sessionId) => {
-    if (!window.confirm('Yakin ingin menghapus sesi ini? Materi pada sesi juga akan terhapus.')) return;
-    const { error } = await supabase.from('course_sessions').delete().eq('id', sessionId);
-    if (error) {
-      toast.error('Gagal menghapus sesi: ' + error.message, { position: 'top-center' });
+  // ── Edit Session ──
+  const openEditSession = (session) => {
+    setEditingSession(session);
+    setEditSessionName(session.judul_pertemuan || '');
+    setEditSessionDesc(session.deskripsi || '');
+    setShowEditSessionModal(true);
+  };
+
+  const handleSaveEditSession = async () => {
+    if (!editSessionName.trim()) {
+      toast.error('Nama sesi wajib diisi!', { position: 'top-center', className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' });
       return;
     }
-    toast.success('Sesi berhasil dihapus', { position: 'top-center' });
-    setSelectedSession(null);
-    if (selectedCourse) handleSelectCourse(selectedCourse);
-  };
-
-  const handleEditSession = async (session) => {
-    const newName = window.prompt('Edit nama sesi', session.judul_pertemuan || '');
-    if (newName === null) return;
-    const { error } = await supabase.from('course_sessions').update({ judul_pertemuan: newName }).eq('id', session.id);
+    const { error } = await supabase.from('course_sessions').update({
+      judul_pertemuan: editSessionName.trim(),
+      deskripsi: editSessionDesc || null,
+    }).eq('id', editingSession.id);
     if (error) {
       toast.error('Gagal mengedit sesi: ' + error.message, { position: 'top-center' });
       return;
     }
-    toast.success('Sesi berhasil diperbarui', { position: 'top-center' });
+    toast.success('Sesi berhasil diperbarui!', {
+      position: 'top-center',
+      className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
+    });
+    setShowEditSessionModal(false);
+    setEditingSession(null);
     if (selectedCourse) handleSelectCourse(selectedCourse);
+  };
+
+  // ── Delete via modal ──
+  const confirmDelete = (type, id, label) => {
+    setDeleteTarget({ type, id, label });
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { type, id } = deleteTarget;
+
+    if (type === 'content') {
+      const { error } = await supabase.from('course_contents').delete().eq('id', id);
+      if (error) {
+        toast.error('Gagal menghapus materi: ' + error.message, { position: 'top-center' });
+      } else {
+        toast.success('Materi berhasil dihapus', { position: 'top-center', className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' });
+        if (selectedSession) handleSelectSession(selectedSession);
+      }
+    } else if (type === 'session') {
+      const { error } = await supabase.from('course_sessions').delete().eq('id', id);
+      if (error) {
+        toast.error('Gagal menghapus sesi: ' + error.message, { position: 'top-center' });
+      } else {
+        toast.success('Sesi berhasil dihapus', { position: 'top-center', className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' });
+        setSelectedSession(null);
+        if (selectedCourse) handleSelectCourse(selectedCourse);
+      }
+    }
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
   };
 
   const TabBtn = ({ active, onClick, icon, label, color }) => (
@@ -305,7 +434,6 @@ export default function CoursePage({ currentUser }) {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:relative md:translate-x-0 md:w-80 md:z-auto md:h-screen md:flex md:shrink-0
       `}>
-        {/* Sidebar Header */}
         <div className="p-4 sm:p-6 border-b-4 border-black bg-[#22c55e] flex items-center justify-between shrink-0">
           <h1 className="text-2xl sm:text-3xl font-black tracking-tighter flex items-center gap-2">
             <BookOpen className="w-7 h-7 sm:w-8 sm:h-8" strokeWidth={3} /> KELAS
@@ -318,7 +446,6 @@ export default function CoursePage({ currentUser }) {
           </button>
         </div>
 
-        {/* Semester picker */}
         <div className="p-3 sm:p-4 border-b-4 border-black bg-purple-100 flex flex-col shrink-0">
           <label className="font-black text-xs sm:text-sm uppercase mb-2">Pilih Semester</label>
           <select 
@@ -332,7 +459,6 @@ export default function CoursePage({ currentUser }) {
           </select>
         </div>
 
-        {/* Course list */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
           <h2 className="font-black text-xs uppercase text-gray-500 tracking-widest">Daftar Mata Kuliah</h2>
           {courses.length === 0 ? <p className="font-mono text-sm">Tidak ada matkul.</p> : 
@@ -365,8 +491,18 @@ export default function CoursePage({ currentUser }) {
 
                           {currentUser?.role === 'admin' && (
                             <div className="flex gap-1">
-                              <button onClick={() => handleEditSession(s)} className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Edit3 size={14} strokeWidth={3} /></button>
-                              <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Trash2 size={14} strokeWidth={3} /></button>
+                              <button
+                                onClick={() => openEditSession(s)}
+                                className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                              >
+                                <Edit3 size={14} strokeWidth={3} />
+                              </button>
+                              <button
+                                onClick={() => confirmDelete('session', s.id, s.judul_pertemuan)}
+                                className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                              >
+                                <Trash2 size={14} strokeWidth={3} />
+                              </button>
                             </div>
                           )}
                         </div>
@@ -383,9 +519,7 @@ export default function CoursePage({ currentUser }) {
       {/* ── MAIN ── */}
       <main className="flex-1 flex flex-col min-h-screen md:h-screen md:overflow-y-auto">
 
-        {/* Sticky header */}
         <header className="p-3 sm:p-4 md:p-6 border-b-4 border-black bg-white flex justify-between items-center sticky top-0 z-20 gap-3">
-          {/* Hamburger (mobile only) */}
           <button
             className="md:hidden border-4 border-black bg-[#22c55e] p-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0"
             onClick={() => setSidebarOpen(true)}
@@ -393,13 +527,7 @@ export default function CoursePage({ currentUser }) {
             <Menu size={22} strokeWidth={3} />
           </button>
 
-          <h2 className="text-base sm:text-lg md:text-xl font-black uppercase truncate flex-1 min-w-0">
-            {/* {selectedSession
-              ? selectedSession.judul_pertemuan
-              : selectedCourse
-                ? selectedCourse.mata_kuliah?.nama_matkul
-                : 'Pilih Mata Kuliah'} */}
-          </h2>
+          <h2 className="text-base sm:text-lg md:text-xl font-black uppercase truncate flex-1 min-w-0"></h2>
 
           {currentUser?.role === 'admin' && (
             <button onClick={() => setShowAdminModal(true)} className={`${neoBtnPurple} text-xs sm:text-sm py-1.5 shrink-0`}>
@@ -408,7 +536,6 @@ export default function CoursePage({ currentUser }) {
           )}
         </header>
 
-        {/* Content area */}
         <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 max-w-5xl mx-auto w-full">
           {selectedSession ? (
             <>
@@ -437,8 +564,18 @@ export default function CoursePage({ currentUser }) {
 
                           {currentUser?.role === 'admin' && (
                             <div className="flex gap-2 ml-2">
-                              <button onClick={() => handleEditContent(content)} className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Edit3 size={16} strokeWidth={3} /></button>
-                              <button onClick={() => handleDeleteContent(content.id)} className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Trash2 size={16} strokeWidth={3} /></button>
+                              <button
+                                onClick={() => openEditContent(content)}
+                                className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                              >
+                                <Edit3 size={16} strokeWidth={3} />
+                              </button>
+                              <button
+                                onClick={() => confirmDelete('content', content.id, content.judul_materi)}
+                                className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                              >
+                                <Trash2 size={16} strokeWidth={3} />
+                              </button>
                             </div>
                           )}
                         </div>
@@ -487,7 +624,7 @@ export default function CoursePage({ currentUser }) {
                 </div>
               </div>
 
-              {/* Discussion section */}
+              {/* ── Discussion section ── */}
               <div className={neoCard}>
                 <h3 className="text-2xl sm:text-3xl font-black mb-5 sm:mb-6 bg-black text-white p-2.5 sm:p-3 inline-flex items-center gap-2">
                   <MessageSquare size={24} /> DISKUSI KELAS
@@ -505,28 +642,40 @@ export default function CoursePage({ currentUser }) {
                     />
                   </div>
 
-                  {/* Attachment row — stacks on mobile */}
-                  <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3 sm:gap-6 bg-white p-3 sm:p-4 border-4 border-black mb-4">
-                    <div className="flex flex-col">
-                      <label className="font-black text-xs sm:text-sm uppercase mb-2">Tipe Lampiran</label>
-                      <select 
-                        value={commentMediaType} 
-                        onChange={(e) => setCommentMediaType(e.target.value)}
-                        className="border-4 border-black p-2 font-mono text-sm bg-white focus:outline-none"
-                      >
-                        <option value="image">Foto (URL)</option>
-                        <option value="video">Video (URL)</option>
-                      </select>
+                  {/* File upload for comment media */}
+                  <div className="border-4 border-black overflow-hidden mb-4">
+                    <div className="bg-black text-white px-3 py-2 font-black text-xs uppercase flex items-center gap-2">
+                      <ImageIcon size={13} /> LAMPIRAN (OPSIONAL)
                     </div>
-                    <div className="sm:col-span-2 flex flex-col">
-                      <label className="font-black text-xs sm:text-sm uppercase mb-2">URL Lampiran (Opsional)</label>
-                      <input 
-                        type="text" 
-                        value={commentMediaUrl}
-                        onChange={(e) => setCommentMediaUrl(e.target.value)}
-                        placeholder="https://..."
-                        className="border-4 border-black p-2 font-mono text-sm focus:outline-none w-full"
-                      />
+                    <div className="p-3 sm:p-4 bg-white flex flex-col gap-3">
+                      <label className="border-4 border-dashed border-black bg-gray-50 hover:bg-purple-50 transition-colors cursor-pointer flex flex-col items-center justify-center py-5 gap-2">
+                        <Upload size={22} strokeWidth={2} className="text-purple-500" />
+                        <span className="font-black text-xs uppercase text-center px-2">
+                          {commentMediaFile ? commentMediaFile.name : 'Klik untuk pilih foto atau video'}
+                        </span>
+                        {commentMediaFile && (
+                          <span className="text-xs font-mono text-gray-500">
+                            {(commentMediaFile.size / 1024 / 1024).toFixed(2)} MB
+                            {' · '}
+                            {commentMediaFile.type.startsWith('image/') ? '🖼 Foto' : '🎬 Video'}
+                          </span>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={(e) => setCommentMediaFile(e.target.files[0] || null)}
+                        />
+                      </label>
+                      {commentMediaFile && (
+                        <button
+                          type="button"
+                          onClick={() => setCommentMediaFile(null)}
+                          className="text-xs font-black text-red-600 underline self-start"
+                        >
+                          ✕ Hapus lampiran
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -534,8 +683,13 @@ export default function CoursePage({ currentUser }) {
                     <span className="text-xs sm:text-sm font-mono font-bold bg-black text-white px-3 py-1.5 uppercase">
                       User: {userName}
                     </span>
-                    <button type="submit" className={`${neoBtnGreen} text-base sm:text-lg w-full sm:w-auto`}>
-                      <Send size={18} strokeWidth={3} /> KIRIM
+                    <button
+                      type="submit"
+                      disabled={isUploadingComment}
+                      className={`${neoBtnGreen} text-base sm:text-lg w-full sm:w-auto ${isUploadingComment ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                      <Send size={18} strokeWidth={3} />
+                      {isUploadingComment ? 'MENGIRIM...' : 'KIRIM'}
                     </button>
                   </div>
                 </form>
@@ -584,11 +738,12 @@ export default function CoursePage({ currentUser }) {
         </div>
       </main>
 
-      {/* ── ADMIN MODAL ── */}
+      {/* ══════════════════════════════════════════════════════
+          ── MODAL: CREATE CONTENT (Admin Panel) ──
+      ══════════════════════════════════════════════════════ */}
       {showAdminModal && (
         <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 z-50">
           <div className="bg-white border-4 border-black p-4 sm:p-6 md:p-8 w-full sm:max-w-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-h-[95vh] overflow-y-auto rounded-none">
-            
             <div className="flex justify-between items-center border-b-4 border-black pb-3 sm:pb-4 mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-[#a855f7] uppercase flex items-center gap-2">
                 <Settings size={26} /> PANEL MATERI
@@ -599,8 +754,6 @@ export default function CoursePage({ currentUser }) {
             </div>
 
             <div className="space-y-4 sm:space-y-6">
-
-              {/* Filter */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 bg-gray-50 p-3 sm:p-4 border-4 border-black">
                 <div className="flex flex-col">
                   <label className="font-black text-xs sm:text-sm mb-2 uppercase">Filter Semester</label>
@@ -617,7 +770,6 @@ export default function CoursePage({ currentUser }) {
                 </div>
               </div>
 
-              {/* Session name */}
               <div className="flex flex-col bg-purple-100 p-3 sm:p-4 border-4 border-black">
                 <label className="font-black text-xs sm:text-sm mb-1 uppercase">Nama Sesi Pertemuan</label>
                 <p className="text-xs font-mono text-gray-600 mb-2">
@@ -653,115 +805,59 @@ export default function CoursePage({ currentUser }) {
                 )}
               </div>
 
-              {/* Content fields */}
               <div className="border-4 border-black p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-
                 <div className="flex flex-col">
                   <label className="font-black text-xs sm:text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1">1. Judul Materi</label>
-                  <input 
-                    type="text" 
-                    value={newContent.judul_materi}
-                    onChange={(e) => setNewContent({...newContent, judul_materi: e.target.value})}
-                    placeholder="Contoh: Pengantar Algoritma..." 
-                    className={neoInput} 
-                  />
+                  <input type="text" value={newContent.judul_materi} onChange={(e) => setNewContent({...newContent, judul_materi: e.target.value})} placeholder="Contoh: Pengantar Algoritma..." className={neoInput} />
                 </div>
-
                 <div className="flex flex-col">
                   <label className="font-black text-xs sm:text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1 flex items-center gap-2"><FileText size={14}/> 2. Konten Teks</label>
-                  <textarea 
-                    value={newContent.teks_konten}
-                    onChange={(e) => setNewContent({...newContent, teks_konten: e.target.value})}
-                    rows={4} 
-                    placeholder="Teks penjelasan materi (opsional)..." 
-                    className={neoInput} 
-                  />
+                  <textarea value={newContent.teks_konten} onChange={(e) => setNewContent({...newContent, teks_konten: e.target.value})} rows={4} placeholder="Teks penjelasan materi (opsional)..." className={neoInput} />
                 </div>
 
-                {/* Video input */}
                 <div className="border-4 border-black overflow-hidden">
-                  <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2">
-                    <Video size={14} /> 3. Video Materi
-                  </div>
+                  <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2"><Video size={14} /> 3. Video Materi</div>
                   <div className="flex border-b-4 border-black">
-                    <TabBtn
-                      active={videoInputMode === 'link'}
-                      onClick={() => { setVideoInputMode('link'); setVideoFile(null); }}
-                      icon={<LinkIcon size={14} strokeWidth={3} />}
-                      label="Tempel Link"
-                      color="bg-blue-200"
-                    />
+                    <TabBtn active={videoInputMode === 'link'} onClick={() => { setVideoInputMode('link'); setVideoFile(null); }} icon={<LinkIcon size={14} strokeWidth={3} />} label="Tempel Link" color="bg-blue-200" />
                     <div className="w-1 border-x-4 border-black" />
-                    <TabBtn
-                      active={videoInputMode === 'upload'}
-                      onClick={() => { setVideoInputMode('upload'); setNewContent({...newContent, link_url: ''}); }}
-                      icon={<Upload size={14} strokeWidth={3} />}
-                      label="Upload File"
-                      color="bg-orange-200"
-                    />
+                    <TabBtn active={videoInputMode === 'upload'} onClick={() => { setVideoInputMode('upload'); setNewContent({...newContent, link_url: ''}); }} icon={<Upload size={14} strokeWidth={3} />} label="Upload File" color="bg-orange-200" />
                   </div>
                   {videoInputMode === 'link' ? (
                     <div className="p-3 sm:p-4 bg-blue-50 flex flex-col gap-2">
                       <p className="text-xs font-mono text-gray-600 font-bold">Tempel URL YouTube atau link video langsung.</p>
-                      <input 
-                        type="text" 
-                        value={newContent.link_url}
-                        onChange={(e) => setNewContent({...newContent, link_url: e.target.value})}
-                        placeholder="https://youtube.com/watch?v=... atau https://..." 
-                        className={`${neoInput} !shadow-none`}
-                      />
+                      <input type="text" value={newContent.link_url} onChange={(e) => setNewContent({...newContent, link_url: e.target.value})} placeholder="https://youtube.com/watch?v=..." className={`${neoInput} !shadow-none`} />
                     </div>
                   ) : (
                     <div className="p-3 sm:p-4 bg-orange-50 flex flex-col gap-2">
                       <p className="text-xs font-mono text-gray-600 font-bold">Upload file video dari perangkat (MP4, MKV, dll).</p>
                       <label className="border-4 border-dashed border-black bg-white hover:bg-orange-100 transition-colors cursor-pointer flex flex-col items-center justify-center py-5 sm:py-6 gap-2">
                         <Upload size={24} strokeWidth={2} className="text-orange-500" />
-                        <span className="font-black text-xs sm:text-sm uppercase text-center px-2">
-                          {videoFile ? videoFile.name : 'Klik untuk pilih file video'}
-                        </span>
-                        {videoFile && (
-                          <span className="text-xs font-mono text-gray-500">{(videoFile.size / 1024 / 1024).toFixed(2)} MB</span>
-                        )}
+                        <span className="font-black text-xs sm:text-sm uppercase text-center px-2">{videoFile ? videoFile.name : 'Klik untuk pilih file video'}</span>
+                        {videoFile && <span className="text-xs font-mono text-gray-500">{(videoFile.size / 1024 / 1024).toFixed(2)} MB</span>}
                         <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files[0])} />
                       </label>
-                      {videoFile && (
-                        <button type="button" onClick={() => setVideoFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>
-                      )}
+                      {videoFile && <button type="button" onClick={() => setVideoFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>}
                     </div>
                   )}
                 </div>
 
-                {/* module input */}
                 <div className="border-4 border-black overflow-hidden">
-                  <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2">
-                    <FileText size={14} /> 4. File / Modul (PDF, DOCX, ZIP)
-                  </div>
+                  <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2"><FileText size={14} /> 4. File / Modul (PDF, DOCX, ZIP)</div>
                   <div className="p-3 sm:p-4 bg-yellow-50 flex flex-col gap-2">
                     <p className="text-xs font-mono text-gray-600 font-bold">Upload file modul atau lampiran dari perangkat.</p>
                     <label className="border-4 border-dashed border-black bg-white hover:bg-yellow-100 transition-colors cursor-pointer flex flex-col items-center justify-center py-5 sm:py-6 gap-2">
                       <Upload size={24} strokeWidth={2} className="text-yellow-600" />
-                      <span className="font-black text-xs sm:text-sm uppercase text-center px-2">
-                        {pdfFile ? pdfFile.name : 'Klik untuk pilih file modul'}
-                      </span>
-                      {pdfFile && (
-                        <span className="text-xs font-mono text-gray-500">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</span>
-                      )}
+                      <span className="font-black text-xs sm:text-sm uppercase text-center px-2">{pdfFile ? pdfFile.name : 'Klik untuk pilih file modul'}</span>
+                      {pdfFile && <span className="text-xs font-mono text-gray-500">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</span>}
                       <input type="file" accept=".pdf,.doc,.docx,.zip,.rar" className="hidden" onChange={(e) => setPdfFile(e.target.files[0])} />
                     </label>
-                    {pdfFile && (
-                      <button type="button" onClick={() => setPdfFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>
-                    )}
+                    {pdfFile && <button type="button" onClick={() => setPdfFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>}
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end pt-2 sm:pt-4">
-                <button 
-                  type="button" 
-                  onClick={handleSaveContent} 
-                  disabled={isUploading}
-                  className={`${neoBtnGreen} text-base sm:text-xl w-full md:w-auto px-6 sm:px-10 py-3 sm:py-4 ${isUploading ? 'opacity-50 cursor-wait' : ''}`}
-                >
+                <button type="button" onClick={handleSaveContent} disabled={isUploading} className={`${neoBtnGreen} text-base sm:text-xl w-full md:w-auto px-6 sm:px-10 py-3 sm:py-4 ${isUploading ? 'opacity-50 cursor-wait' : ''}`}>
                   <Save size={22} strokeWidth={3} />
                   {isUploading ? 'MENGUNGGAH...' : 'SIMPAN MATERI'}
                 </button>
@@ -770,6 +866,217 @@ export default function CoursePage({ currentUser }) {
           </div>
         </div>
       )}
+
+      {/* ══════════════════════════════════════════════════════
+          ── MODAL: EDIT CONTENT ──
+      ══════════════════════════════════════════════════════ */}
+      {showEditContentModal && editingContent && (
+        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 z-50">
+          <div className="bg-white border-4 border-black p-4 sm:p-6 md:p-8 w-full sm:max-w-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-h-[95vh] overflow-y-auto rounded-none">
+            <div className="flex justify-between items-center border-b-4 border-black pb-3 sm:pb-4 mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-black text-green-600 uppercase flex items-center gap-2">
+                <Edit3 size={22} /> EDIT MATERI
+              </h3>
+              <button onClick={() => { setShowEditContentModal(false); setEditingContent(null); }} className="bg-red-500 text-white font-black border-4 border-black p-1.5 hover:bg-red-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1">
+                <X size={20} strokeWidth={3} />
+              </button>
+            </div>
+
+            <div className="border-4 border-black p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+              {/* Judul */}
+              <div className="flex flex-col">
+                <label className="font-black text-xs sm:text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1">1. Judul Materi</label>
+                <input
+                  type="text"
+                  value={editContentForm.judul_materi}
+                  onChange={(e) => setEditContentForm({...editContentForm, judul_materi: e.target.value})}
+                  placeholder="Judul materi..."
+                  className={neoInput}
+                />
+              </div>
+
+              {/* Teks konten */}
+              <div className="flex flex-col">
+                <label className="font-black text-xs sm:text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1 flex items-center gap-2"><FileText size={14}/> 2. Konten Teks</label>
+                <textarea
+                  value={editContentForm.teks_konten}
+                  onChange={(e) => setEditContentForm({...editContentForm, teks_konten: e.target.value})}
+                  rows={4}
+                  placeholder="Teks penjelasan materi (opsional)..."
+                  className={neoInput}
+                />
+              </div>
+
+              {/* Video */}
+              <div className="border-4 border-black overflow-hidden">
+                <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2"><Video size={14} /> 3. Video Materi</div>
+                <div className="flex border-b-4 border-black">
+                  <TabBtn active={editVideoInputMode === 'link'} onClick={() => { setEditVideoInputMode('link'); setEditVideoFile(null); }} icon={<LinkIcon size={14} strokeWidth={3} />} label="Tempel Link" color="bg-blue-200" />
+                  <div className="w-1 border-x-4 border-black" />
+                  <TabBtn active={editVideoInputMode === 'upload'} onClick={() => { setEditVideoInputMode('upload'); setEditContentForm({...editContentForm, link_url: ''}); }} icon={<Upload size={14} strokeWidth={3} />} label="Upload File" color="bg-orange-200" />
+                </div>
+                {editVideoInputMode === 'link' ? (
+                  <div className="p-3 sm:p-4 bg-blue-50 flex flex-col gap-2">
+                    {editingContent.video_url && (
+                      <p className="text-xs font-mono text-gray-500 bg-white border-2 border-black px-2 py-1 truncate">
+                        Saat ini: {editingContent.video_url}
+                      </p>
+                    )}
+                    <p className="text-xs font-mono text-gray-600 font-bold">Ganti URL atau kosongkan untuk hapus video.</p>
+                    <input
+                      type="text"
+                      value={editContentForm.link_url}
+                      onChange={(e) => setEditContentForm({...editContentForm, link_url: e.target.value})}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className={`${neoInput} !shadow-none`}
+                    />
+                  </div>
+                ) : (
+                  <div className="p-3 sm:p-4 bg-orange-50 flex flex-col gap-2">
+                    {editingContent.video_url && <p className="text-xs font-mono text-gray-500">Video saat ini akan diganti dengan file baru.</p>}
+                    <label className="border-4 border-dashed border-black bg-white hover:bg-orange-100 transition-colors cursor-pointer flex flex-col items-center justify-center py-5 gap-2">
+                      <Upload size={24} strokeWidth={2} className="text-orange-500" />
+                      <span className="font-black text-xs sm:text-sm uppercase text-center px-2">{editVideoFile ? editVideoFile.name : 'Klik untuk pilih file video'}</span>
+                      {editVideoFile && <span className="text-xs font-mono text-gray-500">{(editVideoFile.size / 1024 / 1024).toFixed(2)} MB</span>}
+                      <input type="file" accept="video/*" className="hidden" onChange={(e) => setEditVideoFile(e.target.files[0])} />
+                    </label>
+                    {editVideoFile && <button type="button" onClick={() => setEditVideoFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>}
+                  </div>
+                )}
+              </div>
+
+              {/* File/modul */}
+              <div className="border-4 border-black overflow-hidden">
+                <div className="bg-black text-white px-3 sm:px-4 py-2 font-black text-xs sm:text-sm uppercase flex items-center gap-2"><FileText size={14} /> 4. File / Modul (PDF, DOCX, ZIP)</div>
+                <div className="p-3 sm:p-4 bg-yellow-50 flex flex-col gap-2">
+                  {editingContent.file_url && (
+                    <p className="text-xs font-mono text-gray-500 bg-white border-2 border-black px-2 py-1 truncate">
+                      File saat ini: <a href={editingContent.file_url} target="_blank" rel="noreferrer" className="underline text-blue-600">Lihat file</a>
+                    </p>
+                  )}
+                  <p className="text-xs font-mono text-gray-600 font-bold">Upload file baru untuk mengganti (opsional).</p>
+                  <label className="border-4 border-dashed border-black bg-white hover:bg-yellow-100 transition-colors cursor-pointer flex flex-col items-center justify-center py-5 gap-2">
+                    <Upload size={24} strokeWidth={2} className="text-yellow-600" />
+                    <span className="font-black text-xs sm:text-sm uppercase text-center px-2">{editPdfFile ? editPdfFile.name : 'Klik untuk pilih file modul'}</span>
+                    {editPdfFile && <span className="text-xs font-mono text-gray-500">{(editPdfFile.size / 1024 / 1024).toFixed(2)} MB</span>}
+                    <input type="file" accept=".pdf,.doc,.docx,.zip,.rar" className="hidden" onChange={(e) => setEditPdfFile(e.target.files[0])} />
+                  </label>
+                  {editPdfFile && <button type="button" onClick={() => setEditPdfFile(null)} className="text-xs font-black text-red-600 underline self-start">✕ Hapus file</button>}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 sm:pt-6">
+              <button type="button" onClick={() => { setShowEditContentModal(false); setEditingContent(null); }} className="border-4 border-black bg-white px-6 py-3 font-black uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+                BATAL
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEditContent}
+                disabled={isEditUploading}
+                className={`${neoBtnGreen} text-base sm:text-lg px-8 py-3 ${isEditUploading ? 'opacity-50 cursor-wait' : ''}`}
+              >
+                <Save size={20} strokeWidth={3} />
+                {isEditUploading ? 'MENYIMPAN...' : 'SIMPAN PERUBAHAN'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════
+          ── MODAL: EDIT SESSION ──
+      ══════════════════════════════════════════════════════ */}
+      {showEditSessionModal && editingSession && (
+        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+          <div className="bg-white border-4 border-black p-4 sm:p-6 md:p-8 w-full sm:max-w-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-h-[95vh] overflow-y-auto rounded-none">
+            <div className="flex justify-between items-center border-b-4 border-black pb-3 mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-black text-green-600 uppercase flex items-center gap-2">
+                <Edit3 size={22} /> EDIT SESI
+              </h3>
+              <button onClick={() => { setShowEditSessionModal(false); setEditingSession(null); }} className="bg-red-500 text-white font-black border-4 border-black p-1.5 hover:bg-red-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1">
+                <X size={20} strokeWidth={3} />
+              </button>
+            </div>
+
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex flex-col">
+                <label className="font-black text-xs sm:text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1">Nama Sesi / Judul Pertemuan</label>
+                <input
+                  type="text"
+                  value={editSessionName}
+                  onChange={(e) => setEditSessionName(e.target.value)}
+                  placeholder="Nama sesi pertemuan..."
+                  className={neoInput}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="font-black text-xs sm:text-sm mb-2 uppercase bg-black text-white w-max px-2 py-1">Deskripsi (Opsional)</label>
+                <textarea
+                  value={editSessionDesc}
+                  onChange={(e) => setEditSessionDesc(e.target.value)}
+                  rows={3}
+                  placeholder="Deskripsi singkat sesi ini..."
+                  className={neoInput}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-5 sm:pt-6">
+              <button type="button" onClick={() => { setShowEditSessionModal(false); setEditingSession(null); }} className="border-4 border-black bg-white px-6 py-3 font-black uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+                BATAL
+              </button>
+              <button type="button" onClick={handleSaveEditSession} className={`${neoBtnGreen} text-base sm:text-lg px-8 py-3`}>
+                <Save size={20} strokeWidth={3} /> SIMPAN SESI
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════
+          ── MODAL: DELETE CONFIRM ──
+      ══════════════════════════════════════════════════════ */}
+      {showDeleteModal && deleteTarget && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <div className="bg-white border-4 border-black p-6 sm:p-8 w-full max-w-md shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+            <div className="flex items-center gap-3 mb-4 border-b-4 border-black pb-4">
+              <div className="bg-red-500 p-2 border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                <Trash2 size={22} strokeWidth={3} className="text-white" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black uppercase text-red-600">HAPUS {deleteTarget.type === 'content' ? 'MATERI' : 'SESI'}?</h3>
+            </div>
+
+            <p className="font-mono text-sm sm:text-base mb-2 text-gray-700">
+              {deleteTarget.type === 'session'
+                ? 'Sesi dan semua materi di dalamnya akan dihapus permanen.'
+                : 'Materi ini akan dihapus permanen.'}
+            </p>
+            <div className="bg-red-50 border-4 border-red-500 p-3 mb-6">
+              <p className="font-black text-sm sm:text-base text-red-700 break-words">"{deleteTarget.label}"</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}
+                className="flex-1 border-4 border-black bg-white py-3 font-black uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform"
+              >
+                BATAL
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className={`${neoBtnRed} flex-1 py-3 text-base`}
+              >
+                <Trash2 size={18} strokeWidth={3} /> YA, HAPUS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
