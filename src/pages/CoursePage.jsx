@@ -5,7 +5,7 @@ import {
   BookOpen, ChevronRight, ChevronDown, Video, FileText, 
   Download, Send, Settings, X, Save, MessageSquare, 
   MonitorPlay, Image as ImageIcon, Link as LinkIcon,
-  Upload, Menu, ArrowLeft,
+  Upload, Menu, ArrowLeft, Edit3, Trash2,
 } from 'lucide-react';
 
 export default function CoursePage({ currentUser }) {
@@ -221,6 +221,58 @@ export default function CoursePage({ currentUser }) {
     }
   };
 
+  // Admin actions: edit/delete content and sessions
+  const handleDeleteContent = async (contentId) => {
+    if (!window.confirm('Yakin ingin menghapus materi ini?')) return;
+    const { error } = await supabase.from('course_contents').delete().eq('id', contentId);
+    if (error) {
+      toast.error('Gagal menghapus materi: ' + error.message, { position: 'top-center' });
+      return;
+    }
+    toast.success('Materi berhasil dihapus', { position: 'top-center' });
+    if (selectedSession) handleSelectSession(selectedSession);
+  };
+
+  const handleEditContent = async (content) => {
+    const newTitle = window.prompt('Edit judul materi', content.judul_materi || '');
+    if (newTitle === null) return; // cancelled
+    const newText = window.prompt('Edit teks konten (kosong = tidak ada)', content.teks_konten || '');
+    const payload = { judul_materi: newTitle };
+    // allow clearing text
+    if (newText !== null) payload.teks_konten = newText;
+    const { error } = await supabase.from('course_contents').update(payload).eq('id', content.id);
+    if (error) {
+      toast.error('Gagal mengedit materi: ' + error.message, { position: 'top-center' });
+      return;
+    }
+    toast.success('Materi berhasil diperbarui', { position: 'top-center' });
+    if (selectedSession) handleSelectSession(selectedSession);
+  };
+
+  const handleDeleteSession = async (sessionId) => {
+    if (!window.confirm('Yakin ingin menghapus sesi ini? Materi pada sesi juga akan terhapus.')) return;
+    const { error } = await supabase.from('course_sessions').delete().eq('id', sessionId);
+    if (error) {
+      toast.error('Gagal menghapus sesi: ' + error.message, { position: 'top-center' });
+      return;
+    }
+    toast.success('Sesi berhasil dihapus', { position: 'top-center' });
+    setSelectedSession(null);
+    if (selectedCourse) handleSelectCourse(selectedCourse);
+  };
+
+  const handleEditSession = async (session) => {
+    const newName = window.prompt('Edit nama sesi', session.judul_pertemuan || '');
+    if (newName === null) return;
+    const { error } = await supabase.from('course_sessions').update({ judul_pertemuan: newName }).eq('id', session.id);
+    if (error) {
+      toast.error('Gagal mengedit sesi: ' + error.message, { position: 'top-center' });
+      return;
+    }
+    toast.success('Sesi berhasil diperbarui', { position: 'top-center' });
+    if (selectedCourse) handleSelectCourse(selectedCourse);
+  };
+
   const TabBtn = ({ active, onClick, icon, label, color }) => (
     <button
       type="button"
@@ -298,18 +350,26 @@ export default function CoursePage({ currentUser }) {
                 
                 {selectedCourse?.id === c.id && (
                   <div className="pl-3 sm:pl-4 space-y-2 border-l-4 border-black ml-3 sm:ml-4 py-2">
-                    {sessions.length === 0 ? <p className="font-mono text-xs text-gray-500">Belum ada sesi.</p> :
+                    {sessions.length === 0 ? <p className="font-mono text-xs text-gray-500">Belum ada sesi.</p> : 
                       sessions.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => handleSelectSession(s)}
-                          className={`w-full text-left p-2 border-4 border-black font-bold text-xs sm:text-sm transition-all flex items-center gap-2 ${
-                            selectedSession?.id === s.id ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-1' : 'bg-white hover:bg-gray-100'
-                          }`}
-                        >
-                          <MonitorPlay size={14} strokeWidth={3} className="shrink-0" />
-                          <span className="truncate">Sesi {s.urutan}: {s.judul_pertemuan}</span>
-                        </button>
+                        <div key={s.id} className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleSelectSession(s)}
+                            className={`flex-1 text-left p-2 border-4 border-black font-bold text-xs sm:text-sm transition-all flex items-center gap-2 ${
+                              selectedSession?.id === s.id ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-1' : 'bg-white hover:bg-gray-100'
+                            }`}
+                          >
+                            <MonitorPlay size={14} strokeWidth={3} className="shrink-0" />
+                            <span className="truncate">Sesi {s.urutan}: {s.judul_pertemuan}</span>
+                          </button>
+
+                          {currentUser?.role === 'admin' && (
+                            <div className="flex gap-1">
+                              <button onClick={() => handleEditSession(s)} className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Edit3 size={14} strokeWidth={3} /></button>
+                              <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Trash2 size={14} strokeWidth={3} /></button>
+                            </div>
+                          )}
+                        </div>
                       ))
                     }
                   </div>
@@ -370,9 +430,18 @@ export default function CoursePage({ currentUser }) {
                   ) : 
                     contents.map((content) => (
                       <div key={content.id} className="border-4 border-black p-4 sm:p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-4 sm:gap-6">
-                        <h3 className="text-lg sm:text-2xl font-black bg-[#22c55e] self-start px-3 sm:px-4 py-1.5 sm:py-2 border-4 border-black uppercase flex items-center gap-2">
-                          <BookOpen size={20} /> {content.judul_materi}
-                        </h3>
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="text-lg sm:text-2xl font-black bg-[#22c55e] self-start px-3 sm:px-4 py-1.5 sm:py-2 border-4 border-black uppercase flex items-center gap-2">
+                            <BookOpen size={20} /> {content.judul_materi}
+                          </h3>
+
+                          {currentUser?.role === 'admin' && (
+                            <div className="flex gap-2 ml-2">
+                              <button onClick={() => handleEditContent(content)} className="p-1.5 bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Edit3 size={16} strokeWidth={3} /></button>
+                              <button onClick={() => handleDeleteContent(content.id)} className="p-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"><Trash2 size={16} strokeWidth={3} /></button>
+                            </div>
+                          )}
+                        </div>
                         
                         {content.video_url && (
                           <div className="border-4 border-black aspect-video bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
