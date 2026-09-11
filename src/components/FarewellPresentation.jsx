@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-import farewellAudio from '../assets/laguPerpisahan.mp3';
-
-export default function FarewellPresentation({ userName, onClose }) {
+export default function FarewellPresentation({ userName, onClose, onStartAudio }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
@@ -10,7 +8,6 @@ export default function FarewellPresentation({ userName, onClose }) {
 
   const typingIntervalRef = useRef(null);
   const startTimeoutRef = useRef(null);
-  const audioRef = useRef(null);
 
   const dialogSteps = [
     {
@@ -45,34 +42,11 @@ export default function FarewellPresentation({ userName, onClose }) {
     }
   ];
 
-  // Inisialisasi dan Pemutaran Audio Lokal
+  // Dipanggil sekali saat modal dimuat
   useEffect(() => {
-    // Jalankan file dari folder public/audio/farewell-song.mp3
-    // audioRef.current = new Audio('/audio/farewell-song.mp3'); 
-    
-    // Jika menggunakan import src/assets (Opsi A), pakai baris ini:
-    audioRef.current = new Audio(farewellAudio);
-
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.4; // Atur volume (0.0 sampai 1.0)
-
-    const playAudio = async () => {
-      try {
-        await audioRef.current.play();
-      } catch (err) {
-        console.log("Autoplay ditahan browser, audio akan memutar saat ada interaksi tombol.", err);
-      }
-    };
-
-    playAudio();
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      }
-    };
+    if (onStartAudio) {
+      onStartAudio();
+    }
   }, []);
 
   useEffect(() => {
@@ -105,9 +79,9 @@ export default function FarewellPresentation({ userName, onClose }) {
   }, [currentStep, showFinalScreen]);
 
   const nextStep = () => {
-    // Memastikan audio terputar jika autoplay sempat diblokir browser saat render awal
-    if (audioRef.current && audioRef.current.paused) {
-      audioRef.current.play().catch(() => {});
+    // Jalankan audio jika autoplay browser sebelumnya sempat memblokir audio di useEffect
+    if (onStartAudio) {
+      onStartAudio();
     }
 
     if (isTyping) {
@@ -126,7 +100,6 @@ export default function FarewellPresentation({ userName, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[200] font-mono overflow-hidden bg-black flex items-center justify-center p-4">
-      
       {showFinalScreen ? (
         <div className="text-center animate-in fade-in duration-1000 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
           <p className="text-gray-400 font-serif italic text-2xl sm:text-3xl mb-4 tracking-widest animate-pulse">
@@ -149,7 +122,6 @@ export default function FarewellPresentation({ userName, onClose }) {
       ) : (
         <div className="absolute inset-0 flex items-end justify-center p-4 sm:p-10 z-[102]">
           <div className="w-full max-w-4xl animate-in slide-in-from-bottom-10 duration-500">
-            
             <div className="inline-block bg-purple-700 border-t-4 border-l-4 border-r-4 border-black px-4 py-1">
               <span className="text-white font-black text-xs sm:text-sm tracking-tighter uppercase italic">
                 {dialogSteps[currentStep].title}
@@ -158,7 +130,6 @@ export default function FarewellPresentation({ userName, onClose }) {
 
             <div className="bg-white border-8 border-black p-6 shadow-[12px_12px_0px_0px_rgba(168,85,247,1)] relative">
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                
                 <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-black border-4 border-purple-600 flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shrink-0 overflow-hidden ${isTyping ? 'animate-bounce' : ''}`}>
                   <img 
                     src={dialogSteps[currentStep].image} 
@@ -188,11 +159,9 @@ export default function FarewellPresentation({ userName, onClose }) {
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

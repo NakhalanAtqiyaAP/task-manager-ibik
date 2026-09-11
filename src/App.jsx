@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Toaster } from 'react-hot-toast';
 
 import Login from './pages/LoginPage';
@@ -21,7 +21,9 @@ import MataKuliahList from './components/MataKuliahList';
 import Profile from './components/Profile';
 import OAuthBootOverlay from './components/OAuthBootOverlay';
 import JadwalKelas from './components/JadwalKelas';
-import FarewellPresentation from './components/FarewellPresentation'; // Impor komponen perpisahan
+import FarewellPresentation from './components/FarewellPresentation'; 
+
+import farewellAudio from './assets/laguPerpisahan.mp3';
 
 import { useAuth } from './hooks/useAuth';
 import { useStudentTasks } from './hooks/useStudentTasks';
@@ -36,11 +38,68 @@ export default function App() {
   const [farewellDismissed, setFarewellDismissed] = useState(false);
   const [profileUser, setProfileUser] = useState(currentUser);
 
+  // State & Ref Audio Global
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [hasAudioInstance, setHasAudioInstance] = useState(false); // Mengontrol kondisi render tombol tanpa membaca ref di JSX
+  const bgAudioRef = useRef(null);
+  const isInitializingRef = useRef(false);
+
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, category: '', mode: '' 
   });
 
   const showFarewell = isAuthorized && currentUser?.status === 'tidak_aktif' && !farewellDismissed;
+
+  const handleStartFarewellAudio = () => {
+    if (isInitializingRef.current) return;
+
+    if (!bgAudioRef.current) {
+      isInitializingRef.current = true;
+      const audio = new Audio(farewellAudio);
+      audio.loop = true;
+      audio.volume = 0.4;
+      bgAudioRef.current = audio;
+      setHasAudioInstance(true); // Memicu render tombol secara aman via React State
+    }
+
+    if (bgAudioRef.current.paused) {
+      bgAudioRef.current.play()
+        .then(() => {
+          setIsPlayingMusic(true);
+          isInitializingRef.current = false;
+        })
+        .catch((err) => {
+          console.log("Autoplay ditahan browser, menunggu interaksi pengguna:", err);
+          isInitializingRef.current = false;
+        });
+    } else {
+      isInitializingRef.current = false;
+    }
+  };
+
+  const toggleMusic = () => {
+    if (bgAudioRef.current) {
+      if (isPlayingMusic) {
+        bgAudioRef.current.pause();
+        setIsPlayingMusic(false);
+      } else {
+        bgAudioRef.current.play().then(() => {
+          setIsPlayingMusic(true);
+        });
+      }
+    }
+  };
+
+  const stopAndResetAudio = () => {
+    if (bgAudioRef.current) {
+      bgAudioRef.current.pause();
+      bgAudioRef.current.currentTime = 0;
+      bgAudioRef.current = null;
+      isInitializingRef.current = false;
+      setHasAudioInstance(false); // Sembunyikan tombol secara aman
+      setIsPlayingMusic(false);
+    }
+  };
 
   useEffect(() => {
     setProfileUser(currentUser);
@@ -70,6 +129,7 @@ export default function App() {
 
   const handleMenuAction = (category, mode) => {
     if (category === 'Logout') {
+      stopAndResetAudio();
       logout();
     } else if (category === 'Dashboard' || category === 'Member' || category === 'Leaderboard' || category === 'Gallery' || category === 'Kursus') {
       setActiveView(category);
@@ -108,7 +168,7 @@ export default function App() {
 
         <div className="absolute bottom-20 w-full max-w-xs px-4" style={{ maxWidth: '250px' }}>
           <div className="h-1 bg-gray-900 w-full overflow-hidden border border-white/10">
-            <div className="h-full bg-green-500 animate-progress"></div>
+            <div className="h-full bg-[#22c55e] animate-progress"></div>
           </div>
           <div className="flex justify-between mt-2">
             <p className="text-[10px] text-gray-500 animate-pulse uppercase">Loading_to_website...</p>
@@ -136,12 +196,23 @@ export default function App() {
         }}
       />
 
-      {/* OVERLAY DEDIKASI UNTUK MAHASISWA TIDAK AKTIF */}
+      {/* OVERLAY DEDIKASI MAHASISWA TIDAK AKTIF */}
       {showFarewell && (
         <FarewellPresentation 
           userName={currentUser?.nama} 
           onClose={() => setFarewellDismissed(true)} 
+          onStartAudio={handleStartFarewellAudio}
         />
+      )}
+
+      {/* TOMBOL KONTROL MUSIK UNTUK MAHASISWA TIDAK AKTIF */}
+      {hasAudioInstance && (
+        <button 
+          onClick={toggleMusic}
+          className="fixed bottom-6 right-6 z-[90] bg-black text-green-400 border-4 border-black px-4 py-2 font-mono font-black text-xs uppercase shadow-[4px_4px_0px_0px_rgba(34,197,94,1)] hover:bg-green-400 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:translate-x-2 active:translate-y-2"
+        >
+          {isPlayingMusic ? '🎵 MUTE MUSIC' : '🔇 PLAY MUSIC'}
+        </button>
       )}
 
       <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
@@ -216,6 +287,7 @@ export default function App() {
               userEmail={profileUser?.email} 
               onProfileUpdate={(updatedUser) => setProfileUser((user) => ({ ...user, ...updatedUser }))} 
               onLogout={() => { 
+                stopAndResetAudio();
                 logout();
                 setIsProfileOpen(false); 
               }}
