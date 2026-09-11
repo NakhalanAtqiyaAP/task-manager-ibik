@@ -42,13 +42,6 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
     }
   ];
 
-  // Dipanggil sekali saat modal dimuat
-  useEffect(() => {
-    if (onStartAudio) {
-      onStartAudio();
-    }
-  }, []);
-
   useEffect(() => {
     if (showFinalScreen) return;
 
@@ -79,7 +72,7 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
   }, [currentStep, showFinalScreen]);
 
   const nextStep = () => {
-    // Jalankan audio jika autoplay browser sebelumnya sempat memblokir audio di useEffect
+    // Start audio only after a user interaction to avoid duplicate autoplay instances.
     if (onStartAudio) {
       onStartAudio();
     }

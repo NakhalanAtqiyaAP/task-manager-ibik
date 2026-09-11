@@ -43,6 +43,7 @@ export default function App() {
   const [hasAudioInstance, setHasAudioInstance] = useState(false); // Mengontrol kondisi render tombol tanpa membaca ref di JSX
   const bgAudioRef = useRef(null);
   const isInitializingRef = useRef(false);
+  const audioPlayPromiseRef = useRef(null);
 
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, category: '', mode: '' 
@@ -62,14 +63,21 @@ export default function App() {
       setHasAudioInstance(true); // Memicu render tombol secara aman via React State
     }
 
-    if (bgAudioRef.current.paused) {
-      bgAudioRef.current.play()
+    if (bgAudioRef.current.paused && !audioPlayPromiseRef.current) {
+      const playPromise = bgAudioRef.current.play();
+      audioPlayPromiseRef.current = playPromise;
+
+      playPromise
         .then(() => {
           setIsPlayingMusic(true);
-          isInitializingRef.current = false;
         })
         .catch((err) => {
           console.log("Autoplay ditahan browser, menunggu interaksi pengguna:", err);
+        })
+        .finally(() => {
+          if (audioPlayPromiseRef.current === playPromise) {
+            audioPlayPromiseRef.current = null;
+          }
           isInitializingRef.current = false;
         });
     } else {
@@ -82,10 +90,8 @@ export default function App() {
       if (isPlayingMusic) {
         bgAudioRef.current.pause();
         setIsPlayingMusic(false);
-      } else {
-        bgAudioRef.current.play().then(() => {
-          setIsPlayingMusic(true);
-        });
+      } else if (!audioPlayPromiseRef.current) {
+        handleStartFarewellAudio();
       }
     }
   };
@@ -95,11 +101,24 @@ export default function App() {
       bgAudioRef.current.pause();
       bgAudioRef.current.currentTime = 0;
       bgAudioRef.current = null;
+      audioPlayPromiseRef.current = null;
       isInitializingRef.current = false;
       setHasAudioInstance(false); // Sembunyikan tombol secara aman
       setIsPlayingMusic(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (bgAudioRef.current) {
+        bgAudioRef.current.pause();
+        bgAudioRef.current.currentTime = 0;
+        bgAudioRef.current = null;
+      }
+      audioPlayPromiseRef.current = null;
+      isInitializingRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     setProfileUser(currentUser);
