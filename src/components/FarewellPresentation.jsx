@@ -10,37 +10,37 @@ export default function FarewellPresentation({ userName, onClose }) {
   const startTimeoutRef = useRef(null);
 
   const dialogSteps = [
-    {
-      title: "SYSTEM_NOTIFICATION",
-      character: "Udin",
-      message: `Eh... ${userName || 'Teman'}? Sistem mendeteksi status keanggotaanmu di kelas TI-25-KA telah diperbarui...`,
-      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
-    },
-    {
-      title: "TI-25-KA CLASSROOM",
-      character: "Anak-Anak TI-25-KA",
-      message: `Beneran mau pindah/keluar, ${userName}? Terima kasih ya sudah pernah berjuang bareng di semester ini.`,
-      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
-    },
-    {
-      title: "MEMORIES",
-      character: "Udin",
-      message: "Setiap baris kode, diskusi tugas, dan canda tawa di kelas ini nggak akan terhapus dari log ingatan kami.",
-      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
-    },
-    {
-      title: "NEW_JOURNEY",
-      character: "Anak-Anak TI-25-KA",
-      message: "Di mana pun jalan yang kamu pilih selanjutnya, semoga selalu sukses dan berkembang pesat!",
-      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
-    },
-    {
-      title: "LAST_LOGOUT",
-      character: "Udin",
-      message: "Pintu kelas TI-25-KA akan selalu terbuka sebagai rumah pertamamu. Sampai jumpa di lain kesempatan...",
-      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
-    }
-  ];
+  {
+    title: "NEWS_UPDATE",
+    character: "Udin",
+    message: `Wait... ${userName || 'Teman'}! Beneran kabar yang lagi rame dibilang anak-anak? Kamu mau pindah dari kelas kita?`,
+    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
+  },
+  {
+    title: "TI-25-KA CLASSROOM",
+    character: "Anak-Anak TI-25-KA",
+    message: `Kaget banget denger kabar ini, ${userName}... Padahal baru kemarin kita pusing bareng ngejar deadline materi dan presentasi di kelas.`,
+    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
+  },
+  {
+    title: "MEMORIES",
+    character: "Udin",
+    message: "Semua momen pas tawa di kelas, kerja kelompok, sampai pusingnya matkul bareng... ga bakal ada yang sia-sia. Semuanya berbekas.",
+    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
+  },
+  {
+    title: "NEW_JOURNEY",
+    character: "Anak-Anak TI-25-KA",
+    message: "Ke mana pun langkah dan kampus tujuan kamu selanjutnya, tetap semangat ya! Kamu pasti bisa berkembang jauh lebih hebat di sana.",
+    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
+  },
+  {
+    title: "LAST_CHAPTER",
+    character: "Udin",
+    message: "Ingat ya, TI-25-KA selalu jadi rumah tempat kamu pernah berproses bareng. Sukses terus di luar sana, teman...",
+    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
+  }
+];
 
   useEffect(() => {
     if (showFinalScreen) return;
