@@ -31,7 +31,7 @@ export default function FarewellPresentation({ userName, onClose }) {
   {
     title: "NEW_JOURNEY",
     character: "Anak-Anak TI-25-KA",
-    message: "Ke mana pun langkah dan kampus tujuan kamu selanjutnya, tetap semangat ya! Kamu pasti bisa berkembang jauh lebih hebat di sana.",
+    message: "Ke mana pun langkah kamu selanjutnya, tetap semangat ya! Kamu pasti bisa berkembang jauh lebih hebat di sana.",
     image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
   },
   {
