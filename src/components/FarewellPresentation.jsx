@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
+import farewellAudio from '../assets/laguPerpisahan.mp3';
+
 export default function FarewellPresentation({ userName, onClose }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -8,39 +10,70 @@ export default function FarewellPresentation({ userName, onClose }) {
 
   const typingIntervalRef = useRef(null);
   const startTimeoutRef = useRef(null);
+  const audioRef = useRef(null);
 
   const dialogSteps = [
-  {
-    title: "NEWS_UPDATE",
-    character: "Udin",
-    message: `Wait... ${userName || 'Teman'}! Beneran kabar yang lagi rame dibilang anak-anak? Kamu mau pindah dari kelas kita?`,
-    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
-  },
-  {
-    title: "TI-25-KA CLASSROOM",
-    character: "Anak-Anak TI-25-KA",
-    message: `Kaget banget denger kabar ini, ${userName}... Padahal baru kemarin kita pusing bareng ngejar deadline materi dan presentasi di kelas.`,
-    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
-  },
-  {
-    title: "MEMORIES",
-    character: "Udin",
-    message: "Semua momen pas tawa di kelas, kerja kelompok, sampai pusingnya matkul bareng... ga bakal ada yang sia-sia. Semuanya berbekas.",
-    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
-  },
-  {
-    title: "NEW_JOURNEY",
-    character: "Anak-Anak TI-25-KA",
-    message: "Ke mana pun langkah kamu selanjutnya, tetap semangat ya! Kamu pasti bisa berkembang jauh lebih hebat di sana.",
-    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
-  },
-  {
-    title: "LAST_CHAPTER",
-    character: "Udin",
-    message: "Ingat ya, TI-25-KA selalu jadi rumah tempat kamu pernah berproses bareng. Sukses terus di luar sana, teman...",
-    image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
-  }
-];
+    {
+      title: "NEWS_UPDATE",
+      character: "Udin",
+      message: `Wait... ${userName || 'Teman'}! Beneran kabar yang lagi rame dibilang anak-anak? Kamu mau pindah dari kelas kita?`,
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
+    },
+    {
+      title: "TI-25-KA CLASSROOM",
+      character: "Anak-Anak TI-25-KA",
+      message: `Kaget banget denger kabar ini, ${userName}... Padahal baru kemarin kita pusing bareng ngejar deadline materi dan presentasi di kelas.`,
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
+    },
+    {
+      title: "MEMORIES",
+      character: "Udin",
+      message: "Semua momen pas tawa di kelas, kerja kelompok, sampai pusingnya matkul bareng... ga bakal ada yang sia-sia. Semuanya berbekas.",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
+    },
+    {
+      title: "NEW_JOURNEY",
+      character: "Anak-Anak TI-25-KA",
+      message: "Ke mana pun langkah kamu selanjutnya, tetap semangat ya! Kamu pasti bisa berkembang jauh lebih hebat di sana.",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Felix"
+    },
+    {
+      title: "LAST_CHAPTER",
+      character: "Udin",
+      message: "Ingat ya, TI-25-KA selalu jadi rumah tempat kamu pernah berproses bareng. Sukses terus di luar sana, teman...",
+      image: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Jade"
+    }
+  ];
+
+  // Inisialisasi dan Pemutaran Audio Lokal
+  useEffect(() => {
+    // Jalankan file dari folder public/audio/farewell-song.mp3
+    // audioRef.current = new Audio('/audio/farewell-song.mp3'); 
+    
+    // Jika menggunakan import src/assets (Opsi A), pakai baris ini:
+    audioRef.current = new Audio(farewellAudio);
+
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.4; // Atur volume (0.0 sampai 1.0)
+
+    const playAudio = async () => {
+      try {
+        await audioRef.current.play();
+      } catch (err) {
+        console.log("Autoplay ditahan browser, audio akan memutar saat ada interaksi tombol.", err);
+      }
+    };
+
+    playAudio();
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (showFinalScreen) return;
@@ -72,6 +105,11 @@ export default function FarewellPresentation({ userName, onClose }) {
   }, [currentStep, showFinalScreen]);
 
   const nextStep = () => {
+    // Memastikan audio terputar jika autoplay sempat diblokir browser saat render awal
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.play().catch(() => {});
+    }
+
     if (isTyping) {
       clearTimeout(startTimeoutRef.current);
       clearInterval(typingIntervalRef.current);
@@ -81,7 +119,6 @@ export default function FarewellPresentation({ userName, onClose }) {
       if (currentStep < dialogSteps.length - 1) {
         setCurrentStep(currentStep + 1);
       } else {
-        // Pindah ke layar penutup "Selamat Tinggal"
         setShowFinalScreen(true);
       }
     }
