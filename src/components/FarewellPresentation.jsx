@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
 export default function FarewellPresentation({ userName, onClose, onStartAudio }) {
-  const [showCutscene, setShowCutscene] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
@@ -43,9 +42,8 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
     }
   ];
 
-  // Efek ngetik huruf demi huruf
   useEffect(() => {
-    if (showCutscene || showFinalScreen) return;
+    if (showFinalScreen) return;
 
     let i = 0;
     const fullText = dialogSteps[currentStep].message;
@@ -71,17 +69,14 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
       clearTimeout(startTimeoutRef.current);
       clearInterval(typingIntervalRef.current);
     };
-  }, [currentStep, showCutscene, showFinalScreen]);
+  }, [currentStep, showFinalScreen]);
 
-  // Handler saat tombol pada cutscene ditekan (Satu-satunya pemicu audio)
-  const handleStartDialog = () => {
+  const nextStep = () => {
+    // Start audio only after a user interaction to avoid duplicate autoplay instances.
     if (onStartAudio) {
       onStartAudio();
     }
-    setShowCutscene(false);
-  };
 
-  const nextStep = () => {
     if (isTyping) {
       clearTimeout(startTimeoutRef.current);
       clearInterval(typingIntervalRef.current);
@@ -98,31 +93,7 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
 
   return (
     <div className="fixed inset-0 z-[200] font-mono overflow-hidden bg-black flex items-center justify-center p-4">
-      
-      {/* 1. SCENE CUTSCENE PEMBUKA */}
-      {showCutscene ? (
-        <div className="text-center animate-in fade-in duration-1000 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh] p-6 font-mono">
-          <span className="text-purple-400 text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-6 opacity-80">
-            Notification!
-          </span>
-          
-          <h2 className="text-2xl sm:text-4xl font-normal text-gray-200 leading-relaxed tracking-wide mb-10">
-            Ada kabar tentang
-            <span className="block font-black text-white border-b-2 border-purple-500 pb-1 mt-2 w-max mx-auto">
-              {userName || 'Teman Kita'}
-            </span>
-          </h2>
-
-          <button 
-            onClick={handleStartDialog}
-            className="border-2 border-white/20 bg-white text-black font-black px-8 py-3 text-sm uppercase tracking-widest hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-300 active:scale-95"
-          >
-            Lanjutkan
-          </button>
-        </div>
-      ) : showFinalScreen ? (
-          
-        /* 2. LAYAR AKHIR (PERPISAHAN) */
+      {showFinalScreen ? (
         <div className="text-center animate-in fade-in duration-1000 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
           <p className="text-gray-400 font-serif italic text-2xl sm:text-3xl mb-4 tracking-widest animate-pulse">
             Selamat Tinggal
@@ -142,8 +113,6 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
           </button>
         </div>
       ) : (
-        
-        /* 3. SCENE DIALOG VISUAL NOVEL */
         <div className="absolute inset-0 flex items-end justify-center p-4 sm:p-10 z-[102]">
           <div className="w-full max-w-4xl animate-in slide-in-from-bottom-10 duration-500">
             <div className="inline-block bg-purple-700 border-t-4 border-l-4 border-r-4 border-black px-4 py-1">
