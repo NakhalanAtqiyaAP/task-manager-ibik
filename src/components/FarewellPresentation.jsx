@@ -105,26 +105,25 @@ export default function FarewellPresentation({ userName, onClose, onStartAudio }
       
       {/* 1. SCENE CUTSCENE PEMBUKA */}
         {showCutscene ? (
-       <div className="text-center animate-in fade-in duration-1000 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh] p-6 font-mono">
-    <span className="text-purple-400 text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-6 opacity-80">
-      Notification!
+   <div className="text-center animate-in fade-in duration-1000 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh] p-6 font-mono">
+  <span className="text-purple-400 text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-6 opacity-80">
+    Notification!
+  </span>
+  
+  <h2 className="text-2xl sm:text-4xl font-normal text-gray-200 leading-relaxed tracking-wide mb-10">
+    Ada kabar burung tentang
+    <span className="block font-black text-white border-b-2 border-purple-500 pb-1 mt-2 w-max mx-auto">
+      {userName || 'Teman Kita'}
     </span>
-    
-    <h2 className="text-2xl sm:text-4xl font-normal text-gray-200 leading-relaxed tracking-wide mb-10">
-      Ada kabar burung tentang{' '}
-      <span className="font-black text-white border-b-2 border-purple-500 pb-1">
-        {userName || 'Teman Kita'}
-      </span>
-      ...
-    </h2>
+  </h2>
 
-    <button 
-      onClick={handleStartDialog}
-      className="border-2 border-white/20 bg-white text-black font-black px-8 py-3 text-sm uppercase tracking-widest hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-300 active:scale-95"
-    >
-      Lanjutkan
-    </button>
-  </div>
+  <button 
+    onClick={handleStartDialog}
+    className="border-2 border-white/20 bg-white text-black font-black px-8 py-3 text-sm uppercase tracking-widest hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-300 active:scale-95"
+  >
+    Lanjutkan
+  </button>
+</div>
         ) : showFinalScreen ? (
           
         /* 2. LAYAR AKHIR (PERPISAHAN) */
