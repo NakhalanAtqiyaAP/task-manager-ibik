@@ -25,36 +25,38 @@ export default function JadwalKelas({ userRole }) {
   const [activeFilter, setActiveFilter] = useState('Semua');
   const [activeSemester, setActiveSemester] = useState(String(defaultSemester));
 
+  // Ambil daftar mata kuliah berdasarkan semester yang dipilih di FORM ADMIN
   useEffect(() => {
-    fetchMataKuliah();
-  }, [activeSemester]);
+    fetchMataKuliahBySemester(formData.semester);
+  }, [formData.semester]);
 
   useEffect(() => {
     fetchSchedules();
   }, [activeSemester]);
 
-  async function fetchMataKuliah() {
+  async function fetchMataKuliahBySemester(targetSemester) {
     let query = supabase
       .from('courses')
       .select('semester, mata_kuliah:matkul_id (id, kode_matkul, nama_matkul)');
 
-    if (activeSemester !== 'Semua') {
-      query = query.eq('semester', Number(activeSemester));
+    if (targetSemester && targetSemester !== 'Semua') {
+      query = query.eq('semester', Number(targetSemester));
     }
 
     const { data, error } = await query;
-    if (error) console.error("Error fetching mata kuliah:", error);
+    if (error) console.error("Error fetching mata kuliah per semester:", error);
+    
     const courses = (data || []).map(course => course.mata_kuliah).filter(Boolean);
     const uniqueCourses = Array.from(
       new Map(courses.map(course => [course.id, course])).values()
     ).sort((a, b) => a.nama_matkul.localeCompare(b.nama_matkul));
+    
     setMataKuliahList(uniqueCourses);
   }
 
   async function fetchSchedules() {
     let query = supabase.from('jadwal_kuliah').select('*').order('jam_mulai', { ascending: true });
 
-    // Filter berdasarkan semester jika bukan 'Semua'
     if (activeSemester !== 'Semua') {
       query = query.eq('semester', Number(activeSemester));
     }
@@ -86,8 +88,16 @@ export default function JadwalKelas({ userRole }) {
   };
 
   const handleEdit = (s) => {
-    setFormData(s);
+    setFormData({
+      ...s,
+      jam_mulai: s.jam_mulai?.slice(0, 5) || '',
+      jam_selesai: s.jam_selesai?.slice(0, 5) || ''
+    });
     setIsEditing(true);
+  };
+
+  const openTimePicker = (event) => {
+    event.currentTarget.showPicker?.();
   };
 
   const filteredSchedules = activeFilter === 'Semua' 
@@ -138,29 +148,30 @@ export default function JadwalKelas({ userRole }) {
                   ))}
                 </select>
 
+                {/* Select Semester Ditaruh Sebelum Mata Kuliah */}
+                <select 
+                  className={inputStyles}
+                  value={formData.semester}
+                  onChange={(e) => setFormData({...formData, semester: Number(e.target.value), mata_kuliah: ''})}
+                  required
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                    <option key={sem} value={sem}>SEMESTER {sem}</option>
+                  ))}
+                </select>
+
+                {/* Dropdown Mata Kuliah Terfilter Sesuai Semester di Form */}
                 <select
                   className={inputStyles}
                   value={formData.mata_kuliah}
                   onChange={(e) => setFormData({...formData, mata_kuliah: e.target.value})}
                   required
                 >
-                  <option value="">-- PILIH MATA KULIAH --</option>
+                  <option value="">-- PILIH MATKUL (SEM {formData.semester}) --</option>
                   {mataKuliahList.map(mk => (
                     <option key={mk.id} value={mk.nama_matkul}>
                       {mk.nama_matkul} ({mk.kode_matkul})
                     </option>
-                  ))}
-                </select>
-
-                {/* Input Semester */}
-                <select 
-                  className={inputStyles}
-                  value={formData.semester}
-                  onChange={(e) => setFormData({...formData, semester: Number(e.target.value)})}
-                  required
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
-                    <option key={sem} value={sem}>SEMESTER {sem}</option>
                   ))}
                 </select>
                 
@@ -180,16 +191,18 @@ export default function JadwalKelas({ userRole }) {
                 
                 <input 
                   type="time"
-                  className={inputStyles}
+                  className={`${inputStyles} cursor-pointer`}
                   value={formData.jam_mulai}
+                  onClick={openTimePicker}
                   onChange={(e) => setFormData({...formData, jam_mulai: e.target.value})}
                   required
                 />
                 
                 <input 
                   type="time"
-                  className={inputStyles}
+                  className={`${inputStyles} cursor-pointer`}
                   value={formData.jam_selesai}
+                  onClick={openTimePicker}
                   onChange={(e) => setFormData({...formData, jam_selesai: e.target.value})}
                   required
                 />
@@ -252,7 +265,7 @@ export default function JadwalKelas({ userRole }) {
               </div>
             </div>
 
-            {/* SELEKTOR SEMESTER */}
+            {/* SELEKTOR SEMESTER UNTUK TAMPILAN JADWAL */}
             <div className="flex items-center gap-3 shrink-0">
               <label className="font-black text-xs uppercase">Semester:</label>
               <select
@@ -286,8 +299,6 @@ export default function JadwalKelas({ userRole }) {
                 </div>
 
                 <div className="p-4 flex-1 flex flex-col lg:flex-row lg:items-center justify-between gap-4 transition-transform duration-300 group-hover:translate-x-1">
-                  
-                  {/* Info Mata Kuliah */}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="bg-purple-200 border border-black px-2 py-0.5 text-[10px] font-black uppercase">
@@ -299,9 +310,7 @@ export default function JadwalKelas({ userRole }) {
                     <p className="text-xs text-gray-600 mt-0.5">{s.ruangan ? `Ruangan: ${s.ruangan}` : '—'}</p>
                   </div>
                   
-                  {/* Waktu, Status, dan Tombol Aksi */}
                   <div className="flex flex-wrap lg:flex-nowrap items-end lg:items-center gap-3 shrink-0">
-                    
                     <div className="text-left lg:text-center">
                       <span className="text-[10px] font-black uppercase text-gray-400 block mb-1">Waktu</span>
                       <div className="bg-yellow-300 border-2 border-black px-3 py-1.5 font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] whitespace-nowrap">
@@ -316,7 +325,6 @@ export default function JadwalKelas({ userRole }) {
                       </span>
                     </div>
 
-                    {/* Tombol Admin */}
                     {userRole === 'admin' && (
                       <div className="flex gap-2 w-full sm:w-auto justify-end mt-2 lg:mt-0 border-t-2 border-dashed border-gray-300 lg:border-none pt-3 lg:pt-0">
                         <button 
