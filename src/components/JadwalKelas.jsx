@@ -12,20 +12,19 @@ const getCurrentSemester = (startYear = 2025) => {
 };
 
 export default function JadwalKelas({ userRole }) {
-  const defaultSemester = getCurrentSemester(2025); // Semester aktif saat ini
+  const defaultSemester = getCurrentSemester(2025);
   
   const [schedules, setSchedules] = useState([]);
   const [mataKuliahList, setMataKuliahList] = useState([]);
   const [formData, setFormData] = useState({
     hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', 
-    jam_mulai: '', jam_selesai: '', status: 'Normal', semester: defaultSemester
+    jam_mulai: '', jam_selesai: '', status: 'Offline', semester: defaultSemester
   });
   const [isEditing, setIsEditing] = useState(false);
   
   const [activeFilter, setActiveFilter] = useState('Semua');
   const [activeSemester, setActiveSemester] = useState(String(defaultSemester));
 
-  // Ambil daftar mata kuliah berdasarkan semester yang dipilih di FORM ADMIN
   useEffect(() => {
     fetchMataKuliahBySemester(formData.semester);
   }, [formData.semester]);
@@ -82,7 +81,7 @@ export default function JadwalKelas({ userRole }) {
   const resetForm = () => {
     setFormData({ 
       hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', 
-      jam_mulai: '', jam_selesai: '', status: 'Normal', semester: Number(activeSemester) || defaultSemester 
+      jam_mulai: '', jam_selesai: '', status: 'Offline', semester: Number(activeSemester) || defaultSemester 
     });
     setIsEditing(false);
   };
@@ -106,6 +105,22 @@ export default function JadwalKelas({ userRole }) {
 
   const inputStyles = "w-full bg-white border-2 border-gray-600 text-black px-3 py-2 text-sm font-bold uppercase focus:outline-none focus:border-black focus:ring-0";
   const days = ['Semua', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+  // Utility badge status jadwal
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'Online':
+        return 'bg-blue-400 text-black';
+      case 'Offline':
+        return 'bg-green-400 text-black';
+      case 'Pindah Jam':
+        return 'bg-yellow-400 text-black';
+      case 'Dibatalkan':
+        return 'bg-red-500 text-white';
+      default:
+        return 'bg-gray-300 text-black';
+    }
+  };
 
   return (
     <div className="px-4 sm:px-6 pb-24 mt-8">
@@ -148,7 +163,6 @@ export default function JadwalKelas({ userRole }) {
                   ))}
                 </select>
 
-                {/* Select Semester Ditaruh Sebelum Mata Kuliah */}
                 <select 
                   className={inputStyles}
                   value={formData.semester}
@@ -160,7 +174,6 @@ export default function JadwalKelas({ userRole }) {
                   ))}
                 </select>
 
-                {/* Dropdown Mata Kuliah Terfilter Sesuai Semester di Form */}
                 <select
                   className={inputStyles}
                   value={formData.mata_kuliah}
@@ -176,7 +189,7 @@ export default function JadwalKelas({ userRole }) {
                 </select>
                 
                 <input 
-                  placeholder="Ruangan" 
+                  placeholder="Ruangan (misal: R.301 / Zoom)" 
                   className={inputStyles}
                   value={formData.ruangan || ''}
                   onChange={(e) => setFormData({...formData, ruangan: e.target.value})}
@@ -207,13 +220,15 @@ export default function JadwalKelas({ userRole }) {
                   required
                 />
                 
+                {/* Opsi Status Baru: OFFLINE & ONLINE */}
                 <select 
                   className={inputStyles}
                   value={formData.status}
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                 >
-                  <option value="Normal">NORMAL</option>
-                  <option value="Pindah Jam">PINDAH JAM</option>
+                  <option value="Offline"> OFFLINE</option>
+                  <option value="Online">ONLINE</option>
+                  <option value="Pindah Jam"> PINDAH JAM</option>
                   <option value="Dibatalkan">DIBATALKAN</option>
                 </select>
               </div>
@@ -265,7 +280,6 @@ export default function JadwalKelas({ userRole }) {
               </div>
             </div>
 
-            {/* SELEKTOR SEMESTER UNTUK TAMPILAN JADWAL */}
             <div className="flex items-center gap-3 shrink-0">
               <label className="font-black text-xs uppercase">Semester:</label>
               <select
@@ -318,10 +332,11 @@ export default function JadwalKelas({ userRole }) {
                       </div>
                     </div>
 
+                    {/* Render Status Badge Online / Offline */}
                     <div className="text-left lg:text-center lg:mt-0">
                       <span className="text-[10px] font-black uppercase text-gray-400 block mb-1 lg:hidden">Status</span>
-                      <span className={`px-3 py-1.5 border-2 border-black font-black text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] block whitespace-nowrap ${s.status === 'Normal' ? 'bg-green-400' : s.status === 'Pindah Jam' ? 'bg-yellow-400' : 'bg-red-400'}`}>
-                        {s.status.toUpperCase()}
+                      <span className={`px-3 py-1.5 border-2 border-black font-black text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] block whitespace-nowrap ${getStatusBadge(s.status)}`}>
+                        {s.status?.toUpperCase() || 'OFFLINE'}
                       </span>
                     </div>
 
@@ -358,7 +373,6 @@ export default function JadwalKelas({ userRole }) {
           )}
         </div>
 
-        {/* FOOTER */}
         <div className="bg-gray-100 p-4 border-t-4 border-black flex justify-between items-center gap-4">
           <span className="text-xs font-black uppercase">Total: {filteredSchedules.length} Jadwal</span>
         </div>
