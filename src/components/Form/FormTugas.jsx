@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import JSZip from 'jszip'; 
+import { getStudentCurrentSemester } from '../../utilts/semesterHelper';
 
-export default function FormTugas({ onComplete }) {
+export default function FormTugas({ onComplete, student = null }) {
+  const currentSemester = getStudentCurrentSemester(student);
   const [activeCourses, setActiveCourses] = useState([]);
   const [allStudents, setAllStudents] = useState([]); 
   const [selectedStudents, setSelectedStudents] = useState([]); 
@@ -38,7 +40,8 @@ export default function FormTugas({ onComplete }) {
     async function fetchData() {
       const { data: courses } = await supabase
         .from('courses')
-        .select(`id, semester, mata_kuliah ( nama_matkul )`);
+        .select(`id, semester, mata_kuliah ( nama_matkul )`)
+        .eq('semester', currentSemester);
       if (courses) setActiveCourses(courses);
 
       const { data: students } = await supabase
@@ -48,7 +51,7 @@ export default function FormTugas({ onComplete }) {
       if (students) setAllStudents(students);
     }
     fetchData();
-  }, []);
+  }, [currentSemester]);
 
   const toggleStudent = (id) => {
     setSelectedStudents(prev => 

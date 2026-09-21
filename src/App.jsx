@@ -270,7 +270,7 @@ export default function App() {
           
           {modalConfig.category === 'Daftar Tugas' && (
             modalConfig.mode === 'create' 
-              ? <FormTugas onComplete={closeModal} /> 
+              ? <FormTugas onComplete={closeModal} student={currentUser} />
               : <DaftarTugasList studentId={currentUser?.id} student={currentUser} />
           )}
 
