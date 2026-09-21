@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Globe, Crown, Trophy } from 'lucide-react'; // Hapus import Download
+import { Globe, Crown, Trophy } from 'lucide-react';
 
 export default function MemberPage() {
   const [members, setMembers] = useState([]);
@@ -47,12 +47,10 @@ export default function MemberPage() {
 
   useEffect(() => {
     async function fetchData() {
-      // 1. CARI SIAPA JUARA 1 SAAT INI DARI LEADERBOARD
-      // Sesuaikan 'monthly_leaderboard', 'score', dan 'student_id' dengan nama tabel/kolom aslimu
       const { data: leaderData } = await supabase
         .from('monthly_leaderboard') 
         .select('student_id')
-        .order('completed_count', { ascending: false }) // Urutkan berdasarkan skor terbanyak
+        .order('completed_count', { ascending: false })
         .limit(1)
         .single();
 
@@ -60,11 +58,10 @@ export default function MemberPage() {
         setTopStudentId(leaderData.student_id);
       }
 
-      // 2. TARIK DATA MEMBERS
+      // Pastikan memilih kolom 'status' dari tabel students
       const { data: studentsData, error } = await supabase
         .from('students')
-        // Pastikan kolom untuk relasi (misal id atau student_id) ikut di-select
-        .select('id, nama, nim, avatar_url, hobby, phone_num, quotes, media_sosial, sertifikat') 
+        .select('id, nama, nim, avatar_url, hobby, phone_num, quotes, media_sosial, sertifikat, status') 
         .order('nama', { ascending: true });
 
       if (!error && studentsData) {
@@ -108,14 +105,22 @@ export default function MemberPage() {
              certs = Array.isArray(member.sertifikat) ? member.sertifikat : [member.sertifikat];
           }
           const isCurrentKing = topStudentId && member.id === topStudentId;
+          const isInactive = member.status === 'tidak_aktif';
 
           return (
             <div 
               key={member.id}
-              className={`group relative bg-white border-2 sm:border-4 ${isCurrentKing ? 'border-yellow-400' : 'border-black'} shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 sm:hover:translate-x-2 sm:hover:translate-y-2 hover:shadow-none transition-all duration-300 p-4 sm:p-6 flex flex-col items-center animate-squad-entrance`}
+              className={`group relative bg-white border-2 sm:border-4 ${isCurrentKing ? 'border-yellow-400' : 'border-black'} ${isInactive ? 'grayscale opacity-80' : ''} shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 sm:hover:translate-x-2 sm:hover:translate-y-2 hover:shadow-none transition-all duration-300 p-4 sm:p-6 flex flex-col items-center animate-squad-entrance`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              {isCurrentKing && (
+              {/* RIBBON / BADGE TIDAK AKTIF */}
+              {isInactive && (
+                <div className="absolute top-3 left-3 bg-red-600 text-white font-mono font-black text-[9px] sm:text-[10px] uppercase px-2 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] z-20">
+                  Pernah Ada Di Sini
+                </div>
+              )}
+
+              {isCurrentKing && !isInactive && (
                 <div className="absolute -top-6 -right-4 sm:-top-8 sm:-right-6 bg-yellow-400 border-2 sm:border-4 border-black w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-20 animate-bounce-slow" title="Reigning King of the Month">
                   <Crown size={24} className="text-black fill-yellow-400" strokeWidth={2.5} />
                 </div>
