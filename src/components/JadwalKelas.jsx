@@ -2,20 +2,30 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Edit2, Plus, Trash2, Calendar, Filter } from 'lucide-react';
 
+// Helper Perhitungan Semester Aktif Otomatis
+const getCurrentSemester = (startYear = 2025) => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const yearDiff = currentYear - startYear;
+  return currentMonth >= 8 ? (yearDiff * 2 + 1) : (yearDiff * 2);
+};
+
 export default function JadwalKelas({ userRole }) {
+  const defaultSemester = getCurrentSemester(2025); // Semester aktif saat ini
+  
   const [schedules, setSchedules] = useState([]);
   const [mataKuliahList, setMataKuliahList] = useState([]);
   const [formData, setFormData] = useState({
     hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', 
-    jam_mulai: '', jam_selesai: '', status: 'Normal'
+    jam_mulai: '', jam_selesai: '', status: 'Normal', semester: defaultSemester
   });
   const [isEditing, setIsEditing] = useState(false);
   
   const [activeFilter, setActiveFilter] = useState('Semua');
-  const [activeSemester, setActiveSemester] = useState('Semua');
+  const [activeSemester, setActiveSemester] = useState(String(defaultSemester));
 
   useEffect(() => {
-    fetchSchedules();
     fetchMataKuliah();
   }, []);
 
@@ -33,21 +43,16 @@ export default function JadwalKelas({ userRole }) {
   }
 
   async function fetchSchedules() {
-    const { data: jadwalData, error: jadwalError } = await supabase.from('jadwal_kuliah').select('*').order('hari');
-    if (jadwalError) console.error("Error fetching data:", jadwalError);
-    let allSchedules = jadwalData || [];
+    let query = supabase.from('jadwal_kuliah').select('*').order('jam_mulai', { ascending: true });
 
+    // Filter berdasarkan semester jika bukan 'Semua'
     if (activeSemester !== 'Semua') {
-      const { data: courseData, error: courseError } = await supabase
-        .from('courses')
-        .select('id, semester, mata_kuliah:matkul_id (nama_matkul)')
-        .eq('semester', Number(activeSemester));
-      if (courseError) console.error('Error fetching courses for semester filter:', courseError);
-      const names = new Set((courseData || []).map(c => (c.mata_kuliah?.nama_matkul || '').trim()));
-      allSchedules = allSchedules.filter(s => names.has((s.mata_kuliah || '').trim()));
+      query = query.eq('semester', Number(activeSemester));
     }
 
-    setSchedules(allSchedules);
+    const { data, error } = await query;
+    if (error) console.error("Error fetching jadwal:", error);
+    setSchedules(data || []);
   }
 
   async function handleSubmit(e) {
@@ -59,13 +64,15 @@ export default function JadwalKelas({ userRole }) {
       const { error } = await supabase.from('jadwal_kuliah').insert([formData]);
       if (error) console.error("Error inserting:", error);
     }
-    setFormData({ hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', jam_mulai: '', jam_selesai: '', status: 'Normal' });
-    setIsEditing(false);
+    resetForm();
     fetchSchedules();
   }
 
-  const handleCancel = () => {
-    setFormData({ hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', jam_mulai: '', jam_selesai: '', status: 'Normal' });
+  const resetForm = () => {
+    setFormData({ 
+      hari: 'Senin', mata_kuliah: '', ruangan: '', dosen: '', 
+      jam_mulai: '', jam_selesai: '', status: 'Normal', semester: Number(activeSemester) || defaultSemester 
+    });
     setIsEditing(false);
   };
 
@@ -73,6 +80,7 @@ export default function JadwalKelas({ userRole }) {
     setFormData(s);
     setIsEditing(true);
   };
+
   const filteredSchedules = activeFilter === 'Semua' 
     ? schedules 
     : schedules.filter(s => s.hari === activeFilter);
@@ -87,7 +95,7 @@ export default function JadwalKelas({ userRole }) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-gray-700 pb-4 mb-4 gap-3 sm:gap-0">
             <span className="text-lg md:text-xl tracking-tight flex items-center gap-2">
               <Calendar size={24} strokeWidth={3} className="shrink-0" />
-              Jadwal Perkuliahan
+              Jadwal Perkuliahan {activeSemester !== 'Semua' && `— Semester ${activeSemester}`}
             </span>
             <button 
               onClick={fetchSchedules}
@@ -97,7 +105,7 @@ export default function JadwalKelas({ userRole }) {
             </button>
           </div>
           <div className="text-[10px] text-gray-400 tracking-widest leading-relaxed">
-            JADWAL PERKULIAHAN UNTUK SEMESTER INI. {userRole === 'admin' && 'ANDA DAPAT MENAMBAH, MENGUBAH, ATAU MENGHAPUS JADWAL.'}
+            JADWAL PERKULIAHAN AKTIF. {userRole === 'admin' && 'ANDA DAPAT MENAMBAH, MENGUBAH, ATAU MENGHAPUS JADWAL.'}
           </div>
         </div>
 
@@ -109,7 +117,7 @@ export default function JadwalKelas({ userRole }) {
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <select 
                   className={inputStyles}
                   value={formData.hari}
@@ -134,18 +142,30 @@ export default function JadwalKelas({ userRole }) {
                     </option>
                   ))}
                 </select>
+
+                {/* Input Semester */}
+                <select 
+                  className={inputStyles}
+                  value={formData.semester}
+                  onChange={(e) => setFormData({...formData, semester: Number(e.target.value)})}
+                  required
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                    <option key={sem} value={sem}>SEMESTER {sem}</option>
+                  ))}
+                </select>
                 
                 <input 
                   placeholder="Ruangan" 
                   className={inputStyles}
-                  value={formData.ruangan}
+                  value={formData.ruangan || ''}
                   onChange={(e) => setFormData({...formData, ruangan: e.target.value})}
                 />
                 
                 <input 
                   placeholder="Dosen Pengampu" 
                   className={inputStyles}
-                  value={formData.dosen}
+                  value={formData.dosen || ''}
                   onChange={(e) => setFormData({...formData, dosen: e.target.value})}
                 />
                 
@@ -171,10 +191,11 @@ export default function JadwalKelas({ userRole }) {
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                 >
                   <option value="Normal">NORMAL</option>
-                  <option value="Pindah Jam">PINDAH Jam</option>
+                  <option value="Pindah Jam">PINDAH JAM</option>
                   <option value="Dibatalkan">DIBATALKAN</option>
                 </select>
               </div>
+              
               <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4">
                 <button 
                   type="submit" 
@@ -186,7 +207,7 @@ export default function JadwalKelas({ userRole }) {
                 {isEditing && (
                   <button 
                     type="button"
-                    onClick={handleCancel}
+                    onClick={resetForm}
                     className="w-full sm:w-auto justify-center bg-gray-600 hover:bg-gray-700 border-2 border-black text-white px-6 py-3 sm:py-2 font-black uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5 active:translate-x-0.5 transition-all"
                   >
                     BATAL
@@ -196,8 +217,10 @@ export default function JadwalKelas({ userRole }) {
             </form>
           </div>
         )}
+
+        {/* FILTER BANNER */}
         <div className="bg-gray-100 border-b-4 border-black p-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Filter size={16} strokeWidth={3} />
@@ -219,21 +242,27 @@ export default function JadwalKelas({ userRole }) {
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <label className="font-black text-xs uppercase">Semester</label>
+
+            {/* SELEKTOR SEMESTER */}
+            <div className="flex items-center gap-3 shrink-0">
+              <label className="font-black text-xs uppercase">Semester:</label>
               <select
                 value={activeSemester}
                 onChange={(e) => setActiveSemester(e.target.value)}
-                className="border-2 border-black p-2 font-black text-sm bg-white"
+                className="border-2 border-black p-2 font-black text-sm bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
               >
-                <option value="Semua">SEMUA</option>
-                {[1,2,3,4,5,6,7,8].map((sem) => (
-                  <option key={sem} value={sem}>SEMESTER {sem}</option>
+                <option value="Semua">SEMUA SEMESTER</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                  <option key={sem} value={sem}>
+                    SEMESTER {sem} {sem === defaultSemester ? '(AKTIF)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
         </div>
+
+        {/* LIST JADWAL */}
         <div className="divide-y-4 divide-black">
           {filteredSchedules.length > 0 ? (
             filteredSchedules.map((s) => (
@@ -247,11 +276,15 @@ export default function JadwalKelas({ userRole }) {
                   </div>
                 </div>
 
-                {/* Konten Utama Jadwal */}
                 <div className="p-4 flex-1 flex flex-col lg:flex-row lg:items-center justify-between gap-4 transition-transform duration-300 group-hover:translate-x-1">
                   
                   {/* Info Mata Kuliah */}
                   <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-purple-200 border border-black px-2 py-0.5 text-[10px] font-black uppercase">
+                        Semester {s.semester || 1}
+                      </span>
+                    </div>
                     <h4 className="font-black uppercase text-base sm:text-lg text-black leading-tight mb-1">{s.mata_kuliah}</h4>
                     <p className="text-sm font-bold text-gray-700">{s.dosen ? `Dosen: ${s.dosen}` : '—'}</p>
                     <p className="text-xs text-gray-600 mt-0.5">{s.ruangan ? `Ruangan: ${s.ruangan}` : '—'}</p>
@@ -260,7 +293,6 @@ export default function JadwalKelas({ userRole }) {
                   {/* Waktu, Status, dan Tombol Aksi */}
                   <div className="flex flex-wrap lg:flex-nowrap items-end lg:items-center gap-3 shrink-0">
                     
-                    {/* Waktu */}
                     <div className="text-left lg:text-center">
                       <span className="text-[10px] font-black uppercase text-gray-400 block mb-1">Waktu</span>
                       <div className="bg-yellow-300 border-2 border-black px-3 py-1.5 font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] whitespace-nowrap">
@@ -268,7 +300,6 @@ export default function JadwalKelas({ userRole }) {
                       </div>
                     </div>
 
-                    {/* Status */}
                     <div className="text-left lg:text-center lg:mt-0">
                       <span className="text-[10px] font-black uppercase text-gray-400 block mb-1 lg:hidden">Status</span>
                       <span className={`px-3 py-1.5 border-2 border-black font-black text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] block whitespace-nowrap ${s.status === 'Normal' ? 'bg-green-400' : s.status === 'Pindah Jam' ? 'bg-yellow-400' : 'bg-red-400'}`}>
@@ -305,12 +336,12 @@ export default function JadwalKelas({ userRole }) {
             ))
           ) : (
             <div className="p-12 text-center font-black text-gray-400 uppercase italic">
-              {activeFilter === 'Semua' ? 'TIDAK ADA JADWAL' : `TIDAK ADA JADWAL UNTUK HARI ${activeFilter.toUpperCase()}`}
+              {activeFilter === 'Semua' ? 'TIDAK ADA JADWAL UNTUK SEMESTER INI' : `TIDAK ADA JADWAL UNTUK HARI ${activeFilter.toUpperCase()}`}
             </div>
           )}
         </div>
 
-        {/* FOOTER*/}
+        {/* FOOTER */}
         <div className="bg-gray-100 p-4 border-t-4 border-black flex justify-between items-center gap-4">
           <span className="text-xs font-black uppercase">Total: {filteredSchedules.length} Jadwal</span>
         </div>
