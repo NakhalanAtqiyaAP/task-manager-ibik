@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import DateRangePicker from './DateRangePicker';
+import { getStudentCurrentSemester } from '../utilts/semesterHelper';
 
-export default function DaftarTugasList({ studentId }) {
+export default function DaftarTugasList({ studentId, student = null }) {
+  const currentSemester = getStudentCurrentSemester(student);
   const [assignments, setAssignments] = useState([]);
   const [filteredAssignments, setFilteredAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export default function DaftarTugasList({ studentId }) {
         .select(`
           id, deadline, is_completed,
           students ( nama ),
-          tasks ( judul, mata_kuliah:courses(mata_kuliah(nama_matkul)) )
+          tasks ( judul, mata_kuliah:courses(semester, mata_kuliah(nama_matkul)) )
         `)
         .eq('student_id', studentId);
 
@@ -39,16 +41,19 @@ export default function DaftarTugasList({ studentId }) {
     async function fetchCourses() {
       const { data, error } = await supabase
         .from('courses')
-        .select('id, mata_kuliah(nama_matkul)');
+        .select('id, semester, mata_kuliah(nama_matkul)')
+        .eq('semester', currentSemester);
       if (!error) setCourses(data || []);
     }
 
     fetchAssignments();
     fetchCourses();
-  }, [studentId]);
+  }, [studentId, currentSemester]);
 
   useEffect(() => {
-    let filtered = [...assignments];
+    let filtered = assignments.filter(item =>
+      item.tasks?.mata_kuliah?.semester === currentSemester
+    );
 
     if (filters.course) {
       filtered = filtered.filter(item =>
@@ -80,7 +85,7 @@ export default function DaftarTugasList({ studentId }) {
     });
 
     setFilteredAssignments(filtered);
-  }, [assignments, filters]);
+  }, [assignments, filters, currentSemester]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));

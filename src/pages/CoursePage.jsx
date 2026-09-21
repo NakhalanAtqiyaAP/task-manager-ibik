@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import { getStudentCurrentSemester } from '../utilts/semesterHelper';
 import { 
   BookOpen, ChevronRight, ChevronDown, Video, FileText, 
   Download, Send, Settings, X, Save, MessageSquare, 
@@ -9,7 +10,8 @@ import {
 } from 'lucide-react';
 
 export default function CoursePage({ currentUser }) {
-  const [activeSemester, setActiveSemester] = useState(2);
+  const currentSemester = getStudentCurrentSemester(currentUser);
+  const [activeSemester, setActiveSemester] = useState(currentSemester);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   
@@ -29,7 +31,7 @@ export default function CoursePage({ currentUser }) {
 
   // ── Admin: Create modal ──
   const [showAdminModal, setShowAdminModal] = useState(false);
-  const [crudSemester, setCrudSemester] = useState(2);
+  const [crudSemester, setCrudSemester] = useState(currentSemester);
   const [crudCourses, setCrudCourses] = useState([]);
   const [selectedCrudCourse, setSelectedCrudCourse] = useState('');
   const [crudSessions, setCrudSessions] = useState([]);

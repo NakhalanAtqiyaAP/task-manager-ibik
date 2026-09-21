@@ -271,7 +271,7 @@ export default function App() {
           {modalConfig.category === 'Daftar Tugas' && (
             modalConfig.mode === 'create' 
               ? <FormTugas onComplete={closeModal} /> 
-              : <DaftarTugasList studentId={currentUser?.id} />
+              : <DaftarTugasList studentId={currentUser?.id} student={currentUser} />
           )}
 
           {modalConfig.category === 'Mata Kuliah' && (modalConfig.mode === 'create' ? <FormMataKuliah onComplete={closeModal} /> : <MataKuliahList />)}

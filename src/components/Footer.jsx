@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Guide from './Guide'; 
+import { getSemesterLabel } from '../utilts/semesterHelper';
 
 const Footer = ({user}) => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
@@ -13,7 +14,7 @@ const Footer = ({user}) => {
 
   return (
     <footer className="mt-20 border-t-8 border-black bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-start gap-10">
+    <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-start gap-10">
         <div className="max-w-md">
           <h4 className="font-black uppercase text-3xl mb-4 italic tracking-tighter text-black underline decoration-4 decoration-purple-400">
             // TI-25-KA
@@ -51,7 +52,7 @@ const Footer = ({user}) => {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
               Member : Online
             </span>
-            <span className="text-yellow-400 hidden sm:inline">Semester 2</span>
+            <span className="text-yellow-400 hidden sm:inline">{getSemesterLabel(user)}</span>
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 items-center">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import GameGuide from './Guide';
+import { getSemesterLabel } from '../utilts/semesterHelper';
 
 const QUOTES = [
   "“Hidup adalah penderitaan, bertahan hidup adalah mencari makna dalam penderitaan.” — Friedrich Nietzsche",
@@ -137,7 +138,7 @@ export default function Hero({ taskCount = 0, loading = false, user = null, type
         {/* Status Block */}
         <div id="monitor" className="border-4 text-white border-black bg-white p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] relative">
           <div className="absolute -top-4 -right-2 sm:-top-5 sm:-right-5 bg-green-400 border-2 sm:border-4 border-black px-3 py-1 font-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-black uppercase text-sm sm:text-lg z-10">
-            Semester 2
+            {getSemesterLabel(user)}
           </div>
 
           <div className="h-48 sm:h-64 bg-gray-800 border-2 sm:border-4 border-white flex flex-col items-center justify-center p-4 sm:p-6 text-center bg-scan-overlay relative z-0">
