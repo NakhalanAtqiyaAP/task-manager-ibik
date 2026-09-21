@@ -27,19 +27,28 @@ export default function JadwalKelas({ userRole }) {
 
   useEffect(() => {
     fetchMataKuliah();
-  }, []);
+  }, [activeSemester]);
 
   useEffect(() => {
     fetchSchedules();
   }, [activeSemester]);
 
   async function fetchMataKuliah() {
-    const { data, error } = await supabase
-      .from('mata_kuliah')
-      .select('id, kode_matkul, nama_matkul')
-      .order('nama_matkul', { ascending: true });
+    let query = supabase
+      .from('courses')
+      .select('semester, mata_kuliah:matkul_id (id, kode_matkul, nama_matkul)');
+
+    if (activeSemester !== 'Semua') {
+      query = query.eq('semester', Number(activeSemester));
+    }
+
+    const { data, error } = await query;
     if (error) console.error("Error fetching mata kuliah:", error);
-    setMataKuliahList(data || []);
+    const courses = (data || []).map(course => course.mata_kuliah).filter(Boolean);
+    const uniqueCourses = Array.from(
+      new Map(courses.map(course => [course.id, course])).values()
+    ).sort((a, b) => a.nama_matkul.localeCompare(b.nama_matkul));
+    setMataKuliahList(uniqueCourses);
   }
 
   async function fetchSchedules() {
