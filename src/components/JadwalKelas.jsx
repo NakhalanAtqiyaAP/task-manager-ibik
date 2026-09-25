@@ -168,7 +168,8 @@ export default function JadwalKelas({ userRole }) {
             </button>
           </div>
           <p className="text-[10px] sm:text-xs text-gray-400 tracking-wider font-mono">
-            SISTEM INFORMASI TI-25-KA. {userRole === 'admin' ? '🔑 MODE ADMIN AKTIF: ANDA DAPAT KELOLA JADWAL.' : '📌 MODE MAHASISWA'}
+            SISTEM INFORMASI TI-25-KA
+             {/* {userRole === 'admin' ? '🔑 MODE ADMIN AKTIF: ANDA DAPAT KELOLA JADWAL.' : '📌 MODE MAHASISWA'} */}
           </p>
         </div>
 
