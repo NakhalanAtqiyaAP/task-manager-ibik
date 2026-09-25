@@ -281,10 +281,10 @@ export default function JadwalKelas({ userRole }) {
                     value={formData.status}
                     onChange={(e) => setFormData({...formData, status: e.target.value})}
                   >
-                    <option value="Offline">🏫 OFFLINE</option>
-                    <option value="Online">💻 ONLINE</option>
-                    <option value="Pindah Jam">⏳ PINDAH JAM</option>
-                    <option value="Dibatalkan">❌ DIBATALKAN</option>
+                    <option value="Offline">OFFLINE</option>
+                    <option value="Online">ONLINE</option>
+                    <option value="Pindah Jam">PINDAH JAM</option>
+                    <option value="Dibatalkan">DIBATALKAN</option>
                   </select>
                 </div>
               </div>
