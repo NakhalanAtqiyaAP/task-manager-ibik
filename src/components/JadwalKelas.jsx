@@ -69,13 +69,8 @@ export default function JadwalKelas({ userRole }) {
     const { data, error } = await query;
     if (error) console.error("Error fetching jadwal:", error);
     
-    // Urutkan jadwal berdasarkan urutan hari (Senin -> Sabtu), lalu berdasarkan jam mulai
-    const sortedData = (data || []).sort((a, b) => {
-      const indexA = customDayOrder.findIndex(d => d.toLowerCase() === a.hari.toLowerCase());
-      const indexB = customDayOrder.findIndex(d => d.toLowerCase() === b.hari.toLowerCase());
-      if (indexA !== indexB) return indexA - indexB;
-      return a.jam_mulai.localeCompare(b.jam_mulai);
-    });
+    // Urutkan jadwal berdasarkan jam mulai
+    const sortedData = (data || []).sort((a, b) => a.jam_mulai.localeCompare(b.jam_mulai));
 
     setSchedules(sortedData);
     setLoading(false);
@@ -118,6 +113,21 @@ export default function JadwalKelas({ userRole }) {
   const filteredSchedules = activeFilter === 'Semua' 
     ? schedules 
     : schedules.filter(s => s.hari.toLowerCase() === activeFilter.toLowerCase());
+
+  // Pengelompokan Jadwal Berdasarkan Hari
+  const groupedSchedules = filteredSchedules.reduce((acc, item) => {
+    const hari = item.hari;
+    if (!acc[hari]) acc[hari] = [];
+    acc[hari].push(item);
+    return acc;
+  }, {});
+
+  // Urutkan Hari Berdasarkan customDayOrder
+  const sortedDaysInGroup = Object.keys(groupedSchedules).sort((a, b) => {
+    const indexA = customDayOrder.findIndex(d => d.toLowerCase() === a.toLowerCase());
+    const indexB = customDayOrder.findIndex(d => d.toLowerCase() === b.toLowerCase());
+    return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+  });
 
   const inputStyles = "w-full bg-white border-2 border-black text-black px-3 py-2 text-xs sm:text-sm font-black uppercase focus:outline-none focus:bg-yellow-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]";
   const days = ['Semua', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -310,7 +320,27 @@ export default function JadwalKelas({ userRole }) {
                 <Filter size={16} strokeWidth={3} />
                 <span className="text-xs font-black uppercase">Filter Hari:</span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+
+              {/* TAMPILAN DROPDOWN OPTION SAAT DI MOBILE (UKURAN KECIL) */}
+              <div className="block sm:hidden">
+                <select
+                  value={activeFilter}
+                  onChange={(e) => setActiveFilter(e.target.value)}
+                  className="w-full bg-white border-2 border-black p-2 font-black text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none"
+                >
+                  {days.map((day) => {
+                    const isToday = day.toLowerCase() === todayName.toLowerCase();
+                    return (
+                      <option key={day} value={day}>
+                        {day.toUpperCase()} {isToday ? '• (HARI INI)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* TAMPILAN BUTTON TABS SAAT DI SCREEN SEDANG/BESAR */}
+              <div className="hidden sm:flex flex-wrap gap-1.5">
                 {days.map((day) => {
                   const isToday = day.toLowerCase() === todayName.toLowerCase();
                   return (
@@ -350,101 +380,103 @@ export default function JadwalKelas({ userRole }) {
           </div>
         </div>
 
-        {/* DAFTAR JADWAL KELAS */}
-        <div className="divide-y-4 divide-black bg-gray-50">
-          {filteredSchedules.length > 0 ? (
-            filteredSchedules.map((s) => {
-              const isToday = s.hari.toLowerCase() === todayName.toLowerCase();
+        {/* DAFTAR JADWAL KELAS (GATHERED PER DAY GROUP) */}
+        <div className="divide-y-4 divide-black bg-gray-100">
+          {sortedDaysInGroup.length > 0 ? (
+            sortedDaysInGroup.map((hari) => {
+              const isToday = hari.toLowerCase() === todayName.toLowerCase();
+              const items = groupedSchedules[hari];
 
               return (
-                <div 
-                  key={s.id}
-                  className={`group flex flex-col md:flex-row items-stretch transition-all duration-200 border-b-2 border-black last:border-b-0 ${
-                    s.status === 'Dibatalkan' 
-                      ? 'bg-red-50 hover:bg-red-100' 
-                      : isToday 
-                        ? 'bg-yellow-50/80 hover:bg-yellow-100' 
-                        : 'bg-white hover:bg-blue-50'
-                  }`}
-                >
-                  {/* BADGE HARI */}
-                  <div className={`p-4 md:w-24 shrink-0 border-b-4 md:border-b-0 md:border-r-4 border-black flex md:flex-col items-center justify-between md:justify-center gap-2 ${
+                <div key={hari} className="bg-white">
+                  {/* BAR HEADER HARI */}
+                  <div className={`px-4 sm:px-6 py-3 border-b-3 border-black flex items-center justify-between ${
                     isToday ? 'bg-yellow-400' : 'bg-black text-white'
                   }`}>
-                    <span className={`font-black text-base md:text-lg uppercase ${isToday ? 'text-black' : 'text-white'}`}>
-                      {s.hari.substring(0, 3)}
-                    </span>
-                    {isToday && (
-                      <span className="bg-black text-yellow-400 text-[9px] font-black px-1.5 py-0.5 border border-black uppercase whitespace-nowrap">
-                        HARI INI
+                    <div className="flex items-center gap-2">
+                      <span className={`font-black text-sm sm:text-base uppercase ${isToday ? 'text-black' : 'text-white'}`}>
+                        📌 {hari.toUpperCase()}
                       </span>
-                    )}
+                      {isToday && (
+                        <span className="bg-black text-yellow-400 text-[10px] font-black px-2 py-0.5 border border-black uppercase">
+                          HARI INI
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-xs font-black uppercase ${isToday ? 'text-black' : 'text-gray-300'}`}>
+                      {items.length} MATAKULIAH
+                    </span>
                   </div>
 
-                  {/* INFO JADWAL */}
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="bg-purple-200 border border-black px-2 py-0.5 text-[10px] font-black uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-                          SEM {s.semester || 1}
-                        </span>
-                        <span className={`px-2 py-0.5 border border-black font-black text-[10px] uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${getStatusBadge(s.status)}`}>
-                          {s.status?.toUpperCase() || 'OFFLINE'}
-                        </span>
-                      </div>
+                  {/* LIST MATAKULIAH DALAM HARI INI */}
+                  <div className="divide-y-2 divide-gray-200">
+                    {items.map((s) => (
+                      <div 
+                        key={s.id}
+                        className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:bg-blue-50 ${
+                          s.status === 'Dibatalkan' ? 'bg-red-50/70' : ''
+                        }`}
+                      >
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="bg-purple-200 border border-black px-2 py-0.5 text-[10px] font-black uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                              SEM {s.semester || 1}
+                            </span>
+                            <span className={`px-2 py-0.5 border border-black font-black text-[10px] uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${getStatusBadge(s.status)}`}>
+                              {s.status?.toUpperCase() || 'OFFLINE'}
+                            </span>
+                          </div>
 
-                      <h4 className="font-black uppercase text-base sm:text-xl text-black leading-snug">
-                        {s.mata_kuliah}
-                      </h4>
+                          <h4 className="font-black uppercase text-base sm:text-lg text-black leading-snug">
+                            {s.mata_kuliah}
+                          </h4>
 
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-gray-700 pt-1">
-                        <span className="flex items-center gap-1">
-                          <UserCheck size={14} className="text-black" />
-                          {s.dosen ? s.dosen : '—'}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin size={14} className="text-black" />
-                          {s.ruangan ? s.ruangan : '—'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* JAM & STATUS & ACTION */}
-                    <div className="flex flex-wrap sm:flex-nowrap items-center justify-between lg:justify-end gap-3 shrink-0 pt-3 lg:pt-0 border-t-2 border-dashed border-gray-300 lg:border-none">
-                      
-                      {/* WAKTU BADGE */}
-                      <div className="flex items-center gap-1.5 bg-yellow-300 border-2 border-black px-3 py-1.5 font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        <Clock size={16} strokeWidth={2.5} />
-                        <span>{s.jam_mulai} - {s.jam_selesai} WIB</span>
-                      </div>
-
-                      {/* ACTION BUTTONS (ADMIN) */}
-                      {userRole === 'admin' && (
-                        <div className="flex gap-1.5 ml-auto sm:ml-0">
-                          <button 
-                            onClick={() => handleEdit(s)} 
-                            title="Edit Jadwal"
-                            className="bg-blue-400 hover:bg-blue-500 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                          >
-                            <Edit2 size={16} className="text-black" strokeWidth={2.5} />
-                          </button>
-                          <button 
-                            onClick={async () => {
-                              if (confirm(`Hapus jadwal ${s.mata_kuliah}?`)) {
-                                const { error } = await supabase.from('jadwal_kuliah').delete().eq('id', s.id);
-                                if (!error) fetchSchedules();
-                              }
-                            }} 
-                            title="Hapus Jadwal"
-                            className="bg-red-500 hover:bg-red-600 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                          >
-                            <Trash2 size={16} className="text-white" strokeWidth={2.5} />
-                          </button>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-gray-700 pt-0.5">
+                            <span className="flex items-center gap-1">
+                              <UserCheck size={14} className="text-black shrink-0" />
+                              {s.dosen ? s.dosen : '—'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin size={14} className="text-black shrink-0" />
+                              {s.ruangan ? s.ruangan : '—'}
+                            </span>
+                          </div>
                         </div>
-                      )}
 
-                    </div>
+                        {/* JAM & ACTION */}
+                        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t border-dashed border-gray-300 md:border-none">
+                          <div className="flex items-center gap-1.5 bg-yellow-300 border-2 border-black px-3 py-1.5 font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                            <Clock size={15} strokeWidth={2.5} />
+                            <span>{s.jam_mulai} - {s.jam_selesai} WIB</span>
+                          </div>
 
+                          {userRole === 'admin' && (
+                            <div className="flex gap-1.5">
+                              <button 
+                                onClick={() => handleEdit(s)} 
+                                title="Edit Jadwal"
+                                className="bg-blue-400 hover:bg-blue-500 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                              >
+                                <Edit2 size={15} className="text-black" strokeWidth={2.5} />
+                              </button>
+                              <button 
+                                onClick={async () => {
+                                  if (confirm(`Hapus jadwal ${s.mata_kuliah}?`)) {
+                                    const { error } = await supabase.from('jadwal_kuliah').delete().eq('id', s.id);
+                                    if (!error) fetchSchedules();
+                                  }
+                                }} 
+                                title="Hapus Jadwal"
+                                className="bg-red-500 hover:bg-red-600 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                              >
+                                <Trash2 size={15} className="text-white" strokeWidth={2.5} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    ))}
                   </div>
                 </div>
               );
