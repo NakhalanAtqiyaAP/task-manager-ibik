@@ -137,7 +137,7 @@ export default function StudentList() {
             >
               <div className="bg-green-400 p-4 border-b-8 border-black flex justify-between items-center">
                 <h2 className="font-black uppercase italic tracking-tighter flex items-center gap-2">
-                  <User size={20} strokeWidth={3} /> // EDIT_STUDENT_DATA
+                  <User size={20} strokeWidth={3} /> EDIT STUDENT DATA
                 </h2>
                 <button onClick={() => setIsEditModalOpen(false)} className="bg-white border-4 border-black p-1 hover:bg-red-500 hover:text-white transition-colors">
                   <X size={20} strokeWidth={4} />
