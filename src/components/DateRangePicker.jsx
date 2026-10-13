@@ -159,8 +159,8 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
       {/* TRIGGER */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between gap-3 px-3 py-2 bg-white border-[3px] border-black font-black text-xs uppercase tracking-wide
-          transition-all min-w-[220px] text-left
+        className={`flex w-full min-w-0 items-center justify-between gap-3 px-3 py-2 bg-white border-[3px] border-black font-black text-xs uppercase tracking-wide
+          transition-all text-left
           ${isOpen
             ? 'shadow-none translate-x-[3px] translate-y-[3px]'
             : 'shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'
@@ -172,7 +172,7 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
 
       {/* PANEL */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 z-50 bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-[360px] max-w-[calc(100vw-32px)] text-black">
+        <div className="absolute top-full left-0 mt-1.5 z-50 bg-white border-[3px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-[360px] max-w-[calc(100vw-16px)] text-black">
 
           {/* Header */}
           <div className="bg-black flex items-center justify-between px-4 py-2.5">
@@ -195,7 +195,7 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
           </div>
 
           {/* Calendars */}
-          <div className="grid grid-cols-2 gap-0 p-4 pb-2">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2 min-[400px]:gap-0 p-2 min-[400px]:p-4 pb-2">
             {/* Start */}
             <div className="border-2 border-black">
               <div className="bg-purple-600 px-2 py-1.5">
@@ -215,7 +215,7 @@ export default function DateRangePicker({ startDate, endDate, onStartDateChange,
             </div>
 
             {/* End */}
-            <div className="border-2 border-black border-l-0">
+            <div className="border-2 border-black min-[400px]:border-l-0">
               <div className="bg-purple-600 px-2 py-1.5">
                 <div className="text-[9px] font-black uppercase tracking-widest text-purple-200">Sampai Tanggal</div>
                 <div className="text-white font-black text-[11px]">

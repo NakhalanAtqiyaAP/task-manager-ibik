@@ -90,7 +90,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
       {menuOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={closeSidebar}></div>
       )}
-      <div className={`fixed top-0 right-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${menuOpen ? 'translate-x-0 border-l-8 border-black shadow-[-16px_0_0_0_rgba(0,0,0,1)]' : 'translate-x-full border-l-0'}`}>
+      <div className={`fixed top-0 right-0 h-[100dvh] w-64 max-w-[90vw] bg-white z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${menuOpen ? 'translate-x-0 border-l-4 sm:border-l-8 border-black shadow-[-8px_0_0_0_rgba(0,0,0,1)] sm:shadow-[-16px_0_0_0_rgba(0,0,0,1)]' : 'translate-x-full border-l-0'}`}>
 
         <div className="bg-purple-900 text-white p-4 border-b-4 border-black flex justify-between items-center">
           <h2 className="text-xl font-black uppercase italic">Menu</h2>

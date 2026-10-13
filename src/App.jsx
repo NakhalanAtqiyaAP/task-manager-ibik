@@ -228,20 +228,20 @@ export default function App() {
       {hasAudioInstance && (
         <button 
           onClick={toggleMusic}
-          className="fixed bottom-6 right-6 z-[90] bg-black text-green-400 border-4 border-black px-4 py-2 font-mono font-black text-xs uppercase shadow-[4px_4px_0px_0px_rgba(34,197,94,1)] hover:bg-green-400 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:translate-x-2 active:translate-y-2"
+          className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[90] max-w-[calc(100vw-1.5rem)] bg-black text-green-400 border-4 border-black px-3 sm:px-4 py-2 font-mono font-black text-[10px] sm:text-xs uppercase shadow-[4px_4px_0px_0px_rgba(34,197,94,1)] hover:bg-green-400 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:translate-x-2 active:translate-y-2"
         >
           {isPlayingMusic ? '🎵 MUTE MUSIC' : '🔇 PLAY MUSIC'}
         </button>
       )}
 
-      <div className="min-h-screen selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-visible bg-stripes bg-blueprint">
+      <div className="min-h-screen w-full min-w-0 selection:bg-green-400 selection:text-black font-sans bg-purple-900 relative overflow-x-clip bg-stripes bg-blueprint">
         <Navbar 
           onMenuAction={handleMenuAction} 
           currentUser={currentUser} 
           onToggleProfile={() => setIsProfileOpen(true)} 
         />
 
-        <main className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8 transition-all duration-300 min-h-screen">
+        <main className="w-full min-w-0 max-w-7xl mx-auto pt-4 sm:pt-8 px-3 sm:px-6 lg:px-8 transition-all duration-300 min-h-screen">
           {activeView === 'Dashboard' ? (
             <>
               <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
@@ -285,14 +285,14 @@ export default function App() {
           ></div>
         )}
         <div 
-          className={`fixed top-0 right-0 h-full w-full sm:w-100 bg-white z-100 transform transition-transform duration-300 ease-in-out flex flex-col 
+          className={`fixed top-0 right-0 h-[100dvh] w-full sm:w-100 max-w-full bg-white z-100 transform transition-transform duration-300 ease-in-out flex flex-col
             ${isProfileOpen 
-              ? 'translate-x-0 border-l-8 border-black shadow-[-16px_0_0_0_rgba(0,0,0,1)]' 
+              ? 'translate-x-0 border-l-4 sm:border-l-8 border-black shadow-[-8px_0_0_0_rgba(0,0,0,1)] sm:shadow-[-16px_0_0_0_rgba(0,0,0,1)]'
               : 'translate-x-full border-l-0 border-transparent shadow-none'
             }`}
         >
-          <div className="flex justify-between items-center p-6 border-b-4 border-black bg-purple-900">
-            <h2 className="text-2xl font-black uppercase italic text-white">// USER_PROFILE</h2>
+          <div className="flex justify-between items-center gap-3 p-4 sm:p-6 border-b-4 border-black bg-purple-900">
+            <h2 className="text-lg sm:text-2xl font-black uppercase italic text-white break-words">// USER_PROFILE</h2>
             <button 
               onClick={() => setIsProfileOpen(false)}
               className="w-10 h-10 bg-white border-4 border-black font-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:bg-red-400"
@@ -301,7 +301,7 @@ export default function App() {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 bg-white">
             <Profile 
               userEmail={profileUser?.email} 
               onProfileUpdate={(updatedUser) => setProfileUser((user) => ({ ...user, ...updatedUser }))} 

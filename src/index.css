@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
 body {
   /* Membuat pola grid minimalis */
   background-color: #f0f0f0;
