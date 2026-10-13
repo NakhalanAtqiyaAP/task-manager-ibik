@@ -146,7 +146,7 @@ export default function StudentList() {
 
               <form onSubmit={handleUpdate} className="p-6 space-y-4">
                 <div>
-                  <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">// NAMA_LENGKAP</label>
+                  <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">NAMA_LENGKAP</label>
                   <input 
                     required
                     className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none uppercase"
@@ -156,7 +156,7 @@ export default function StudentList() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">// NIM</label>
+                    <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">NIM</label>
                     <input 
                       required
                       className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
@@ -165,7 +165,7 @@ export default function StudentList() {
                     />
                   </div>
                   <div>
-                    <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">// KELAS</label>
+                    <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">KELAS</label>
                     <input 
                       required
                       className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none uppercase"
@@ -175,7 +175,7 @@ export default function StudentList() {
                   </div>
                 </div>
                 <div>
-                  <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">// WHATSAPP</label>
+                  <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">WHATSAPP</label>
                   <input 
                     required
                     className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
