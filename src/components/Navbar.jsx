@@ -93,7 +93,7 @@ export default function Navbar({ onMenuAction, currentUser, onToggleProfile }) {
       <div className={`fixed top-0 right-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${menuOpen ? 'translate-x-0 border-l-8 border-black shadow-[-16px_0_0_0_rgba(0,0,0,1)]' : 'translate-x-full border-l-0'}`}>
 
         <div className="bg-purple-900 text-white p-4 border-b-4 border-black flex justify-between items-center">
-          <h2 className="text-xl font-black uppercase italic">// Menu</h2>
+          <h2 className="text-xl font-black uppercase italic">Menu</h2>
           <button onClick={closeSidebar} className="w-8 h-8 bg-white text-black border-4 border-black font-black flex items-center justify-center hover:bg-red-400">
              <X size={18} strokeWidth={3} />
           </button>
