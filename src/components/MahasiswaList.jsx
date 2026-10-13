@@ -183,6 +183,15 @@ export default function StudentList() {
                     onChange={(e) => setEditFormData({...editFormData, phone_num: e.target.value})}
                   />
                 </div>
+                <div>
+                  <label className="block font-black text-[10px] uppercase mb-1 text-gray-500 italic">STATUS</label>
+                  <input 
+                    required
+                    className="w-full border-4 border-black p-3 font-bold focus:bg-green-100 outline-none"
+                    value={editFormData.status || ''}
+                    onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                  />
+                </div>
 
                 <button className="w-full bg-black text-white py-4 font-black uppercase text-lg shadow-[6px_6px_0px_0px_rgba(74,222,128,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3">
                   <Save size={20} /> SIMPAN_PERUBAHAN
