@@ -8,20 +8,30 @@ export default function LeaderboardPage({ studentId }) {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      const { data, error } = await supabase
-        .from('monthly_leaderboard')
-        .select('*');
+ useEffect(() => {
+  async function fetchLeaderboard() {
+    const { data, error } = await supabase
+      .from('monthly_leaderboard')
+      .select('*');
 
-      if (!error && data) {
-        setLeaders(data);
-      }
-      setLoading(false);
+    if (!error && data) {
+      const formattedData = data.map(item => ({
+        ...item,
+        completed_count: item.completed_count || 0
+      })).sort((a, b) => {
+        if (b.completed_count !== a.completed_count) {
+          return b.completed_count - a.completed_count; 
+        }
+        return a.nama.localeCompare(b.nama); 
+      });
+
+      setLeaders(formattedData);
     }
+    setLoading(false);
+  }
 
-    fetchLeaderboard();
-  }, []);
+  fetchLeaderboard();
+}, []);
 
   const downloadPDF = (score, studentName, certData) => {
     const doc = new jsPDF({ 
