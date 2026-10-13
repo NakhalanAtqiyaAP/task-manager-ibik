@@ -52,7 +52,8 @@ export default function StudentList() {
         nama: editFormData.nama,
         nim: editFormData.nim,
         phone_num: editFormData.phone_num,
-        kelas: editFormData.kelas
+        kelas: editFormData.kelas,
+        status: editFormData.status
       })
       .eq('id', selectedStudent.id);
 
