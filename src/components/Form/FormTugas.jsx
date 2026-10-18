@@ -168,7 +168,7 @@ export default function FormTugas({ onComplete, student = null }) {
         toast.dismiss("upload-toast");
       }
 
-      // Menyimpan master task sekaligus memasukkan deadline agar terbaca oleh Bot WhatsApp
+      // 1. Simpan Master Task ke tabel 'tasks' (Tanpa kolom deadline)
       const { data: newTask, error: taskError } = await supabase
         .from('tasks')
         .insert([{
@@ -177,14 +177,13 @@ export default function FormTugas({ onComplete, student = null }) {
           tipe_tugas: formData.tipe_tugas,
           deskripsi: formData.deskripsi,
           materi: finalMateriValue, 
-          course_id: formData.course_id,
-          deadline: deadlineIso
+          course_id: formData.course_id
         }])
         .select().single();
 
       if (taskError) throw new Error(`Master Task: ${taskError.message}`);
 
-      // Membagikan ke tabel student_tasks
+      // 2. Simpan distribusi ke 'student_tasks' (Deadline tersimpan di sini)
       const dist = selectedStudents.map(studentId => ({
         task_id: newTask.id,
         student_id: studentId,
