@@ -92,31 +92,31 @@ export default function FormTugas({ onComplete, student = null }) {
 
     if (selectedStudents.length === 0) {
       return toast.error("PILIH MINIMAL 1 MAHASISWA!", {
-        position:"top-center",
+        position: "top-center",
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
     }
 
     if (materiType === 'file' && materiFiles.length === 0) {
       return toast.error("FILE MATERI BELUM DIPILIH!", {
-        position:"top-center",
+        position: "top-center",
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
     }
 
     if (materiType === 'link' && materiLinks.filter(link => link.trim() !== '').length === 0) {
       return toast.error("LINK MATERI BELUM DIISI!", {
-        position:"top-center",
+        position: "top-center",
         className: 'border-4 border-black rounded-none font-black bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
     }
 
     setIsDeploying(true);
     
-    let deadline = formData.deadline;
-    if (deadline) {
-      const localDate = new Date(deadline);
-      deadline = localDate.toISOString();
+    let deadlineIso = formData.deadline;
+    if (deadlineIso) {
+      const localDate = new Date(deadlineIso);
+      deadlineIso = localDate.toISOString();
     }
     
     try {
@@ -168,6 +168,7 @@ export default function FormTugas({ onComplete, student = null }) {
         toast.dismiss("upload-toast");
       }
 
+      // Menyimpan master task sekaligus memasukkan deadline agar terbaca oleh Bot WhatsApp
       const { data: newTask, error: taskError } = await supabase
         .from('tasks')
         .insert([{
@@ -176,16 +177,18 @@ export default function FormTugas({ onComplete, student = null }) {
           tipe_tugas: formData.tipe_tugas,
           deskripsi: formData.deskripsi,
           materi: finalMateriValue, 
-          course_id: formData.course_id
+          course_id: formData.course_id,
+          deadline: deadlineIso
         }])
         .select().single();
 
       if (taskError) throw new Error(`Master Task: ${taskError.message}`);
 
+      // Membagikan ke tabel student_tasks
       const dist = selectedStudents.map(studentId => ({
         task_id: newTask.id,
         student_id: studentId,
-        deadline: deadline,
+        deadline: deadlineIso,
         submission_link: formData.submission_link
       }));
 
@@ -193,7 +196,7 @@ export default function FormTugas({ onComplete, student = null }) {
       if (distError) throw new Error(`Distribusi: ${distError.message}`);
 
       toast.success(`TASK DEPLOYED TO ${selectedStudents.length} STUDENTS!`, {
-        position:"top-center",
+        position: "top-center",
         className: 'border-4 border-black rounded-none font-black bg-green-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]',
         duration: 4000
       });
@@ -202,7 +205,7 @@ export default function FormTugas({ onComplete, student = null }) {
     } catch (err) {
       toast.dismiss("upload-toast");
       toast.error(err.message, {
-        position:"top-center",
+        position: "top-center",
         className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
     } finally {
