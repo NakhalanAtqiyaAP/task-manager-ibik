@@ -18,6 +18,7 @@ export default function FormTugas({ onComplete, student = null }) {
   const [formData, setFormData] = useState({ 
     kode_tugas: '', 
     judul: '', 
+    tipe_tugas: 'Tugas Regular',
     deskripsi: '', 
     course_id: '', 
     deadline: '',
@@ -172,6 +173,7 @@ export default function FormTugas({ onComplete, student = null }) {
         .insert([{
           kode_tugas: formData.kode_tugas,
           judul: formData.judul,
+          tipe_tugas: formData.tipe_tugas,
           deskripsi: formData.deskripsi,
           materi: finalMateriValue, 
           course_id: formData.course_id
@@ -227,12 +229,25 @@ export default function FormTugas({ onComplete, student = null }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="col-span-1">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">JUDUL TUGAS</label>
           <input required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
             disabled={isDeploying}
+            value={formData.judul}
             onChange={(e) => setFormData({...formData, judul: e.target.value})} />
+        </div>
+        <div>
+          <label className="block font-black uppercase text-xs mb-1 text-gray-500">TIPE TUGAS</label>
+          <select required className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none"
+            value={formData.tipe_tugas} 
+            onChange={(e) => setFormData({...formData, tipe_tugas: e.target.value})} 
+            disabled={isDeploying}>
+            <option value="Tugas Regular">TUGAS REGULAR</option>
+            <option value="Proyek Besar">PROYEK BESAR</option>
+            <option value="Kuis">KUIS</option>
+            <option value="Praktikum">PRAKTIKUM</option>
+          </select>
         </div>
         <div>
           <label className="block font-black uppercase text-xs mb-1 text-gray-500">DEADLINE</label>
@@ -316,14 +331,13 @@ export default function FormTugas({ onComplete, student = null }) {
           </div>
         )}
 
-        {/* INPUT FILE DIBUAT MULTIPLE */}
         {materiType === 'file' && (
           <div>
             <input 
               type="file"
               multiple 
               disabled={isDeploying}
-              className="w-full border-4 border-black  p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]  file:text-black  hover:file:bg-green-300 cursor-pointer "
+              className="w-full border-4 border-black p-2 font-bold outline-none file:mr-4 file:py-2 file:px-4 file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-green-400 file:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] file:text-black hover:file:bg-green-300 cursor-pointer"
               onChange={handleFileChange} 
             />
             {materiFiles.length > 0 && (
@@ -334,6 +348,7 @@ export default function FormTugas({ onComplete, student = null }) {
           </div>
         )}
       </div>
+
       <div>
         <label className="block font-black uppercase text-xs mb-1 text-gray-500 flex justify-between items-center">
           <span>METODE PENGUMPULAN</span>
@@ -360,6 +375,7 @@ export default function FormTugas({ onComplete, student = null }) {
           rows="3"
           disabled={isDeploying}
           className="w-full border-4 border-black p-3 font-bold focus:bg-purple-100 outline-none resize-none"
+          value={formData.deskripsi}
           onChange={(e) => setFormData({...formData, deskripsi: e.target.value})} 
         />
       </div>
