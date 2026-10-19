@@ -22,6 +22,7 @@ import Profile from './components/Profile';
 import OAuthBootOverlay from './components/OAuthBootOverlay';
 import JadwalKelas from './components/JadwalKelas';
 import FarewellPresentation from './components/FarewellPresentation'; 
+import KalenderKelas  from './components/KalenderKelas';
 
 import farewellAudio from './assets/laguPerpisahan.mp3';
 
@@ -246,6 +247,7 @@ export default function App() {
             <>
               <Hero taskCount={activeTasksCount} loading={loading} user={currentUser} />
               <TaskTable studentId={currentUser?.id} onRefresh={fetchStudentTasks} />
+               <KalenderKelas studentId={currentUser?.id} />
               <JadwalKelas userRole={currentUser?.role} />
             </>
           ) : activeView === 'Member' ? (
