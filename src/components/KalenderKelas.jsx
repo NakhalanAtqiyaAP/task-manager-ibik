@@ -105,7 +105,7 @@ export default function KalenderKelas({ studentId }) {
     switch (status) {
       case 'Online': return 'bg-blue-400 text-black';
       case 'Offline': return 'bg-green-400 text-black';
-      case 'Pindah Jam': return 'bg-yellow-400 text-black';
+      case 'Pindah Jam': return 'bg-green-400 text-black';
       case 'Dibatalkan': return 'bg-red-500 text-white';
       default: return 'bg-gray-300 text-black';
     }
@@ -119,7 +119,7 @@ export default function KalenderKelas({ studentId }) {
         <div className="bg-black text-white p-4 md:p-6 font-black uppercase">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-gray-800 pb-4 mb-4 gap-4">
             <span className="text-xl md:text-2xl tracking-tight flex items-center gap-2.5">
-              <CalendarIcon size={28} strokeWidth={2.5} className="shrink-0 text-yellow-400" />
+              <CalendarIcon size={28} strokeWidth={2.5} className="shrink-0 text-green-400" />
               KALENDER AKADEMIK & TUGAS
             </span>
 
@@ -135,7 +135,7 @@ export default function KalenderKelas({ studentId }) {
 
               <button
                 onClick={goToToday}
-                className="text-xs font-black bg-yellow-400 text-black border-2 border-black px-3 py-2 hover:bg-yellow-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,0.8)] active:translate-x-0.5 active:translate-y-0.5"
+                className="text-xs font-black bg-green-400 text-black border-2 border-black px-3 py-2 hover:bg-green-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,0.8)] active:translate-x-0.5 active:translate-y-0.5"
               >
                 HARI INI
               </button>
@@ -146,18 +146,18 @@ export default function KalenderKelas({ studentId }) {
           <div className="flex items-center justify-between bg-gray-900 border-2 border-gray-700 p-2 sm:p-3">
             <button
               onClick={prevMonth}
-              className="bg-yellow-400 text-black border-2 border-black p-1.5 hover:bg-yellow-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-x-0.5 active:translate-y-0.5"
+              className="bg-green-400 text-black border-2 border-black p-1.5 hover:bg-green-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-x-0.5 active:translate-y-0.5"
             >
               <ChevronLeft size={20} strokeWidth={3} />
             </button>
 
-            <span className="text-base sm:text-lg font-black tracking-widest text-yellow-400">
+            <span className="text-base sm:text-lg font-black tracking-widest text-green-400">
               {monthNames[month]} {year}
             </span>
 
             <button
               onClick={nextMonth}
-              className="bg-yellow-400 text-black border-2 border-black p-1.5 hover:bg-yellow-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-x-0.5 active:translate-y-0.5"
+              className="bg-green-400 text-black border-2 border-black p-1.5 hover:bg-green-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-x-0.5 active:translate-y-0.5"
             >
               <ChevronRight size={20} strokeWidth={3} />
             </button>
@@ -165,7 +165,7 @@ export default function KalenderKelas({ studentId }) {
         </div>
 
         {/* KETERANGAN LEGENDA (LEGEND) */}
-        <div className="bg-yellow-200 border-b-4 border-black p-3 text-xs font-black uppercase flex flex-wrap gap-4 items-center justify-between">
+        <div className="bg-green-200 border-b-4 border-black p-3 text-xs font-black uppercase flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-3 items-center">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 bg-blue-400 border border-black inline-block"></span>
@@ -215,21 +215,21 @@ export default function KalenderKelas({ studentId }) {
               <div
                 key={`day-${dayNum}`}
                 onClick={() => setSelectedDay({ dayNum, daySchedules, dayTasks, targetDate })}
-                className={`bg-white min-h-[80px] sm:min-h-[110px] p-1 sm:p-2 cursor-pointer transition-all hover:bg-yellow-50 flex flex-col justify-between border border-gray-300 relative group ${
-                  isToday ? 'bg-yellow-100 ring-2 ring-black ring-inset' : ''
+                className={`bg-white min-h-[80px] sm:min-h-[110px] p-1 sm:p-2 cursor-pointer transition-all hover:bg-green-50 flex flex-col justify-between border border-gray-300 relative group ${
+                  isToday ? 'bg-green-100 ring-2 ring-black ring-inset' : ''
                 }`}
               >
                 {/* NOMOR TANGGAL */}
                 <div className="flex justify-between items-center mb-1">
                   <span className={`text-xs sm:text-sm font-black px-1.5 py-0.5 ${
                     isToday 
-                      ? 'bg-black text-yellow-400 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]' 
+                      ? 'bg-black text-green-400 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]' 
                       : 'text-black'
                   }`}>
                     {dayNum}
                   </span>
                   {isToday && (
-                    <span className="hidden sm:inline-block text-[8px] font-black bg-yellow-400 text-black border border-black px-1 uppercase">
+                    <span className="hidden sm:inline-block text-[8px] font-black bg-green-400 text-black border border-black px-1 uppercase">
                       HARI INI
                     </span>
                   )}
@@ -290,7 +290,7 @@ export default function KalenderKelas({ studentId }) {
             {/* MODAL HEADER */}
             <div className="bg-black text-white p-4 flex justify-between items-center border-b-4 border-black sticky top-0 z-10">
               <div>
-                <span className="text-xs text-yellow-400 font-mono uppercase block">AGENDA TANGGAL</span>
+                <span className="text-xs text-green-400 font-mono uppercase block">AGENDA TANGGAL</span>
                 <h3 className="text-base sm:text-lg font-black uppercase">
                   {selectedDay.dayNum} {monthNames[month]} {year} ({daysOfWeek[selectedDay.targetDate.getDay()]})
                 </h3>
