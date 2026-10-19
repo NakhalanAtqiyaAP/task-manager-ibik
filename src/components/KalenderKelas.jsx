@@ -133,12 +133,12 @@ export default function KalenderKelas({ studentId }) {
                 {loading ? 'SYNC...' : 'REFRESH'}
               </button>
 
-              <button
+              {/* <button
                 onClick={goToToday}
                 className="text-xs font-black bg-green-400 text-black border-2 border-black px-3 py-2 hover:bg-green-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,0.8)] active:translate-x-0.5 active:translate-y-0.5"
               >
                 HARI INI
-              </button>
+              </button> */}
             </div>
           </div>
 
