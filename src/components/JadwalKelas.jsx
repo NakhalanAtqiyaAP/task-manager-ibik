@@ -129,7 +129,7 @@ export default function JadwalKelas({ userRole }) {
     return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
   });
 
-  const inputStyles = "w-full bg-white border-2 border-black text-black px-3 py-2 text-xs sm:text-sm font-black uppercase focus:outline-none focus:bg-yellow-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]";
+  const inputStyles = "w-full bg-white border-2 border-black text-black px-3 py-2 text-xs sm:text-sm font-black uppercase focus:outline-none focus:bg-green-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]";
   const days = ['Semua', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
   const getStatusBadge = (status) => {
@@ -139,7 +139,7 @@ export default function JadwalKelas({ userRole }) {
       case 'Offline':
         return 'bg-green-400 text-black';
       case 'Pindah Jam':
-        return 'bg-yellow-400 text-black';
+        return 'bg-green-400 text-black';
       case 'Dibatalkan':
         return 'bg-red-500 text-white';
       default:
@@ -155,7 +155,7 @@ export default function JadwalKelas({ userRole }) {
         <div className="bg-black text-white p-4 md:p-6 font-black uppercase">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-gray-800 pb-4 mb-3 gap-3">
             <span className="text-xl md:text-2xl tracking-tight flex items-center gap-2.5">
-              <Calendar size={28} strokeWidth={2.5} className="shrink-0 text-yellow-400" />
+              <Calendar size={28} strokeWidth={2.5} className="shrink-0 text-green-400" />
               Jadwal Perkuliahan {activeSemester !== 'Semua' && `— Semester ${activeSemester}`}
             </span>
             <button 
@@ -312,7 +312,7 @@ export default function JadwalKelas({ userRole }) {
         )}
 
         {/* FILTER & CONTROL PANEL */}
-        <div className="bg-yellow-200 border-b-4 border-black p-4">
+        <div className="bg-green-200 border-b-4 border-black p-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             
             {/* HARI FILTER */}
@@ -351,7 +351,7 @@ export default function JadwalKelas({ userRole }) {
                       className={`px-3 py-1.5 font-black uppercase text-xs border-2 border-black transition-all relative ${
                         activeFilter === day
                           ? 'bg-black text-white translate-y-0.5 translate-x-0.5 shadow-none'
-                          : 'bg-white hover:bg-yellow-300 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                          : 'bg-white hover:bg-green-300 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                       }`}
                     >
                       {day} {isToday && <span className="text-[9px] text-green-400 font-bold ml-1">• HARI INI</span>}
@@ -392,14 +392,14 @@ export default function JadwalKelas({ userRole }) {
                 <div key={hari} className="bg-white">
                   {/* BAR HEADER HARI */}
                   <div className={`px-4 sm:px-6 py-3 border-b-3 border-black flex items-center justify-between ${
-                    isToday ? 'bg-yellow-400' : 'bg-black text-white'
+                    isToday ? 'bg-green-400' : 'bg-black text-white'
                   }`}>
                     <div className="flex items-center gap-2">
                       <span className={`font-black text-sm sm:text-base uppercase ${isToday ? 'text-black' : 'text-white'}`}>
                         {hari.toUpperCase()}
                       </span>
                       {isToday && (
-                        <span className="bg-black text-yellow-400 text-[10px] font-black px-2 py-0.5 border border-black uppercase">
+                        <span className="bg-black text-green-400 text-[10px] font-black px-2 py-0.5 border border-black uppercase">
                           HARI INI
                         </span>
                       )}
@@ -446,7 +446,7 @@ export default function JadwalKelas({ userRole }) {
 
                         {/* JAM & ACTION */}
                         <div className="flex flex-wrap sm:flex-nowrap items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t border-dashed border-gray-300 md:border-none">
-                          <div className="flex items-center gap-1.5 bg-yellow-300 border-2 border-black px-3 py-1.5 font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                          <div className="flex items-center gap-1.5 bg-green-300 border-2 border-black px-3 py-1.5 font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                             <Clock size={15} strokeWidth={2.5} />
                             <span>{s.jam_mulai} - {s.jam_selesai} WIB</span>
                           </div>
