@@ -277,7 +277,7 @@ export default function KalenderKelas({ studentId }) {
         {/* FOOTER */}
         <div className="bg-black text-white p-3 border-t-4 border-black flex justify-between items-center text-xs font-black uppercase">
           <span>BULAN: {monthNames[month]} {year}</span>
-          <span className="text-gray-400 font-mono text-[10px]">SISTEM AKADEMIK TI-25-KA</span>
+          {/* <span className="text-gray-400 font-mono text-[10px]">SISTEM AKADEMIK TI-25-KA</span> */}
         </div>
 
       </div>
