@@ -170,15 +170,24 @@ export default function TaskTable({ studentId, onRefresh }) {
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('student_tasks')
         .update({ 
           is_completed: newStatus,
           points_earned: calculatedPoints
         })
-        .eq('id', taskItem.id);
+        .eq('id', taskItem.id)
+        .select();
 
       if (error) throw error;
+
+      if (!data || data.length === 0) {
+        toast.error("Gagal memperbarui database. Periksa RLS atau ID tugas!", {
+          position: 'top-center',
+          className: 'border-4 border-black font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+        });
+        return;
+      }
 
       if (newStatus) {
         triggerConfetti();
@@ -195,10 +204,10 @@ export default function TaskTable({ studentId, onRefresh }) {
         position: 'top-center',
         className: 'border-4 border-black rounded-none font-black bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
       });
-      console.error(error);
+      console.error("Detail Error Update:", error);
     }
   };
-
+  
   const MateriAction = ({ materi }) => {
     if (!materi) return null;
 

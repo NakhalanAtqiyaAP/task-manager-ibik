@@ -17,7 +17,8 @@ export default function LeaderboardPage({ studentId }) {
       if (!error && data) {
         const formattedData = data.map(item => ({
           ...item,
-          total_points: Number(item.total_points ?? item.points_earned ?? 0)
+          total_points: Number(item.total_points ?? item.points_earned ?? 0),
+          completed_count: item.completed_count || 0
         })).sort((a, b) => {
           if (b.total_points !== a.total_points) {
             return b.total_points - a.total_points; 
