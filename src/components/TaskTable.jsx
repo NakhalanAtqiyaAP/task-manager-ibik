@@ -1,11 +1,27 @@
 import { useEffect, useState, useRef } from 'react'; 
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Award, Zap } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
 import HistoryDashboard from './HistoryDashboard';
 import DateRangePicker from './DateRangePicker';
+
+const calculateTaskPoints = (createdAtIso, deadlineIso, completedAt = new Date()) => {
+  const created = new Date(createdAtIso || Date.now() - 7 * 24 * 60 * 60 * 1000).getTime();
+  const deadline = new Date(deadlineIso).getTime();
+  const completed = new Date(completedAt).getTime();
+
+  if (completed >= deadline) return 5;
+
+  const totalDuration = deadline - created;
+  if (totalDuration <= 0) return 100;
+
+  const remainingTime = deadline - completed;
+  const ratio = Math.max(0, Math.min(1, remainingTime / totalDuration));
+
+  return Math.round(5 + ratio * 95);
+};
 
 export default function TaskTable({ studentId, onRefresh }) {
   const [tasks, setTasks] = useState([]);
@@ -26,17 +42,24 @@ export default function TaskTable({ studentId, onRefresh }) {
     const now = new Date().toISOString();
 
     try {
-      const { data: expiredTasks } = await supabase
+      const { data: expiredTasks, error } = await supabase
         .from('student_tasks')
-        .select('id, task_id, is_completed')
+        .select('id, task_id, is_completed, points_earned, created_at, deadline')
         .eq('student_id', studentId)
         .lt('deadline', now);
 
+      if (error) {
+        console.error("Error checking expired tasks:", error);
+        return;
+      }
+
       if (expiredTasks && expiredTasks.length > 0) {
+        console.log(`Peringatan: ${expiredTasks.length} tugas kedaluwarsa dipindahkan ke riwayat.`);
         const historyPayload = expiredTasks.map(t => ({
           student_id: studentId,
           task_id: t.task_id,
           status: t.is_completed ? 'COMPLETED' : 'OVERDUE',
+          points_earned: t.is_completed ? (t.points_earned || 5) : 0,
           completed_at: now
         }));
 
@@ -47,6 +70,8 @@ export default function TaskTable({ studentId, onRefresh }) {
         if (!insertError) {
           const idsToDelete = expiredTasks.map(t => t.id);
           await supabase.from('student_tasks').delete().in('id', idsToDelete);
+        } else {
+          console.error("Gagal menyisipkan ke histories_task:", insertError);
         }
       }
     } catch (error) {
@@ -57,39 +82,54 @@ export default function TaskTable({ studentId, onRefresh }) {
   };
 
   const fetchStudentTasks = async () => {
-    if (!studentId) return;
+    if (!studentId) {
+      console.warn("TaskTable: studentId belum tersedia/null!");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     
+    // Sinkronkan tugas yang lewat deadline
     await syncExpiredTasks();
 
-    let query = supabase
-      .from('student_tasks')
-      .select(`
-        id, deadline, is_completed, task_id, submission_link, 
-        tasks ( 
-          id, judul, deskripsi, materi, 
-          courses ( mata_kuliah (nama_matkul), semester )
-        )
-      `)
-      .eq('student_id', studentId);
+    try {
+      // Gunakan tasks!inner jika menyaring berdasarkan course_id
+      let query = supabase
+        .from('student_tasks')
+        .select(`
+          id, deadline, is_completed, points_earned, created_at, task_id, submission_link, 
+          tasks!inner ( 
+            id, judul, deskripsi, materi, created_at, course_id,
+            courses ( mata_kuliah (nama_matkul), semester )
+          )
+        `)
+        .eq('student_id', studentId);
 
-    if (selectedCourse) {
-      query = query.eq('tasks.course_id', selectedCourse);
-    }
+      if (selectedCourse) {
+        query = query.eq('tasks.course_id', selectedCourse);
+      }
 
-    if (dateRange.start) {
-      query = query.gte('deadline', dateRange.start.toISOString());
-    }
-    if (dateRange.end) {
-      query = query.lte('deadline', dateRange.end.toISOString());
-    }
+      if (dateRange.start) {
+        query = query.gte('deadline', dateRange.start.toISOString());
+      }
+      if (dateRange.end) {
+        query = query.lte('deadline', dateRange.end.toISOString());
+      }
 
-    const { data, error } = await query.order('deadline', { ascending: true });
+      const { data, error } = await query.order('deadline', { ascending: true });
 
-    if (!error) {
-      setTasks(data || []);
+      if (error) {
+        console.error("Error Fetch Student Tasks:", error);
+      } else {
+        console.log("Data Tasks Terambil:", data);
+        setTasks(data || []);
+      }
+    } catch (err) {
+      console.error("Exception Fetch Tasks:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -119,17 +159,33 @@ export default function TaskTable({ studentId, onRefresh }) {
     }
   }, [selectedCourse, dateRange]);
 
-  const handleToggleTask = async (taskId, currentStatus) => {
+  const handleToggleTask = async (taskItem) => {
+    const currentStatus = taskItem.is_completed;
+    const newStatus = !currentStatus;
+
+    let calculatedPoints = 0;
+    if (newStatus) {
+      const taskCreatedAt = taskItem.tasks?.created_at || taskItem.created_at;
+      calculatedPoints = calculateTaskPoints(taskCreatedAt, taskItem.deadline, new Date());
+    }
+
     try {
       const { error } = await supabase
         .from('student_tasks')
-        .update({ is_completed: !currentStatus })
-        .eq('id', taskId);
+        .update({ 
+          is_completed: newStatus,
+          points_earned: calculatedPoints
+        })
+        .eq('id', taskItem.id);
 
       if (error) throw error;
 
-      if (!currentStatus) {
+      if (newStatus) {
         triggerConfetti();
+        toast.success(`Selamat! Kamu mendapatkan +${calculatedPoints} POIN! 🎉`, {
+          position: 'top-center',
+          className: 'border-4 border-black font-black bg-yellow-400 text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+        });
       }
       
       await fetchStudentTasks();
@@ -143,65 +199,65 @@ export default function TaskTable({ studentId, onRefresh }) {
     }
   };
 
-const MateriAction = ({ materi }) => {
-  if (!materi) return null;
+  const MateriAction = ({ materi }) => {
+    if (!materi) return null;
 
-  const lines = materi
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
+    const lines = materi
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedMateri = lines[selectedIndex] || '';
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const selectedMateri = lines[selectedIndex] || '';
 
-  const urlRegex = /^(http|https):\/\/[^ "]+$/;
-  const isLink = urlRegex.test(selectedMateri);
-  const isSupabaseFile = isLink && selectedMateri.includes('materi_tugas');
+    const urlRegex = /^(http|https):\/\/[^ "]+$/;
+    const isLink = urlRegex.test(selectedMateri);
+    const isSupabaseFile = isLink && selectedMateri.includes('materi_tugas');
 
-  return (
-    <div className="relative group/materi inline-block mr-2">
-      {lines.length > 1 && (
-        <div className="mb-2">
-          <label className="block text-[10px] uppercase font-black text-gray-700 mb-1">Pilih Link Materi</label>
-          <select
-            value={selectedIndex}
-            onChange={(e) => setSelectedIndex(Number(e.target.value))}
-            className="w-full border-2 border-black bg-white text-[10px] font-black uppercase p-2"
+    return (
+      <div className="relative group/materi inline-block mr-2">
+        {lines.length > 1 && (
+          <div className="mb-2">
+            <label className="block text-[10px] uppercase font-black text-gray-700 mb-1">Pilih Link Materi</label>
+            <select
+              value={selectedIndex}
+              onChange={(e) => setSelectedIndex(Number(e.target.value))}
+              className="w-full border-2 border-black bg-white text-[10px] font-black uppercase p-2"
+            >
+              {lines.map((line, index) => (
+                <option key={index} value={index}>
+                  Link {index + 1}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {isLink ? (
+          <a
+            href={selectedMateri}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={isSupabaseFile}
+            className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
           >
-            {lines.map((line, index) => (
-              <option key={index} value={index}>
-                Link {index + 1}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+            {isSupabaseFile ? 'UNDUH MATERI' : 'BUKA MATERI'}
+          </a>
+        ) : (
+          <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            Catatan Materi
+          </div>
+        )}
 
-      {isLink ? (
-        <a
-          href={selectedMateri}
-          target="_blank"
-          rel="noopener noreferrer"
-          download={isSupabaseFile}
-          className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-        >
-          {isSupabaseFile ? 'UNDUH MATERI' : 'BUKA MATERI'}
-        </a>
-      ) : (
-        <div className="inline-flex items-center gap-1 mt-2 bg-green-400 border-2 border-black px-2 py-1 text-[10px] font-black uppercase cursor-help shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-          Catatan Materi
-        </div>
-      )}
-
-      <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
-        <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
-          <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
-          {isSupabaseFile ? 'Materi siap diunduh.' : selectedMateri}
+        <div className="absolute bottom-full left-0 mb-2 hidden group-hover/materi:block z-50">
+          <div className="bg-black text-white text-[9px] p-2 border-2 border-purple-400 w-48 break-words shadow-[4px_4px_0px_0px_rgba(147,51,234,1)]">
+            <span className="text-purple-300 font-black block mb-1">DETAIL MATERI:</span>
+            {isSupabaseFile ? 'Materi siap diunduh.' : selectedMateri}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   const triggerConfetti = () => {
     const duration = 3 * 1000;
@@ -242,7 +298,7 @@ const MateriAction = ({ materi }) => {
   return (
     <div className="px-4 sm:px-6 pb-24 mt-8">
       <HistoryDashboard studentId={studentId} />  
-      <div id="task" className=" scroll-reveal border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10" >
+      <div id="task" className="scroll-reveal border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative z-10">
         <div className="bg-black text-white p-5 font-black uppercase">
           <div className="flex justify-between items-center border-b-2 border-gray-700 pb-4 mb-4">
             <span className="text-xl tracking-tight">Daftar Tugas</span>
@@ -296,17 +352,26 @@ const MateriAction = ({ materi }) => {
             </div>
           </div>
 
-          <div className="text-[10px] text-gray-400 tracking-widest leading-relaxed">
-            TUGAS YANG DICHECKLIST AKAN TETAP MUNCUL DI SINI SAMPAI DEADLINE TERLEWATI. LALU SISTEM AKAN OTOMATIS MEMINDAHKANNYA KE RIWAYAT.
+          <div className="text-[10px] text-yellow-400 tracking-widest leading-relaxed font-mono">
+            ⚡ MAKIN CEPAT KAMU SELESAIKAN TUGAS, MAKIN BANYAK POIN YANG DIDAPATKAN (100 POIN ➔ 5 POIN)!
           </div>
         </div>
 
         {/* LIST TUGAS */}
         <div className="divide-y-4 divide-black">
-          {tasks.length > 0 ? (
+          {loading ? (
+            <div className="p-12 text-center font-black text-gray-500 uppercase italic animate-pulse">
+              Memuat daftar tugas...
+            </div>
+          ) : tasks.length > 0 ? (
             displayedTasks.map((item) => {
               const isDone = item.is_completed;
               const link = item.submission_link;
+
+              const currentPotentialPoints = calculateTaskPoints(
+                item.tasks?.created_at || item.created_at,
+                item.deadline
+              );
 
               const renderSubmissionAction = () => {
                 if (!link) return null;
@@ -357,7 +422,7 @@ const MateriAction = ({ materi }) => {
                 >
                   <div className="p-4 border-r-4 border-black flex-shrink-0 relative z-10">
                     <button
-                      onClick={() => handleToggleTask(item.id, isDone)}
+                      onClick={() => handleToggleTask(item)}
                       className={`w-10 h-10 border-4 border-black flex items-center justify-center transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 
                         ${isDone 
                           ? 'bg-green-400 group-hover:bg-green-500 group-hover:-translate-y-1 group-hover:-translate-x-1 group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]' 
@@ -367,6 +432,7 @@ const MateriAction = ({ materi }) => {
                       <CheckCircle2 className={`w-6 h-6 text-black stroke-[3px] transition-transform duration-300 ${!isDone && 'group-hover:scale-110'}`} />
                     </button>
                   </div>
+
                   <div className={`p-4 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-transform duration-300 ${!isDone && 'group-hover:translate-x-1'}`}>
                     <div>
                       <h4 className={`font-black uppercase text-sm sm:text-base ${isDone ? 'line-through text-gray-500' : ''}`}>
@@ -376,7 +442,7 @@ const MateriAction = ({ materi }) => {
                         {item.tasks?.courses?.mata_kuliah?.nama_matkul} (Sem {item.tasks?.courses?.semester})
                       </p>
                       
-                  <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {!isDone && <MateriAction materi={item.tasks?.materi} />}
                         {!isDone && renderSubmissionAction()}
                       </div>
@@ -394,9 +460,14 @@ const MateriAction = ({ materi }) => {
                       <span className={`font-black text-sm ${isDone ? 'text-gray-400' : 'text-purple-600'}`}>
                         {fmtDate(item.deadline)}
                       </span>
-                      {isDone && (
-                        <span className="bg-green-400 border border-black text-black text-[10px] px-2 py-0.5 mt-1 font-black uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          Selesai
+
+                      {isDone ? (
+                        <span className="bg-green-400 border border-black text-black text-[10px] px-2 py-0.5 mt-1 font-black uppercase italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1">
+                          <Award size={12} /> +{item.points_earned || 5} PTS
+                        </span>
+                      ) : (
+                        <span className="bg-yellow-300 border border-black text-black text-[10px] px-2 py-0.5 mt-1 font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1">
+                          <Zap size={12} /> SISA: +{currentPotentialPoints} PTS
                         </span>
                       )}
                     </div>
@@ -406,7 +477,7 @@ const MateriAction = ({ materi }) => {
             })
           ) : (
             <div className="p-12 text-center font-black text-gray-400 uppercase italic">
-              {loading ? 'Menyinkronkan data...' : 'Tidak ada tugas aktif!'}
+              Tidak ada tugas aktif!
             </div>
           )}
         </div>

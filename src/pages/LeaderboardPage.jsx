@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Trophy, Medal, Award, Frown, Download, Star, Rocket, Flame } from 'lucide-react';
+import { Trophy, Medal, Award, Frown, Download, Star, Flame, Zap } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { motion } from 'framer-motion'; 
 
@@ -8,32 +8,32 @@ export default function LeaderboardPage({ studentId }) {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-  async function fetchLeaderboard() {
-    const { data, error } = await supabase
-      .from('monthly_leaderboard')
-      .select('*');
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      const { data, error } = await supabase
+        .from('monthly_leaderboard')
+        .select('*');
 
-    if (!error && data) {
-      const formattedData = data.map(item => ({
-        ...item,
-        completed_count: item.completed_count || 0
-      })).sort((a, b) => {
-        if (b.completed_count !== a.completed_count) {
-          return b.completed_count - a.completed_count; 
-        }
-        return a.nama.localeCompare(b.nama); 
-      });
+      if (!error && data) {
+        const formattedData = data.map(item => ({
+          ...item,
+          total_points: Number(item.total_points ?? item.points_earned ?? 0)
+        })).sort((a, b) => {
+          if (b.total_points !== a.total_points) {
+            return b.total_points - a.total_points; 
+          }
+          return a.nama.localeCompare(b.nama); 
+        });
 
-      setLeaders(formattedData);
+        setLeaders(formattedData);
+      }
+      setLoading(false);
     }
-    setLoading(false);
-  }
 
-  fetchLeaderboard();
-}, []);
+    fetchLeaderboard();
+  }, []);
 
-  const downloadPDF = (score, studentName, certData) => {
+  const downloadPDF = (scorePoints, studentName, certData) => {
     const doc = new jsPDF({ 
       orientation: 'landscape', 
       unit: 'mm', 
@@ -72,7 +72,6 @@ export default function LeaderboardPage({ studentId }) {
     doc.setFont("helvetica", "normal");
     doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
 
-    // --- LOGIKA RESPONSIVE NAMA ---
     let fontSize = 60;
     const maxWidth = 250;
     const cleanName = studentName.toUpperCase();
@@ -92,9 +91,9 @@ export default function LeaderboardPage({ studentId }) {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont("helvetica", "italic");
-    doc.text(`Telah mendominasi bulan ${certData?.month} dengan menyelesaikan`, 148, 140, { align: "center" });
+    doc.text(`Telah mendominasi bulan ${certData?.month} dengan meraih total`, 148, 140, { align: "center" });
     doc.setFont("helvetica", "bold");
-    doc.text(`${score} TUGAS TEPAT WAKTU (ON-TIME)`, 148, 148, { align: "center" });
+    doc.text(`${scorePoints} POIN PRESTASI TEPAT WAKTU`, 148, 148, { align: "center" });
 
     // 7. TANGGAL TERBIT
     doc.setLineWidth(1);
@@ -180,10 +179,10 @@ export default function LeaderboardPage({ studentId }) {
               <Star className="mx-auto mb-2 sm:mb-4 animate-spin-slow w-12 h-12 sm:w-16 sm:h-16" />
               <h2 className="text-2xl sm:text-4xl font-black uppercase mb-2 text-black leading-tight">GGWP! KAMU RAJANYA!</h2>
               <p className="text-sm sm:text-base font-bold uppercase text-black mb-4 sm:mb-6 border-b-2 border-black pb-4">
-                Kamu telah mendominasi TI-25-KA bulan ini. Mahkotamu sudah siap.
+                Kamu telah mendominasi TI-25-KA bulan ini dengan perolehan poin tertinggi.
               </p>
               <button 
-                onClick={() => downloadPDF(leaders[0].completed_count, leaders[0].nama,{ 
+                onClick={() => downloadPDF(leaders[0].total_points, leaders[0].nama, { 
                   title: "KING OF THE MONTH", 
                   month: new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) 
                 })}
@@ -200,10 +199,10 @@ export default function LeaderboardPage({ studentId }) {
               <p className="text-xs sm:text-sm md:text-base font-medium uppercase tracking-widest text-gray-400 max-w-2xl mx-auto leading-relaxed">
                 "Disiplin adalah jembatan antara cita-cita dan pencapaian." <br className="hidden sm:block"/>
                 Bulan ini mungkin milik <span className="text-yellow-400 font-black">{leaders[0].nama}</span>, 
-                tapi bulan depan? Itu adalah milikmu jika kamu konsisten mulai hari ini.
+                tapi bulan depan? Kerjakan tugas lebih awal untuk mengumpulkan poin maksimal!
               </p>
               <div className="mt-4 sm:mt-6 text-[8px] sm:text-[10px] font-black uppercase text-green-400 border-2 border-green-400 inline-block px-3 py-1 sm:px-4 sm:py-2">
-                ASAH SKILL-MU. KEJAR DEADLINE-MU.
+                ASAH SKILL-MU. KEJAR POIN MAKSIMALMU.
               </div>
             </div>
           )}
@@ -255,10 +254,12 @@ export default function LeaderboardPage({ studentId }) {
                 </div>
               </div>
 
-              {/* Score */}
-              <div className="bg-green-400 border-2 sm:border-4 border-black px-2 py-1 sm:px-4 sm:py-2 text-center min-w-[50px] sm:min-w-[80px] flex-shrink-0">
-                <span className="text-xl sm:text-3xl font-black">{student.completed_count}</span>
-                <span className="text-[6px] sm:text-[8px] font-black uppercase block mt-0.5">DONE</span>
+              {/* Tampilan Total Poin */}
+              <div className="bg-green-400 border-2 sm:border-4 border-black px-2 py-1 sm:px-4 sm:py-2 text-center min-w-[60px] sm:min-w-[90px] flex-shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <span className="text-xl sm:text-3xl font-black">{student.total_points}</span>
+                <span className="text-[6px] sm:text-[8px] font-black uppercase block mt-0.5 flex items-center justify-center gap-0.5">
+                  <Zap size={8} /> POIN
+                </span>
               </div>
             </motion.div>
           );
@@ -281,7 +282,7 @@ export default function LeaderboardPage({ studentId }) {
       {/* FOOTER */}
       {!isAwardDay && (
         <div className="mt-8 sm:mt-12 bg-white border-2 sm:border-4 border-black p-2 sm:p-4 inline-block font-black uppercase text-[10px] sm:text-xs italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-full break-words">
-          * Hari Penghargaan selanjutnya: Tanggal 28 {new Date(today.getFullYear(), today.getMonth() + (today.getDate() > 28 ? 1 : 0), 28).toLocaleDateString('id-ID', { month: 'long' })}
+          Hari Penghargaan selanjutnya: Tanggal 28 {new Date(today.getFullYear(), today.getMonth() + (today.getDate() > 28 ? 1 : 0), 28).toLocaleDateString('id-ID', { month: 'long' })}
         </div>
       )}
     </div>
