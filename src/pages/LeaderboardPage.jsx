@@ -8,30 +8,41 @@ export default function LeaderboardPage({ studentId }) {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      const { data, error } = await supabase
-        .from('monthly_leaderboard')
-        .select('*');
+  const fetchLeaderboard = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('monthly_leaderboard')
+      .select('*')
+      .order('total_points', { ascending: false })
+      .order('nama', { ascending: true });
 
-      if (!error && data) {
-        const formattedData = data.map(item => ({
-          ...item,
-          total_points: Number(item.total_points ?? item.points_earned ?? 0),
-          completed_count: item.completed_count || 0
-        })).sort((a, b) => {
-          if (b.total_points !== a.total_points) {
-            return b.total_points - a.total_points; 
-          }
-          return a.nama.localeCompare(b.nama); 
-        });
-
-        setLeaders(formattedData);
-      }
-      setLoading(false);
+    if (!error && data) {
+      const formattedData = data.map(item => ({
+        ...item,
+        total_points: Number(item.total_points || 0),
+        completed_count: Number(item.completed_count || 0)
+      }));
+      setLeaders(formattedData);
+    } else {
+      console.error("Gagal memuat leaderboard:", error);
     }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchLeaderboard();
+
+    // Subscribe ke perubahan real-time tabel monthly_leaderboard
+    const channel = supabase
+      .channel('public:monthly_leaderboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_leaderboard' }, () => {
+        fetchLeaderboard();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const downloadPDF = (scorePoints, studentName, certData) => {
@@ -44,21 +55,21 @@ export default function LeaderboardPage({ studentId }) {
     const purple800 = [91, 33, 182];
     const green400 = [74, 222, 128];
 
-    // 1. BACKGROUND
+    // Background
     doc.setFillColor(purple800[0], purple800[1], purple800[2]);
     doc.rect(0, 0, 297, 210, 'F');
 
-    // 2. BORDER
+    // Border
     doc.setDrawColor(green400[0], green400[1], green400[2]);
     doc.setLineWidth(5);
     doc.rect(5, 5, 287, 200, 'S');
 
-    // 3. AKSEN SUDUT
+    // Aksen Sudut
     doc.setFillColor(green400[0], green400[1], green400[2]);
     doc.rect(0, 0, 50, 20, 'F');
     doc.rect(247, 190, 50, 20, 'F');
 
-    // 4. HEADER
+    // Header
     doc.setTextColor(green400[0], green400[1], green400[2]);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(45);
@@ -68,7 +79,7 @@ export default function LeaderboardPage({ studentId }) {
     doc.setFontSize(22);
     doc.text(`${certData?.title || "KING OF THE MONTH"} TI-25-KA`, 20, 55);
 
-    // 5. PENERIMA
+    // Penerima
     doc.setFontSize(18);
     doc.setFont("helvetica", "normal");
     doc.text("Diberikan dengan penuh hormat kepada:", 148, 95, { align: "center" });
@@ -88,7 +99,7 @@ export default function LeaderboardPage({ studentId }) {
     doc.setTextColor(green400[0], green400[1], green400[2]);
     doc.text(cleanName, 148, 120, { align: "center" });
 
-    // 6. KETERANGAN PRESTASI
+    // Keterangan Prestasi
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont("helvetica", "italic");
@@ -96,7 +107,7 @@ export default function LeaderboardPage({ studentId }) {
     doc.setFont("helvetica", "bold");
     doc.text(`${scorePoints} POIN PRESTASI TEPAT WAKTU`, 148, 148, { align: "center" });
 
-    // 7. TANGGAL TERBIT
+    // Tanggal Terbit
     doc.setLineWidth(1);
     doc.setDrawColor(255, 255, 255);
     doc.line(100, 165, 197, 165);
@@ -113,7 +124,7 @@ export default function LeaderboardPage({ studentId }) {
     });
     doc.text(tgl.toUpperCase(), 148, 183, { align: "center" });
 
-    // 8. FOOTER
+    // Footer
     doc.setFontSize(10);
     doc.text("TI-25-KA", 20, 200);
 
