@@ -11,7 +11,8 @@ import {
   MapPin, 
   UserCheck, 
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -43,9 +44,12 @@ export default function KalenderKelas({ studentId }) {
       if (schedErr) console.error('Error fetching schedules:', schedErr);
       else setSchedules(scheduleData || []);
 
-      // 2. Fetch Tugas Mahasiswa (jika studentId tersedia)
+      // 2. Fetch Tugas Mahasiswa (Aktif & Terlewat)
       if (studentId) {
-        const { data: taskData, error: taskErr } = await supabase
+        const nowIso = new Date().toISOString();
+
+        // A. Fetch tugas aktif dari student_tasks
+        const { data: activeTaskData, error: taskErr } = await supabase
           .from('student_tasks')
           .select(`
             id, deadline, is_completed, 
@@ -56,8 +60,56 @@ export default function KalenderKelas({ studentId }) {
           `)
           .eq('student_id', studentId);
 
-        if (taskErr) console.error('Error fetching tasks:', taskErr);
-        else setTasks(taskData || []);
+        if (taskErr) console.error('Error fetching active tasks:', taskErr);
+
+        // B. Fetch tugas yang sudah masuk riwayat dari histories_task
+        const { data: historyTaskData, error: histErr } = await supabase
+          .from('histories_task')
+          .select(`
+            id, status, completed_at,
+            tasks (
+              id, judul, deskripsi, materi,
+              courses ( mata_kuliah ( nama_matkul ) )
+            )
+          `)
+          .eq('student_id', studentId);
+
+        if (histErr) console.error('Error fetching history tasks:', histErr);
+
+        // Format & Normalisasi Tugas Aktif
+        const formattedActiveTasks = (activeTaskData || []).map((t) => {
+          const isOverdue = !t.is_completed && new Date(t.deadline) < new Date();
+          return {
+            id: `active-${t.id}`,
+            deadline: t.deadline,
+            is_completed: t.is_completed,
+            is_overdue: isOverdue,
+            status: t.is_completed ? 'COMPLETED' : isOverdue ? 'OVERDUE' : 'PENDING',
+            judul: t.tasks?.judul || 'Tugas',
+            deskripsi: t.tasks?.deskripsi || '',
+            materi: t.tasks?.materi || '',
+            nama_matkul: t.tasks?.courses?.mata_kuliah?.nama_matkul || 'Umum'
+          };
+        });
+
+        // Format & Normalisasi Tugas Riwayat (Termasuk yang Overdue dari riwayat)
+        const formattedHistoryTasks = (historyTaskData || []).map((h) => {
+          const isOverdue = h.status === 'OVERDUE';
+          return {
+            id: `hist-${h.id}`,
+            deadline: h.completed_at || nowIso,
+            is_completed: h.status === 'COMPLETED',
+            is_overdue: isOverdue,
+            status: h.status,
+            judul: h.tasks?.judul || 'Tugas',
+            deskripsi: h.tasks?.deskripsi || '',
+            materi: h.tasks?.materi || '',
+            nama_matkul: h.tasks?.courses?.mata_kuliah?.nama_matkul || 'Umum'
+          };
+        });
+
+        // Gabungkan seluruh tugas
+        setTasks([...formattedActiveTasks, ...formattedHistoryTasks]);
       }
     } catch (err) {
       console.error('Failed to load calendar data:', err);
@@ -105,7 +157,7 @@ export default function KalenderKelas({ studentId }) {
     switch (status) {
       case 'Online': return 'bg-blue-400 text-black';
       case 'Offline': return 'bg-green-400 text-black';
-      case 'Pindah Jam': return 'bg-green-400 text-black';
+      case 'Pindah Jam': return 'bg-yellow-400 text-black';
       case 'Dibatalkan': return 'bg-red-500 text-white';
       default: return 'bg-gray-300 text-black';
     }
@@ -133,12 +185,12 @@ export default function KalenderKelas({ studentId }) {
                 {loading ? 'SYNC...' : 'REFRESH'}
               </button>
 
-              {/* <button
+              <button
                 onClick={goToToday}
                 className="text-xs font-black bg-green-400 text-black border-2 border-black px-3 py-2 hover:bg-green-300 transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,0.8)] active:translate-x-0.5 active:translate-y-0.5"
               >
                 HARI INI
-              </button> */}
+              </button>
             </div>
           </div>
 
@@ -178,6 +230,10 @@ export default function KalenderKelas({ studentId }) {
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 bg-green-400 border border-black inline-block"></span>
               Tugas Selesai
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 bg-red-500 border border-black inline-block"></span>
+              Tugas Terlewat
             </span>
           </div>
           <span className="text-[10px] text-gray-700 font-mono">KLIK TANGGAL UNTUK RINCIAN</span>
@@ -250,17 +306,28 @@ export default function KalenderKelas({ studentId }) {
                     </div>
                   ))}
 
-                  {/* Badge Tugas */}
-                  {dayTasks.slice(0, 2).map((t) => (
-                    <div
-                      key={`task-${t.id}`}
-                      className={`border border-black px-1 py-0.5 text-[8px] sm:text-[10px] font-black uppercase truncate shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between ${
-                        t.is_completed ? 'bg-green-300 line-through text-gray-700' : 'bg-purple-300 text-black'
-                      }`}
-                    >
-                      <span className="truncate">📋 {t.tasks?.judul || 'Tugas'}</span>
-                    </div>
-                  ))}
+                  {/* Badge Tugas (Selesai, Aktif, & Terlewat) */}
+                  {dayTasks.slice(0, 2).map((t) => {
+                    let taskBadgeClass = 'bg-purple-300 text-black';
+                    let taskIcon = '📋';
+
+                    if (t.is_completed) {
+                      taskBadgeClass = 'bg-green-300 line-through text-gray-700';
+                      taskIcon = '✅';
+                    } else if (t.is_overdue) {
+                      taskBadgeClass = 'bg-red-500 text-white font-black';
+                      taskIcon = '🚨';
+                    }
+
+                    return (
+                      <div
+                        key={`task-${t.id}`}
+                        className={`border border-black px-1 py-0.5 text-[8px] sm:text-[10px] uppercase truncate shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between ${taskBadgeClass}`}
+                      >
+                        <span className="truncate">{taskIcon} {t.judul}</span>
+                      </div>
+                    );
+                  })}
 
                   {/* Sisa Item Jika Lebih dari 4 */}
                   {totalItems > 4 && (
@@ -277,7 +344,6 @@ export default function KalenderKelas({ studentId }) {
         {/* FOOTER */}
         <div className="bg-black text-white p-3 border-t-4 border-black flex justify-between items-center text-xs font-black uppercase">
           <span>BULAN: {monthNames[month]} {year}</span>
-          {/* <span className="text-gray-400 font-mono text-[10px]">SISTEM AKADEMIK TI-25-KA</span> */}
         </div>
 
       </div>
@@ -361,44 +427,53 @@ export default function KalenderKelas({ studentId }) {
 
                 {selectedDay.dayTasks.length > 0 ? (
                   <div className="space-y-2">
-                    {selectedDay.dayTasks.map((t) => (
-                      <div
-                        key={t.id}
-                        className={`border-2 border-black p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] space-y-1.5 ${
-                          t.is_completed ? 'bg-green-50' : 'bg-white'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div>
-                            <h5 className={`font-black text-sm uppercase ${t.is_completed ? 'line-through text-gray-500' : ''}`}>
-                              {t.tasks?.judul}
-                            </h5>
-                            <p className="text-[10px] font-bold text-gray-600 italic">
-                              {t.tasks?.courses?.mata_kuliah?.nama_matkul || 'Umum'}
-                            </p>
-                          </div>
-                          {t.is_completed ? (
-                            <span className="bg-green-400 text-black border border-black px-2 py-0.5 text-[9px] font-black uppercase flex items-center gap-1">
-                              <CheckCircle2 size={12} /> Selesai
-                            </span>
-                          ) : (
-                            <span className="bg-purple-400 text-black border border-black px-2 py-0.5 text-[9px] font-black uppercase">
-                              Pending
-                            </span>
-                          )}
-                        </div>
+                    {selectedDay.dayTasks.map((t) => {
+                      let cardBg = 'bg-white';
+                      if (t.is_completed) cardBg = 'bg-green-50';
+                      else if (t.is_overdue) cardBg = 'bg-red-50 border-red-500';
 
-                        {t.tasks?.deskripsi && (
-                          <p className="text-xs text-gray-700 bg-gray-100 p-2 border-l-3 border-purple-500 font-mono">
-                            {t.tasks.deskripsi}
-                          </p>
-                        )}
-                        
-                        <div className="text-right text-[10px] font-mono font-bold text-gray-600">
-                          Jam Deadline: {new Date(t.deadline).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                      return (
+                        <div
+                          key={t.id}
+                          className={`border-2 border-black p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] space-y-1.5 ${cardBg}`}
+                        >
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <h5 className={`font-black text-sm uppercase ${t.is_completed ? 'line-through text-gray-500' : ''}`}>
+                                {t.judul}
+                              </h5>
+                              <p className="text-[10px] font-bold text-gray-600 italic">
+                                {t.nama_matkul}
+                              </p>
+                            </div>
+
+                            {t.is_completed ? (
+                              <span className="bg-green-400 text-black border border-black px-2 py-0.5 text-[9px] font-black uppercase flex items-center gap-1">
+                                <CheckCircle2 size={12} /> Selesai
+                              </span>
+                            ) : t.is_overdue ? (
+                              <span className="bg-red-500 text-white border border-black px-2 py-0.5 text-[9px] font-black uppercase flex items-center gap-1 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                                <AlertTriangle size={12} /> Terlewat
+                              </span>
+                            ) : (
+                              <span className="bg-purple-400 text-black border border-black px-2 py-0.5 text-[9px] font-black uppercase">
+                                Pending
+                              </span>
+                            )}
+                          </div>
+
+                          {t.deskripsi && (
+                            <p className="text-xs text-gray-700 bg-gray-100 p-2 border-l-3 border-purple-500 font-mono">
+                              {t.deskripsi}
+                            </p>
+                          )}
+                          
+                          <div className="text-right text-[10px] font-mono font-bold text-gray-600">
+                            Jam Deadline: {new Date(t.deadline).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-xs font-black text-gray-500 uppercase italic bg-gray-50 p-3 border border-dashed border-gray-400 text-center">
