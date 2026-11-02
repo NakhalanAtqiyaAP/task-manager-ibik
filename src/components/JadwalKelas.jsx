@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Edit2, Plus, Trash2, Calendar as CalendarIcon, Filter, Clock, MapPin, UserCheck, RefreshCw, BookOpen } from 'lucide-react';
-import Calendar from './Calendar'; // Pastikan path import Calendar sesuai dengan struktur folder kamu
+import { Edit2, Plus, Trash2, Calendar as CalendarIcon, Filter, Clock, MapPin, UserCheck, RefreshCw, BookOpen, AlertTriangle } from 'lucide-react';
 
 const getCurrentSemester = (startYear = 2025) => {
   const now = new Date();
@@ -84,10 +83,12 @@ export default function JadwalKelas({ userRole }) {
     setLoading(false);
   }
 
-  // Set Hari otomatis berdasarkan Tanggal (Untuk UTS/UAS)
+  // Set Hari otomatis berdasarkan Tanggal (Menggunakan Native JS Parsing)
   const handleDateChange = (dateString) => {
     if (dateString) {
-      const dateObj = new Date(dateString);
+      // Memisahkan YYYY-MM-DD agar waktu tidak bergeser gara-gara zona waktu (UTC)
+      const [year, month, day] = dateString.split('-');
+      const dateObj = new Date(year, month - 1, day);
       const dayName = daysName[dateObj.getDay()];
       setFormData({ ...formData, tanggal_ujian: dateString, hari: dayName });
     } else {
@@ -106,6 +107,27 @@ export default function JadwalKelas({ userRole }) {
     }
     resetForm();
     fetchSchedules();
+  }
+
+  // Fitur Reset Semua Jadwal Ujian
+  async function handleResetUjian() {
+    if (confirm(`⚠️ PERINGATAN: Anda yakin ingin MENGHAPUS SEMUA jadwal ${viewMode} di Semester ${activeSemester}? Aksi ini tidak dapat dibatalkan!`)) {
+      setLoading(true);
+      const { error } = await supabase
+        .from('jadwal_kuliah')
+        .delete()
+        .eq('tipe_jadwal', viewMode)
+        .eq('semester', Number(activeSemester));
+
+      if (error) {
+        console.error("Error resetting jadwal:", error);
+        alert(`Gagal mereset jadwal ${viewMode}.`);
+      } else {
+        alert(`Semua jadwal ${viewMode} semester ${activeSemester} berhasil direset.`);
+        fetchSchedules();
+      }
+      setLoading(false);
+    }
   }
 
   const resetForm = () => {
@@ -235,19 +257,31 @@ export default function JadwalKelas({ userRole }) {
                 {isEditing ? <Edit2 size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
                 {isEditing ? `EDIT JADWAL ${viewMode}` : `TAMBAH JADWAL ${viewMode}`}
               </h3>
+              
+              {/* TOMBOL RESET SEMUA UJIAN */}
+              {viewMode !== 'Reguler' && schedules.length > 0 && (
+                <button 
+                  onClick={handleResetUjian}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 text-xs font-black uppercase flex items-center gap-1.5 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                >
+                  <AlertTriangle size={14} /> RESET {viewMode}
+                </button>
+              )}
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 
-                {/* JIKA MODE UJIAN, TAMPILKAN CALENDAR. JIKA REGULER, TAMPILKAN DROPDOWN HARI */}
+                {/* JIKA MODE UJIAN, TAMPILKAN INPUT DATE HTML5 BAWAAN. JIKA REGULER, TAMPILKAN DROPDOWN HARI */}
                 {viewMode !== 'Reguler' ? (
                   <div className="sm:col-span-2">
                     <label className="block text-[10px] font-black uppercase mb-1">Tanggal Ujian:</label>
-                    <Calendar 
-                      value={formData.tanggal_ujian} 
-                      onChange={handleDateChange} 
-                      placeholder="PILIH TANGGAL UJIAN" 
+                    <input 
+                      type="date"
+                      className={`${inputStyles} cursor-pointer`}
+                      value={formData.tanggal_ujian}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      required
                     />
                   </div>
                 ) : (
